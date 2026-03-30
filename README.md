@@ -123,7 +123,7 @@ Het volledige stageproces wordt doorlopen in drie grote stappen:
 |---|---|
 | **Frontend** | Vite + HTML / CSS / JavaScript |
 | **Backend** | Node.js + Express.js |
-| **Base de données** | MySQL |
+| **Database** | MySQL |
 
 ---
 

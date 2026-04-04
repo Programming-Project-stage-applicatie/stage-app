@@ -7,7 +7,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// MySQL connectie
+// MySQL connectie (MOET boven de middleware staan)
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -24,7 +24,15 @@ db.connect((err) => {
   console.log("Verbonden met MySQL database");
 });
 
-// Users
+// Database beschikbaar maken voor routes
+app.use((req, res, next) => {
+    req.db = db;
+    next();
+});
+
+// Routes
+const internshipRequestsRoutes = require("./routes/internship_requests");
+app.use("/internship-requests", internshipRequestsRoutes);
 
 const userRoutes = require("./routes/users");
 app.use("/users", userRoutes);

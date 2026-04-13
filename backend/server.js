@@ -18,10 +18,10 @@ const db = mysql.createConnection({
 // Test connectie
 db.connect((err) => {
   if (err) {
-    console.log("MySQL fout:", err);
+    console.log("MySQL error:", err);
     return;
   }
-  console.log("Verbonden met MySQL database");
+  console.log("Connected to MySQL database");
 });
 
 // Users
@@ -29,13 +29,17 @@ db.connect((err) => {
 const userRoutes = require("./routes/users");
 app.use("/users", userRoutes);
 
+const authRoutes = require("./routes/auth");
+app.use("/auth", authRoutes);
+
+
 // Test route
 app.get("/", (req, res) => {
-  res.send("Backend werkt");
+  res.send("Backend is running");
 });
 
 app.listen(3000, () => {
-  console.log("Server draait op http://localhost:3000");
+  console.log("Server running on http://localhost:3000");
 });
 
 

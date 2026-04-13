@@ -23,8 +23,10 @@ exports.createUser = async (req, res) => {
     };
 
     userModel.createUser(user, (err, results) => {
-      if (err) return res.status(500).json(err);
-      res.json({ message: "Gebruiker toegevoegd!", userId: results.insertId });
+      if (err) return res.status(500).json({
+      message: "Failed to create user"
+    });
+      res.json({ message: "User created successfully", userId: results.insertId });
     });
   } catch (error) {
     res.status(500).json({ error });

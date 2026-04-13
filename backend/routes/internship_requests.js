@@ -7,7 +7,7 @@ router.get("/", (req, res) => {
 
     req.db.query(sql, (err, results) => {
         if (err) {
-            return res.status(500).json({ error: "Database fout" });
+            return res.status(500).json({ error: "Database error" });
         }
         res.json(results);
     });
@@ -36,7 +36,7 @@ router.post("/", (req, res) => {
         !start_date ||
         !end_date
     ) {
-        return res.status(400).json({ error: "Verplichte velden ontbreken" });
+        return res.status(400).json({ error: "Missing required fields" });
     }
 
     const sql = `
@@ -58,12 +58,12 @@ router.post("/", (req, res) => {
 
     req.db.query(sql, values, (err, result) => {
         if (err) {
-            console.error("Database fout:", err);
-            return res.status(500).json({ error: "Database fout" });
+            console.error("Database error:", err);
+            return res.status(500).json({ error: "Database error" });
         }
 
         res.status(201).json({
-            message: "Stageaanvraag succesvol ingediend",
+            message: "Internship request submitted successfully",
             request_id: result.insertId
         });
     });

@@ -25,7 +25,7 @@ router.post("/", (req, res) => {
         description,
         start_date,
         end_date,
-        stage_committee_id
+        internship_committee_id
     } = req.body;
 
     // Verplichte velden controleren
@@ -41,8 +41,8 @@ router.post("/", (req, res) => {
 
     const sql = `
         INSERT INTO internship_requests 
-        (student_id, company, mentor_firstName, mentor_lastName, description, start_date, end_date, stage_committee_id, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'ingediend')
+        (student_id, company, mentor_firstName, mentor_lastName, description, start_date, end_date, internship_committee_id, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'submitted')
     `;
 
     const values = [
@@ -53,7 +53,7 @@ router.post("/", (req, res) => {
         description,
         start_date,
         end_date,
-        stage_committee_id || null
+        internship_committee_id|| null
     ];
 
     req.db.query(sql, values, (err, result) => {

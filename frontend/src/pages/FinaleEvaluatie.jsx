@@ -82,6 +82,12 @@ export default function FinaleEvaluatie() {
       {/* ── Titel ── */}
       <h1 style={s.titel}>Finale Evaluatie</h1>
 
+      <div style={s.statusBadge(evaluatie.status)}>
+      {evaluatie.status ? evaluatie.status.toUpperCase() : "ONBEKEND"}
+      </div>
+
+      
+
       {/* ── Student info ── */}
       <div style={s.infoBlok}>
         <p style={s.infoRegel}>
@@ -256,4 +262,26 @@ const s = {
   scoreBlok:       { display: "inline-block", background: "#f0fdf4", border: "1px solid #86efac", borderRadius: "8px", padding: "0.75rem 1.5rem", marginBottom: "0.5rem" },
   scoreGetal:      { fontSize: "2rem", fontWeight: "bold", color: "#16a34a" },
   scoreMax:        { fontSize: "1rem", color: "#555" },
+
+scoreMax:    { fontSize: "1rem", color: "#555" },
+  statusBadge: (status) => ({
+    display: "inline-block",
+    padding: "0.3rem 1rem",
+    borderRadius: "20px",
+    fontWeight: "bold",
+    fontSize: "0.85rem",
+    marginBottom: "1rem",
+    background:
+      status === "Open"        ? "#fef9c3" :
+      status === "Ingediend"   ? "#dbeafe" :
+      status === "Geëvalueerd" ? "#f0fdf4" : "#f3f4f6",
+    color:
+      status === "Open"        ? "#854d0e" :
+      status === "Ingediend"   ? "#1e40af" :
+      status === "Geëvalueerd" ? "#166534" : "#374151",
+    border:
+      status === "Open"        ? "1px solid #fde047" :
+      status === "Ingediend"   ? "1px solid #93c5fd" :
+      status === "Geëvalueerd" ? "1px solid #86efac" : "1px solid #d1d5db",
+  }),
 };

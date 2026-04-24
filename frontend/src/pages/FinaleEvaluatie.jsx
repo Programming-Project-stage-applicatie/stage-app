@@ -73,7 +73,7 @@ export default function FinaleEvaluatie() {
 
   if (!evaluatie) return <div style={s.loading}>Laden…</div>;
 
-  const isOpen      = !evaluatie.status || evaluatie.status === "Open";
+  const isOpen      = evaluatie.status === "Open";
   const alleenLezen = !isOpen;
 
   return (
@@ -152,7 +152,7 @@ export default function FinaleEvaluatie() {
 
       {/* ── Feedback Mentor ── */}
       <section style={s.sectie}>
-        <h2 style={s.sectietitel}>Feedback Mentor:</h2>
+        <h2 style={s.sectietitel}>Feedback Mentor</h2>
         <textarea
           style={{ ...s.textarea, ...s.textareaReadonly }}
           value={evaluatie.feedback_mentor || ""}
@@ -172,6 +172,28 @@ export default function FinaleEvaluatie() {
         />
       </section>
 
+
+      {/* ── Beoordeling (alleen zichtbaar als Geëvalueerd) ── */}
+      {evaluatie.status === "Geëvalueerd" && (
+        <>
+          <hr style={s.lijn} />
+          <section style={s.sectie}>
+            <h2 style={s.sectietitel}>Beoordeling</h2>
+            <label style={s.label}>Eindscore:</label>
+            <div style={s.scoreBlok}>
+              <span style={s.scoreGetal}>{evaluatie.eindscore != null ? evaluatie.eindscore : "—"}</span>
+              {evaluatie.eindscore != null && <span style={s.scoreMax}> / 20</span>}
+            </div>
+            <label style={{ ...s.label, marginTop: "1rem" }}>Motivatie:</label>
+            <textarea
+              style={{ ...s.textarea, ...s.textareaReadonly }}
+              value={evaluatie.motivatie || ""}
+              readOnly
+              placeholder="Nog geen motivatie ingegeven."
+            />
+          </section>
+        </>
+      )}
       {/* ── Foutmelding ── */}
       {fout && <p style={s.fout}>⚠️ {fout}</p>}
 
@@ -231,4 +253,7 @@ const s = {
   btn:             { padding: "0.65rem 2.5rem", fontSize: "0.9rem", fontWeight: "bold", borderRadius: "4px", cursor: "pointer", letterSpacing: "0.05em" },
   btnGroen:        { background: "#16a34a", color: "#fff", border: "none" },
   btnWit:          { background: "#fff", color: "#333", border: "1px solid #ccc" },
+  scoreBlok:       { display: "inline-block", background: "#f0fdf4", border: "1px solid #86efac", borderRadius: "8px", padding: "0.75rem 1.5rem", marginBottom: "0.5rem" },
+  scoreGetal:      { fontSize: "2rem", fontWeight: "bold", color: "#16a34a" },
+  scoreMax:        { fontSize: "1rem", color: "#555" },
 };

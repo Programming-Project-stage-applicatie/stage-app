@@ -9,6 +9,7 @@ app.use(express.json());
 
 let db;
 
+<<<<<<< HEAD
 // MySQL connectie (promise-based)
 async function initDB() {
   try {
@@ -31,6 +32,15 @@ initDB();
 app.use((req, res, next) => {
   req.db = db;
   next();
+=======
+// Test connectie
+db.connect((err) => {
+  if (err) {
+    console.log("MySQL error:", err);
+    return;
+  }
+  console.log("Connected to MySQL database");
+>>>>>>> 554fa7c2852acaff956bfe8d8ad920bbe85eb9c0
 });
 
 // Routes
@@ -40,11 +50,22 @@ app.use("/internship-requests", internshipRequestsRoutes);
 const userRoutes = require("./routes/users");
 app.use("/users", userRoutes);
 
+const authRoutes = require("./routes/auth");
+app.use("/auth", authRoutes);
+
+
 // Test route
 app.get("/", (req, res) => {
-  res.send("Backend werkt");
+  res.send("Backend is running");
 });
 
 app.listen(3000, () => {
+<<<<<<< HEAD
   console.log("Server draait op http://localhost:3000");
 });
+=======
+  console.log("Server running on http://localhost:3000");
+});
+
+
+>>>>>>> 554fa7c2852acaff956bfe8d8ad920bbe85eb9c0

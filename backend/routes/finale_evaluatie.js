@@ -145,5 +145,34 @@ router.post("/student/:studentId/indienen", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// ─── POST /api/finale-evaluatie/student/:studentId/annuleren ────────────────
+// Zet status terug op Open
+router.post("/student/:studentId/annuleren", async (req, res) => {
+  const { studentId } = req.params;
+
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM finale_evaluatie WHERE student_id = ?",
+      [studentId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Geen finale evaluatie gevonden." });
+    }
+
+    if (rows[0].status !== "Ingediend") {
+      return res.status(400).json({ error: "Kan alleen annuleren als status 'Ingediend' is." });
+    }
+
+    await db.query(
+      "UPDATE finale_evaluatie SET status = 'Open', updated_at = NOW() WHERE id = ?",
+      [rows[0].id]
+    );
+
+    res.json({ message: "Annulering geslaagd!", status: "Open" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 export default router;

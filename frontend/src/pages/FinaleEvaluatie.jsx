@@ -67,9 +67,22 @@ export default function FinaleEvaluatie() {
     }
   }
 
-  function handleAnnuleren() {
-    navigate(-1);
+function handleAnnuleren() { //opgelet na de merge moet deze functie aangepast worden 
+  if (window.confirm("Ben je zeker dat je wilt annuleren?")) {
+    fetch(`/api/finale-evaluatie/student/${studentId}/annuleren`, {
+      method: "POST",
+    })
+    .then(res => {
+      if (res.ok) {
+        haalOp(); // herlaad de data → status wordt terug "Open"
+      } else {
+        setFout("Annuleren mislukt. Probeer opnieuw.");
+      }
+    })
+    .catch(() => setFout("Er ging iets mis. Probeer opnieuw."));
   }
+}
+
 
   if (!evaluatie) return <div style={s.loading}>Laden…</div>;
 

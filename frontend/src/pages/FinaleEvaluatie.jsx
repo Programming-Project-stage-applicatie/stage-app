@@ -12,7 +12,7 @@ export default function FinaleEvaluatie() {
   const navigate = useNavigate();
 
   const user      = JSON.parse(localStorage.getItem("user") || "{}");
-  const studentId = user.id || 1; // fallback voor test
+  const studentId = user.id || 1;
 
   useEffect(() => { haalOp(); }, []);
 
@@ -21,9 +21,9 @@ export default function FinaleEvaluatie() {
       const res  = await fetch(`/api/finale-evaluatie/student/${studentId}`);
       const data = await res.json();
       setEvaluatie(data);
-      setOmschrijving(data.omschrijving ?? "");
+      setOmschrijving(data.presentation ?? "");  
     } catch {
-      setEvaluatie({ status: "Open" });
+      setEvaluatie({ status: "open" });  
     }
   }
 
@@ -43,7 +43,6 @@ export default function FinaleEvaluatie() {
     setFout("");
     setBezig(true);
 
-    // Eerst opslaan
     const fd = new FormData();
     fd.append("omschrijving", omschrijving);
     if (bestand) fd.append("document", bestand);
@@ -54,7 +53,6 @@ export default function FinaleEvaluatie() {
       });
       if (!r1.ok) { const d = await r1.json(); setFout(d.error); return; }
 
-      // Dan indienen
       const r2 = await fetch(`/api/finale-evaluatie/student/${studentId}/indienen`, {
         method: "POST",
       });
@@ -67,41 +65,45 @@ export default function FinaleEvaluatie() {
     }
   }
 
-function handleAnnuleren() { //opgelet na de merge moet deze functie aangepast worden 
-  if (window.confirm("Ben je zeker dat je wilt annuleren?")) {
-    fetch(`/api/finale-evaluatie/student/${studentId}/annuleren`, {
-      method: "POST",
-    })
-    .then(res => {
-      if (res.ok) {
-        haalOp(); // herlaad de data → status wordt terug "Open"
-      } else {
-        setFout("Annuleren mislukt. Probeer opnieuw.");
-      }
-    })
-    .catch(() => setFout("Er ging iets mis. Probeer opnieuw."));
+  function handleAnnuleren() { // opgelet na de merge moet deze functie aangepast worden
+    if (window.confirm("Ben je zeker dat je wilt annuleren?")) {
+      fetch(`/api/finale-evaluatie/student/${studentId}/annuleren`, {
+        method: "POST",
+      })
+      .then(res => {
+        if (res.ok) {
+          haalOp();
+        } else {
+          setFout("Annuleren mislukt. Probeer opnieuw.");
+        }
+      })
+      .catch(() => setFout("Er ging iets mis. Probeer opnieuw."));
+    }
   }
-}
 
+  function vertaalStatus(status) {
+    const vertalingen = {
+      open: "Open",
+      submitted: "Ingediend",
+      evaluated: "Geëvalueerd",
+    };
+    return vertalingen[status] || status;
+  }
 
   if (!evaluatie) return <div style={s.loading}>Laden…</div>;
 
-  const isOpen      = evaluatie.status === "Open";
+  const isOpen      = evaluatie.status === "open";  
   const alleenLezen = !isOpen;
 
   return (
     <div style={s.pagina}>
 
-      {/* ── Titel ── */}
       <h1 style={s.titel}>Finale Evaluatie</h1>
 
       <div style={s.statusBadge(evaluatie.status)}>
-      {evaluatie.status ? evaluatie.status.toUpperCase() : "ONBEKEND"}
+        {vertaalStatus(evaluatie.status).toUpperCase()}  
       </div>
 
-      
-
-      {/* ── Student info ── */}
       <div style={s.infoBlok}>
         <p style={s.infoRegel}>
           <span style={s.infoLabel}>Student:</span>
@@ -115,14 +117,12 @@ function handleAnnuleren() { //opgelet na de merge moet deze functie aangepast w
 
       <hr style={s.lijn} />
 
-      {/* ── Status melding ── */}
       {alleenLezen && (
         <div style={s.statusMelding}>
-          ✅ Je eindpresentatie is <strong>{evaluatie.status}</strong>. Je kan deze niet meer bewerken.
+          ✅ Je eindpresentatie is <strong>{vertaalStatus(evaluatie.status)}</strong>. Je kan deze niet meer bewerken.  
         </div>
       )}
 
-      {/* ── Eindpresentatie ── */}
       <section style={s.sectie}>
         <h2 style={s.sectietitel}>Eindpresentatie</h2>
 
@@ -135,7 +135,6 @@ function handleAnnuleren() { //opgelet na de merge moet deze functie aangepast w
           readOnly={alleenLezen}
         />
 
-        {/* Upload */}
         {isOpen && (
           <div style={s.uploadRij}>
             <label style={s.label}>Upload bestand (optioneel)</label>
@@ -159,49 +158,44 @@ function handleAnnuleren() { //opgelet na de merge moet deze functie aangepast w
           </div>
         )}
 
-        {/* Huidig document */}
-        {evaluatie.document_url && (
-          <a href={evaluatie.document_url} target="_blank" rel="noreferrer" style={s.docLink}>
-            📎 {evaluatie.document_url.split("/").pop()}
+        {evaluatie.document && (
+          <a href={evaluatie.document} target="_blank" rel="noreferrer" style={s.docLink}>
+            📎 {evaluatie.document.split("/").pop()}  // ← document ipv document_url
           </a>
         )}
       </section>
 
       <hr style={s.lijn} />
 
-      {/* ── Feedback Mentor ── */}
       <section style={s.sectie}>
         <h2 style={s.sectietitel}>Feedback Mentor</h2>
         <textarea
           style={{ ...s.textarea, ...s.textareaReadonly }}
-          value={evaluatie.feedback_mentor || ""}
+          value={evaluatie.mentor_feedback || ""}  
           readOnly
           placeholder="Nog geen feedback van mentor."
         />
       </section>
 
-      {/* ── Feedback Docent ── */}
       <section style={s.sectie}>
         <h2 style={s.sectietitel}>Feedback Docent:</h2>
         <textarea
           style={{ ...s.textarea, ...s.textareaReadonly }}
-          value={evaluatie.feedback_docent || ""}
+          value={evaluatie.teacher_feedback || ""}  
           readOnly
           placeholder="Nog geen feedback van docent."
         />
       </section>
 
-
-      {/* ── Beoordeling (alleen zichtbaar als Geëvalueerd) ── */}
-      {evaluatie.status === "Geëvalueerd" && (
+      {evaluatie.status === "evaluated" && (  
         <>
           <hr style={s.lijn} />
           <section style={s.sectie}>
             <h2 style={s.sectietitel}>Beoordeling</h2>
             <label style={s.label}>Eindscore:</label>
             <div style={s.scoreBlok}>
-              <span style={s.scoreGetal}>{evaluatie.eindscore != null ? evaluatie.eindscore : "—"}</span>
-              {evaluatie.eindscore != null && <span style={s.scoreMax}> / 20</span>}
+              <span style={s.scoreGetal}>{evaluatie.final_score != null ? evaluatie.final_score : "—"}</span>  // ← final_score
+              {evaluatie.final_score != null && <span style={s.scoreMax}> / 20</span>}
             </div>
             <label style={{ ...s.label, marginTop: "1rem" }}>Motivatie:</label>
             <textarea
@@ -213,10 +207,9 @@ function handleAnnuleren() { //opgelet na de merge moet deze functie aangepast w
           </section>
         </>
       )}
-      {/* ── Foutmelding ── */}
+
       {fout && <p style={s.fout}>⚠️ {fout}</p>}
 
-      {/* ── Knoppen ── */}
       <div style={s.knoppen}>
         {isOpen && (
           <button
@@ -244,30 +237,22 @@ const s = {
   pagina:          { maxWidth: "620px", margin: "2rem auto", padding: "1.5rem", fontFamily: "Arial, sans-serif", color: "#222" },
   loading:         { display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" },
   titel:           { fontSize: "1.6rem", fontWeight: "bold", marginBottom: "1rem" },
-
   infoBlok:        { marginBottom: "1rem" },
   infoRegel:       { margin: "0.2rem 0", fontSize: "0.95rem" },
   infoLabel:       { fontWeight: "bold", marginRight: "0.4rem" },
-
   lijn:            { border: "none", borderTop: "1px solid #ccc", margin: "1.25rem 0" },
-
   statusMelding:   { background: "#f0fdf4", border: "1px solid #86efac", color: "#166534", padding: "0.75rem 1rem", borderRadius: "6px", marginBottom: "1rem", fontSize: "0.9rem" },
-
   sectie:          { marginBottom: "1.25rem" },
   sectietitel:     { fontSize: "1rem", fontWeight: "bold", marginBottom: "0.5rem" },
   label:           { display: "block", fontSize: "0.9rem", marginBottom: "0.4rem" },
-
   textarea:        { width: "100%", minHeight: "90px", padding: "0.6rem 0.75rem", border: "1px solid #ccc", borderRadius: "4px", fontSize: "0.9rem", resize: "vertical", boxSizing: "border-box", background: "#fff" },
   textareaReadonly:{ background: "#f9f9f9", color: "#444" },
-
   uploadRij:       { marginTop: "0.75rem" },
   uploadControls:  { display: "flex", alignItems: "center", gap: "0.75rem", marginTop: "0.3rem" },
   kiesBestandBtn:  { padding: "0.4rem 0.9rem", background: "#f0f0f0", border: "1px solid #bbb", borderRadius: "4px", cursor: "pointer", fontSize: "0.85rem" },
   bestandNaam:     { fontSize: "0.85rem", color: "#555" },
   docLink:         { display: "inline-block", marginTop: "0.4rem", color: "#2563eb", fontSize: "0.85rem" },
-
   fout:            { color: "#dc2626", background: "#fef2f2", padding: "0.6rem 0.9rem", borderRadius: "4px", marginBottom: "0.75rem", fontSize: "0.9rem" },
-
   knoppen:         { display: "flex", justifyContent: "center", gap: "1rem", marginTop: "2rem" },
   btn:             { padding: "0.65rem 2.5rem", fontSize: "0.9rem", fontWeight: "bold", borderRadius: "4px", cursor: "pointer", letterSpacing: "0.05em" },
   btnGroen:        { background: "#16a34a", color: "#fff", border: "none" },
@@ -275,8 +260,6 @@ const s = {
   scoreBlok:       { display: "inline-block", background: "#f0fdf4", border: "1px solid #86efac", borderRadius: "8px", padding: "0.75rem 1.5rem", marginBottom: "0.5rem" },
   scoreGetal:      { fontSize: "2rem", fontWeight: "bold", color: "#16a34a" },
   scoreMax:        { fontSize: "1rem", color: "#555" },
-
-scoreMax:    { fontSize: "1rem", color: "#555" },
   statusBadge: (status) => ({
     display: "inline-block",
     padding: "0.3rem 1rem",
@@ -285,16 +268,16 @@ scoreMax:    { fontSize: "1rem", color: "#555" },
     fontSize: "0.85rem",
     marginBottom: "1rem",
     background:
-      status === "Open"        ? "#fef9c3" :
-      status === "Ingediend"   ? "#dbeafe" :
-      status === "Geëvalueerd" ? "#f0fdf4" : "#f3f4f6",
+      status === "open"       ? "#fef9c3" :
+      status === "submitted"  ? "#dbeafe" :
+      status === "evaluated"  ? "#f0fdf4" : "#f3f4f6",
     color:
-      status === "Open"        ? "#854d0e" :
-      status === "Ingediend"   ? "#1e40af" :
-      status === "Geëvalueerd" ? "#166534" : "#374151",
+      status === "open"       ? "#854d0e" :
+      status === "submitted"  ? "#1e40af" :
+      status === "evaluated"  ? "#166534" : "#374151",
     border:
-      status === "Open"        ? "1px solid #fde047" :
-      status === "Ingediend"   ? "1px solid #93c5fd" :
-      status === "Geëvalueerd" ? "1px solid #86efac" : "1px solid #d1d5db",
+      status === "open"       ? "1px solid #fde047" :
+      status === "submitted"  ? "1px solid #93c5fd" :
+      status === "evaluated"  ? "1px solid #86efac" : "1px solid #d1d5db",
   }),
 };

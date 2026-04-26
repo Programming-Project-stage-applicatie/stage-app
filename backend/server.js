@@ -1,33 +1,36 @@
 const express = require("express");
 const cors = require("cors");
-const mysql = require("mysql2");
+const mysql = require("mysql2/promise");
 require("dotenv").config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// MySQL connectie (MOET boven de middleware staan)
-const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME
-});
+let db;
 
-// Test connectie
-db.connect((err) => {
-  if (err) {
-    console.log("MySQL fout:", err);
-    return;
+// MySQL connectie (promise-based)
+async function initDB() {
+  try {
+    db = await mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME
+    });
+
+    console.log("Verbonden met MySQL database");
+  } catch (err) {
+    console.error("MySQL fout:", err);
   }
-  console.log("Verbonden met MySQL database");
-});
+}
+
+initDB();
 
 // Database beschikbaar maken voor routes
 app.use((req, res, next) => {
-    req.db = db;
-    next();
+  req.db = db;
+  next();
 });
 
 // Routes
@@ -45,5 +48,3 @@ app.get("/", (req, res) => {
 app.listen(3000, () => {
   console.log("Server draait op http://localhost:3000");
 });
-
-

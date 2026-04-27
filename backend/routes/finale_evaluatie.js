@@ -169,4 +169,44 @@ router.post("/student/:studentId/annuleren", async (req, res) => {
   }
 });
 
+// ─── POST /api/finale-evaluatie/student/:studentId/mentor-motivatie ─────────
+router.post("/student/:studentId/mentor-motivatie", async (req, res) => {
+  const { studentId } = req.params;
+  const { mentor_motivatie, mentor_id } = req.body;
+
+  if (!mentor_motivatie || mentor_motivatie.trim() === "") {
+    return res.status(400).json({ error: "Eindmotivatie is verplicht." });
+  }
+
+  try {
+    const [rows] = await db.query(
+      "SELECT id, status FROM final_evaluations WHERE internship_id = ?",
+      [studentId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Geen finale evaluatie gevonden." });
+    }
+
+    const record = rows[0];
+
+    if (record.status !== "submitted") {
+      return res.status(400).json({
+        error: `Eindmotivatie kan enkel ingegeven worden als de status 'submitted' is (huidige status: '${record.status}').`,
+      });
+    }
+
+    await db.query(
+      `UPDATE final_evaluations
+       SET mentor_motivatie = ?, mentor_id = ?
+       WHERE id = ?`,
+      [mentor_motivatie.trim(), mentor_id ?? null, record.id]
+    );
+
+    res.json({ message: "Eindmotivatie opgeslagen.", status: record.status });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;

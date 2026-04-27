@@ -109,3 +109,73 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+.login-page {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--bg);
+  padding: 32px 28px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.login-card h1 {
+  font-size: 32px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+
+.login-card h2 {
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 28px;
+}
+
+.login-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  
+}
+
+.login-card label {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.login-card input {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 16px;
+}
+
+.login-card button {
+  margin-top: 12px;
+  padding: 12px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  box-shadow: rgba(170, 59, 255, 0.4) 0 8px 18px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.login-help {
+  margin-top: 20px;
+  font-size: 14px;
+  opacity: 0.85;
+}

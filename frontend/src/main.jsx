@@ -1,8 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-
-import FinaleEvaluatie from "./pages/FinaleEvaluatie.jsx";
+import FinaleEvaluatie from "./pages/FinaleEvaluatieMentor.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

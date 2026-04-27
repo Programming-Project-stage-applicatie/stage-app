@@ -21,9 +21,9 @@ export default function FinaleEvaluatie() {
       const res  = await fetch(`/api/finale-evaluatie/student/${studentId}`);
       const data = await res.json();
       setEvaluatie(data);
-      setOmschrijving(data.presentation ?? "");  
+      setOmschrijving(data.presentation ?? "");
     } catch {
-      setEvaluatie({ status: "open" });  
+      setEvaluatie({ status: "open" });
     }
   }
 
@@ -92,7 +92,7 @@ export default function FinaleEvaluatie() {
 
   if (!evaluatie) return <div style={s.loading}>Laden…</div>;
 
-  const isOpen      = evaluatie.status === "open";  
+  const isOpen      = evaluatie.status === "open";
   const alleenLezen = !isOpen;
 
   return (
@@ -101,7 +101,7 @@ export default function FinaleEvaluatie() {
       <h1 style={s.titel}>Finale Evaluatie</h1>
 
       <div style={s.statusBadge(evaluatie.status)}>
-        {vertaalStatus(evaluatie.status).toUpperCase()}  
+        {vertaalStatus(evaluatie.status).toUpperCase()}
       </div>
 
       <div style={s.infoBlok}>
@@ -119,7 +119,7 @@ export default function FinaleEvaluatie() {
 
       {alleenLezen && (
         <div style={s.statusMelding}>
-          ✅ Je eindpresentatie is <strong>{vertaalStatus(evaluatie.status)}</strong>. Je kan deze niet meer bewerken.  
+          ✅ Je eindpresentatie is <strong>{vertaalStatus(evaluatie.status)}</strong>. Je kan deze niet meer bewerken.
         </div>
       )}
 
@@ -160,41 +160,44 @@ export default function FinaleEvaluatie() {
 
         {evaluatie.document && (
           <a href={evaluatie.document} target="_blank" rel="noreferrer" style={s.docLink}>
-            📎 {evaluatie.document.split("/").pop()}  // ← document ipv document_url
+            📎 {evaluatie.document.split("/").pop()}
           </a>
         )}
       </section>
 
-      <hr style={s.lijn} />
+      {alleenLezen && (
+        <>
+          <hr style={s.lijn} />
+          <section style={s.sectie}>
+            <h2 style={s.sectietitel}>Feedback Mentor</h2>
+            <textarea
+              style={{ ...s.textarea, ...s.textareaReadonly }}
+              value={evaluatie.mentor_feedback || ""}
+              readOnly
+              placeholder="Nog geen feedback van mentor."
+            />
+          </section>
 
-      <section style={s.sectie}>
-        <h2 style={s.sectietitel}>Feedback Mentor</h2>
-        <textarea
-          style={{ ...s.textarea, ...s.textareaReadonly }}
-          value={evaluatie.mentor_feedback || ""}  
-          readOnly
-          placeholder="Nog geen feedback van mentor."
-        />
-      </section>
+          <section style={s.sectie}>
+            <h2 style={s.sectietitel}>Feedback Docent:</h2>
+            <textarea
+              style={{ ...s.textarea, ...s.textareaReadonly }}
+              value={evaluatie.teacher_feedback || ""}
+              readOnly
+              placeholder="Nog geen feedback van docent."
+            />
+          </section>
+        </>
+      )}
 
-      <section style={s.sectie}>
-        <h2 style={s.sectietitel}>Feedback Docent:</h2>
-        <textarea
-          style={{ ...s.textarea, ...s.textareaReadonly }}
-          value={evaluatie.teacher_feedback || ""}  
-          readOnly
-          placeholder="Nog geen feedback van docent."
-        />
-      </section>
-
-      {evaluatie.status === "evaluated" && (  
+      {evaluatie.status === "evaluated" && (
         <>
           <hr style={s.lijn} />
           <section style={s.sectie}>
             <h2 style={s.sectietitel}>Beoordeling</h2>
             <label style={s.label}>Eindscore:</label>
             <div style={s.scoreBlok}>
-              <span style={s.scoreGetal}>{evaluatie.final_score != null ? evaluatie.final_score : "—"}</span>  // ← final_score
+              <span style={s.scoreGetal}>{evaluatie.final_score != null ? evaluatie.final_score : "—"}</span>
               {evaluatie.final_score != null && <span style={s.scoreMax}> / 20</span>}
             </div>
             <label style={{ ...s.label, marginTop: "1rem" }}>Motivatie:</label>

@@ -9,23 +9,27 @@ export default function FinaleEvaluatieMentor() {
 
   const user      = JSON.parse(localStorage.getItem("user") || "{}");
   const mentorId  = user.id || 1;
-
-  // In a real scenario, studentId would come from route params or props
   const studentId = user.studentId || 1;
 
   useEffect(() => { haalOp(); }, []);
 
-  async function haalOp() {
-    try {
-      const res  = await fetch(`/api/finale-evaluatie/student/${studentId}`);
-      const data = await res.json();
-      setEvaluatie(data);
-      setMotivatie(data.mentor_motivatie ?? "");
-    } catch {
-      setEvaluatie({ status: "submitted", student_naam: "Sarah Janssens", bedrijf: "XYZ BV" });
-    }
-  }
-
+async function haalOp() {
+  // TIJDELIJK — verwijderen als backend klaar is
+  setEvaluatie({
+    status: "submitted",
+    student_naam: "Test Student",
+    bedrijf: "Test BV",
+    presentation: "Dit is een testpresentatie.",
+    document: null,
+    mentor_motivatie: "",
+    final_score: null,
+    motivatie: "",
+    teacher_feedback: "",
+  });
+  setMotivatie("");
+  return;
+  // EINDE TIJDELIJK
+}
   async function handleBevestigen() {
     if (!motivatie.trim()) {
       setFout("Eindmotivatie is verplicht.");
@@ -64,8 +68,15 @@ export default function FinaleEvaluatieMentor() {
       submitted:  "Ingediend",
       evaluated:  "Geëvalueerd",
     };
-    return vertalingen[status] || status;
+    return vertalingen[status] || status || "Onbekend";
   }
+
+  if (fout && !evaluatie) return (
+    <div style={s.pagina}>
+      <p style={s.fout}>⚠️ {fout}</p>
+      <button style={{ ...s.btn, ...s.btnWit }} onClick={haalOp}>Opnieuw proberen</button>
+    </div>
+  );
 
   if (!evaluatie) return <div style={s.loading}>Laden…</div>;
 
@@ -83,11 +94,11 @@ export default function FinaleEvaluatieMentor() {
       <div style={s.infoBlok}>
         <p style={s.infoRegel}>
           <span style={s.infoLabel}>Student:</span>
-          {evaluatie.student_naam || "Sarah Janssens"}
+          {evaluatie.student_naam || "—"}
         </p>
         <p style={s.infoRegel}>
           <span style={s.infoLabel}>Stage:</span>
-          {evaluatie.bedrijf || user.bedrijf || "XYZ BV"}
+          {evaluatie.bedrijf || user.bedrijf || "—"}
         </p>
         <p style={s.infoRegel}>
           <span style={s.infoLabel}>Mentor:</span>
@@ -97,21 +108,18 @@ export default function FinaleEvaluatieMentor() {
 
       <hr style={s.lijn} />
 
-      {/* Status banner wanneer al geëvalueerd */}
       {!kanBewerken && evaluatie.status !== "open" && (
         <div style={s.statusMelding}>
           ✅ De eindmotivatie is <strong>{vertaalStatus(evaluatie.status)}</strong>. Je kan deze niet meer bewerken.
         </div>
       )}
 
-      {/* Banner wanneer student nog niet heeft ingediend */}
       {evaluatie.status === "open" && (
         <div style={s.waarschuwingMelding}>
           ⏳ De student heeft zijn eindpresentatie nog niet ingediend. Je kan pas een eindmotivatie ingeven nadat de student heeft ingediend.
         </div>
       )}
 
-      {/* Presentatie van de student — alleen lezen */}
       <section style={s.sectie}>
         <h2 style={s.sectietitel}>Eindpresentatie Student</h2>
         <label style={s.label}>Omschrijving eindpresentatie</label>
@@ -130,7 +138,6 @@ export default function FinaleEvaluatieMentor() {
 
       <hr style={s.lijn} />
 
-      {/* Eindmotivatie — invoerveld voor mentor */}
       <section style={s.sectie}>
         <h2 style={s.sectietitel}>Eindmotivatie Mentor</h2>
         <label style={s.label}>
@@ -159,7 +166,6 @@ export default function FinaleEvaluatieMentor() {
 
       <hr style={s.lijn} />
 
-      {/* Beoordeling door de docent — alleen lezen */}
       <section style={s.sectie}>
         <h2 style={s.sectietitel}>Beoordeling Docent</h2>
 

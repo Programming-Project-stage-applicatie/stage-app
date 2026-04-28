@@ -208,5 +208,84 @@ router.post("/student/:studentId/mentor-motivatie", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// ─── GET /api/finale-evaluatie/student/:studentId/docent ────────────────────
+// Haalt alle data op die de docent nodig heeft (student, mentor, eigen velden)
+router.get("/student/:studentId/docent", async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM final_evaluations WHERE internship_id = ?",
+      [req.params.studentId]
+    );
+
+    if (rows.length === 0) {
+      return res.json({ status: "open" });
+    }
+
+    const r = rows[0];
+    res.json({
+      status:            r.status,
+      student_naam:      r.student_naam   ?? null,
+      bedrijf:           r.bedrijf        ?? null,
+      presentation:      r.presentation   ?? null,
+      document:          r.document       ?? null,
+      mentor_naam:       r.mentor_naam    ?? null,
+      mentor_motivatie:  r.mentor_motivatie ?? null,
+      final_score:       r.final_score    ?? null,
+      feedback_docent:   r.feedback_docent ?? null,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── POST /api/finale-evaluatie/student/:studentId/docent ───────────────────
+// Slaat score + feedback op.
+// Als beëindigd === true → status wordt "evaluated" (zichtbaar voor student)
+// Als beëindigd === false → enkel opslaan, status blijft "submitted"
+router.post("/student/:studentId/docent", async (req, res) => {
+  const { studentId } = req.params;
+  const { final_score, feedback_docent, beëindigd } = req.body;
+
+  // Validatie score
+  const score = Number(final_score);
+  if (final_score === undefined || isNaN(score) || score < 0 || score > 20) {
+    return res.status(400).json({ error: "Vul een geldige score in (0–20)." });
+  }
+
+  try {
+    const [rows] = await db.query(
+      "SELECT id, status FROM final_evaluations WHERE internship_id = ?",
+      [studentId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Geen finale evaluatie gevonden." });
+    }
+
+    const record = rows[0];
+
+    if (record.status === "open") {
+      return res.status(400).json({
+        error: "De student heeft de eindpresentatie nog niet ingediend.",
+      });
+    }
+
+    const nieuweStatus = beëindigd === true ? "evaluated" : record.status;
+
+    await db.query(
+      `UPDATE final_evaluations
+       SET final_score = ?, feedback_docent = ?, status = ?
+       WHERE id = ?`,
+      [score, feedback_docent ?? null, nieuweStatus, record.id]
+    );
+
+    res.json({
+      message: beëindigd ? "Evaluatie beëindigd en opgeslagen." : "Score en feedback opgeslagen.",
+      status:  nieuweStatus,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 export default router;

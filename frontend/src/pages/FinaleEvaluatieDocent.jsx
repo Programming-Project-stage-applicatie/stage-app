@@ -246,15 +246,22 @@ export default function FinaleEvaluatieDocent() {
           /* Bewerkbare velden */
           <>
             <label style={s.label}>Eindscore (0–20):</label>
-            <input
-              type="number"
-              min="0"
-              max="20"
-              value={score}
-              onChange={e => setScore(e.target.value)}
-              style={s.inputScore}
-              placeholder="bv. 14"
-            />
+            <div style={s.scoreInvoerRij}>
+              <input
+                type="number"
+                min="0"
+                max="20"
+                value={score}
+                onChange={e => { setScore(e.target.value); setFout(""); }}
+                style={{ ...s.inputScore, borderColor: fout ? "#dc2626" : "#ccc" }}
+                placeholder="0 – 20"
+              />
+              <span style={s.scoreHint}>/ 20</span>
+            </div>
+            {fout && <p style={s.foutInline}>⚠️ {fout}</p>}
+            <p style={s.scoreToelichting}>
+              ℹ️ De score wordt zichtbaar voor de mentor van zodra u op 'Bevestigen' klikt. De score wordt zichtbaar voor de student van zodra u de checkbox 'Evaluatie beëindigd' aanvinkt en op 'Bevestigen' klikt. Enkel de docent kan de score aanpassen.
+            </p>
 
             <label style={{ ...s.label, marginTop: "1rem" }}>Feedback:</label>
             <textarea
@@ -271,8 +278,6 @@ export default function FinaleEvaluatieDocent() {
           </div>
         )}
       </section>
-
-      {fout && <p style={s.fout}>⚠️ {fout}</p>}
 
       {/* Checkbox + Knoppen */}
       {kanInvullen && !toonReadonly && (
@@ -300,7 +305,7 @@ export default function FinaleEvaluatieDocent() {
             onClick={handleIndienen}
             disabled={bezig}
           >
-            {bezig ? "BEZIG…" : isGeeval ? "OPSLAAN" : "INDIENEN"}
+            {bezig ? "BEZIG…" : isGeeval ? "OPSLAAN" : "BEVESTIGEN"}
           </button>
         )}
         {toonReadonly && (
@@ -339,7 +344,11 @@ const s = {
   label:               { display: "block", fontSize: "0.9rem", marginBottom: "0.4rem" },
   textarea:            { width: "100%", minHeight: "90px", padding: "0.6rem 0.75rem", border: "1px solid #ccc", borderRadius: "4px", fontSize: "0.9rem", resize: "vertical", boxSizing: "border-box", background: "#fff" },
   textareaReadonly:    { background: "#f9f9f9", color: "#444" },
-  inputScore:          { width: "120px", padding: "0.5rem 0.75rem", border: "1px solid #ccc", borderRadius: "4px", fontSize: "1rem", marginBottom: "0.5rem" },
+  inputScore:          { width: "100px", padding: "0.5rem 0.75rem", border: "1px solid #ccc", borderRadius: "4px", fontSize: "1.1rem", marginBottom: "0" },
+  scoreInvoerRij:      { display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem" },
+  scoreHint:           { fontSize: "1rem", color: "#555" },
+  foutInline:          { color: "#dc2626", background: "#fef2f2", padding: "0.4rem 0.75rem", borderRadius: "4px", marginBottom: "0.5rem", fontSize: "0.88rem" },
+  scoreToelichting:    { fontSize: "0.82rem", color: "#555", background: "#f8f8f8", border: "1px solid #e5e7eb", borderRadius: "4px", padding: "0.5rem 0.75rem", marginBottom: "0.25rem" },
   docLink:             { display: "inline-block", marginTop: "0.5rem", color: "#2563eb", fontSize: "0.85rem", textDecoration: "underline" },
   geenBijlage:         { marginTop: "0.5rem", fontSize: "0.85rem", color: "#888" },
   fout:                { color: "#dc2626", background: "#fef2f2", padding: "0.6rem 0.9rem", borderRadius: "4px", marginBottom: "0.75rem", fontSize: "0.9rem" },

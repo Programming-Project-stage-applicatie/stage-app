@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 export default function FinaleEvaluatieMentor() {
   const [evaluatie, setEvaluatie]       = useState(null);
-  const [motivatie, setMotivatie]       = useState("");
+  const [feedback, setFeedback]         = useState("");
   const [fout, setFout]                 = useState("");
   const [succes, setSucces]             = useState("");
   const [bezig, setBezig]               = useState(false);
@@ -13,38 +13,43 @@ export default function FinaleEvaluatieMentor() {
 
   useEffect(() => { haalOp(); }, []);
 
-async function haalOp() {
-  // TIJDELIJK — verwijderen als backend klaar is
-  setEvaluatie({
-    status: "submitted",
-    student_naam: "Test Student",
-    bedrijf: "Test BV",
-    presentation: "Dit is een testpresentatie.",
-    document: null,
-    mentor_motivatie: "",
-    final_score: null,
-    motivatie: "",
-    teacher_feedback: "",
-  });
-  setMotivatie("");
-  return;
-  // EINDE TIJDELIJK
-}
+  async function haalOp() {
+    // TIJDELIJK — verwijderen als backend klaar is
+    setEvaluatie({
+      status: "submitted",
+      student_naam: "Test Student",
+      bedrijf: "Test BV",
+      presentation: "Dit is een testpresentatie.",
+      document: null,
+      mentor_motivatie: "",
+      final_score: null,
+      evaluatie_docent: "",
+      feedback_docent: "",
+    });
+    setFeedback("");
+    return;
+    // EINDE TIJDELIJK
+  }
+
   async function handleBevestigen() {
-    if (!motivatie.trim()) {
-      setFout("Eindmotivatie is verplicht.");
+    if (!feedback.trim()) {
+      setFout("Feedback is verplicht.");
       return;
     }
-    if (!window.confirm("Ben je zeker dat je de eindmotivatie wilt opslaan?")) return;
+    if (!window.confirm("Ben je zeker dat je de feedback wilt opslaan?")) return;
     setFout("");
     setSucces("");
     setBezig(true);
-
+// TIJDELIJK — verwijderen als backend klaar is
+  setSucces("Feedback succesvol opgeslagen.");
+  setBezig(false);
+  return;
+  // EINDE TIJDELIJK
     try {
       const res = await fetch(`/api/finale-evaluatie/student/${studentId}/mentor-motivatie`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mentor_motivatie: motivatie, mentor_id: mentorId }),
+        body: JSON.stringify({ mentor_motivatie: feedback, mentor_id: mentorId }),
       });
 
       if (!res.ok) {
@@ -53,7 +58,7 @@ async function haalOp() {
         return;
       }
 
-      setSucces("Eindmotivatie succesvol opgeslagen.");
+      setSucces("Feedback succesvol opgeslagen.");
       await haalOp();
     } catch {
       setFout("Er ging iets mis. Probeer opnieuw.");
@@ -110,16 +115,17 @@ async function haalOp() {
 
       {!kanBewerken && evaluatie.status !== "open" && (
         <div style={s.statusMelding}>
-          ✅ De eindmotivatie is <strong>{vertaalStatus(evaluatie.status)}</strong>. Je kan deze niet meer bewerken.
+          ✅ De feedback is <strong>{vertaalStatus(evaluatie.status)}</strong>. Je kan deze niet meer bewerken.
         </div>
       )}
 
       {evaluatie.status === "open" && (
         <div style={s.waarschuwingMelding}>
-          ⏳ De student heeft zijn eindpresentatie nog niet ingediend. Je kan pas een eindmotivatie ingeven nadat de student heeft ingediend.
+          ⏳ De student heeft zijn eindpresentatie nog niet ingediend. Je kan pas feedback ingeven nadat de student heeft ingediend.
         </div>
       )}
 
+      {/* Eindpresentatie van de student — alleen lezen */}
       <section style={s.sectie}>
         <h2 style={s.sectietitel}>Eindpresentatie Student</h2>
         <label style={s.label}>Omschrijving eindpresentatie</label>
@@ -138,10 +144,11 @@ async function haalOp() {
 
       <hr style={s.lijn} />
 
+      {/* Feedback van de mentor — bewerkbaar zolang status "submitted" is */}
       <section style={s.sectie}>
-        <h2 style={s.sectietitel}>Eindmotivatie Mentor</h2>
+        <h2 style={s.sectietitel}>Feedback Mentor</h2>
         <label style={s.label}>
-          Motivatieveld mentor {kanBewerken && <span style={s.verplicht}>*</span>}
+          Feedback mentor {kanBewerken && <span style={s.verplicht}>*</span>}
         </label>
         <textarea
           style={{
@@ -150,12 +157,12 @@ async function haalOp() {
           }}
           placeholder={
             kanBewerken
-              ? "Voer hier je eindmotivatie in voor de beoordeling van de student…"
-              : "Nog geen eindmotivatie ingegeven."
+              ? "Voer hier je feedback in voor de beoordeling van de student…"
+              : "Nog geen feedback ingegeven."
           }
-          value={motivatie}
+          value={feedback}
           onChange={(e) => {
-            setMotivatie(e.target.value);
+            setFeedback(e.target.value);
             setFout("");
             setSucces("");
           }}
@@ -166,15 +173,17 @@ async function haalOp() {
 
       <hr style={s.lijn} />
 
+      {/* Beoordeling van de docent — altijd alleen lezen voor de mentor */}
       <section style={s.sectie}>
         <h2 style={s.sectietitel}>Beoordeling Docent</h2>
 
         {evaluatie.status !== "evaluated" ? (
           <div style={s.infoBanner}>
-            ℹ️ De docent heeft nog geen score of motivatie ingevoerd.
+            ℹ️ De docent heeft nog geen beoordeling ingevoerd.
           </div>
         ) : (
           <>
+            {/* Eindscore = de punten die de docent geeft (bv. 14/20) */}
             <label style={s.label}>Eindscore docent:</label>
             <div style={s.scoreBlok}>
               <span style={s.scoreGetal}>
@@ -185,22 +194,24 @@ async function haalOp() {
               )}
             </div>
 
+            {/* Evaluatie docent = de schriftelijke beoordeling/motivatie van de punten */}
             <label style={{ ...s.label, marginTop: "1rem" }}>
-              Eindmotivatie docent:
+              Evaluatie docent:
             </label>
             <textarea
               style={{ ...s.textarea, ...s.textareaReadonly }}
-              value={evaluatie.motivatie || ""}
+              value={evaluatie.evaluatie_docent || ""}
               readOnly
-              placeholder="Nog geen motivatie ingevoerd door de docent."
+              placeholder="Nog geen evaluatie ingevoerd door de docent."
             />
 
+            {/* Feedback docent = bijkomende opmerkingen of verbeterpunten */}
             <label style={{ ...s.label, marginTop: "1rem" }}>
               Feedback docent:
             </label>
             <textarea
               style={{ ...s.textarea, ...s.textareaReadonly }}
-              value={evaluatie.teacher_feedback || ""}
+              value={evaluatie.feedback_docent || ""}
               readOnly
               placeholder="Nog geen feedback ingevoerd door de docent."
             />

@@ -89,8 +89,6 @@ router.post(
         return res.json({ message: "Opgeslagen", status: "open" });
       }
 
-      /* Tijdelijke oplossing met vaste waarden 1 voor teacher en mentor.
-         Na de merge aanpassen op basis van het login systeem. */
       const [result] = await db.query(
         `INSERT INTO final_evaluations (internship_id, presentation, document, status, teacher_id, mentor_id)
          VALUES (?, ?, ?, 'open', 1, 1)`,
@@ -197,9 +195,7 @@ router.post("/student/:studentId/mentor-motivatie", async (req, res) => {
     }
 
     await db.query(
-      `UPDATE final_evaluations
-       SET mentor_motivatie = ?, mentor_id = ?
-       WHERE id = ?`,
+      `UPDATE final_evaluations SET mentor_motivatie = ?, mentor_id = ? WHERE id = ?`,
       [mentor_motivatie.trim(), mentor_id ?? null, record.id]
     );
 
@@ -208,8 +204,8 @@ router.post("/student/:studentId/mentor-motivatie", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 // ─── GET /api/finale-evaluatie/student/:studentId/docent ────────────────────
-// Haalt alle data op die de docent nodig heeft (student, mentor, eigen velden)
 router.get("/student/:studentId/docent", async (req, res) => {
   try {
     const [rows] = await db.query(
@@ -217,21 +213,19 @@ router.get("/student/:studentId/docent", async (req, res) => {
       [req.params.studentId]
     );
 
-    if (rows.length === 0) {
-      return res.json({ status: "open" });
-    }
+    if (rows.length === 0) return res.json({ status: "open" });
 
     const r = rows[0];
     res.json({
-      status:            r.status,
-      student_naam:      r.student_naam   ?? null,
-      bedrijf:           r.bedrijf        ?? null,
-      presentation:      r.presentation   ?? null,
-      document:          r.document       ?? null,
-      mentor_naam:       r.mentor_naam    ?? null,
-      mentor_motivatie:  r.mentor_motivatie ?? null,
-      final_score:       r.final_score    ?? null,
-      feedback_docent:   r.feedback_docent ?? null,
+      status:           r.status,
+      student_naam:     r.student_naam     ?? null,
+      bedrijf:          r.bedrijf          ?? null,
+      presentation:     r.presentation     ?? null,
+      document:         r.document         ?? null,
+      mentor_naam:      r.mentor_naam      ?? null,
+      mentor_motivatie: r.mentor_motivatie ?? null,
+      final_score:      r.final_score      ?? null,
+      feedback_docent:  r.feedback_docent  ?? null,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -239,14 +233,10 @@ router.get("/student/:studentId/docent", async (req, res) => {
 });
 
 // ─── POST /api/finale-evaluatie/student/:studentId/docent ───────────────────
-// Slaat score + feedback op.
-// Als beëindigd === true → status wordt "evaluated" (zichtbaar voor student)
-// Als beëindigd === false → enkel opslaan, status blijft "submitted"
 router.post("/student/:studentId/docent", async (req, res) => {
   const { studentId } = req.params;
   const { final_score, feedback_docent, beëindigd } = req.body;
 
-  // Validatie score
   const score = Number(final_score);
   if (final_score === undefined || isNaN(score) || score < 0 || score > 20) {
     return res.status(400).json({ error: "Vul een geldige score in (0–20)." });
@@ -273,9 +263,7 @@ router.post("/student/:studentId/docent", async (req, res) => {
     const nieuweStatus = beëindigd === true ? "evaluated" : record.status;
 
     await db.query(
-      `UPDATE final_evaluations
-       SET final_score = ?, feedback_docent = ?, status = ?
-       WHERE id = ?`,
+      `UPDATE final_evaluations SET final_score = ?, feedback_docent = ?, status = ? WHERE id = ?`,
       [score, feedback_docent ?? null, nieuweStatus, record.id]
     );
 

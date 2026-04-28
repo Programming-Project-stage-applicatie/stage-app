@@ -343,7 +343,7 @@ const s = {
   sectietitel:         { fontSize: "1rem", fontWeight: "bold", marginBottom: "0.5rem" },
   label:               { display: "block", fontSize: "0.9rem", marginBottom: "0.4rem" },
   textarea:            { width: "100%", minHeight: "90px", padding: "0.6rem 0.75rem", border: "1px solid #ccc", borderRadius: "4px", fontSize: "0.9rem", resize: "vertical", boxSizing: "border-box", background: "#fff" },
-  textareaReadonly:    { background: "#f9f9f9", color: "#444" },
+  textareaReadonly:    { background: "#f9f9f9", color: "#444", cursor: "default", outline: "none", userSelect: "none", pointerEvents: "none" },
   inputScore:          { width: "100px", padding: "0.5rem 0.75rem", border: "1px solid #ccc", borderRadius: "4px", fontSize: "1.1rem", marginBottom: "0" },
   scoreInvoerRij:      { display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem" },
   scoreHint:           { fontSize: "1rem", color: "#555" },

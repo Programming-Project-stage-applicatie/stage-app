@@ -19,24 +19,7 @@ export default function FinaleEvaluatieDocent() {
   useEffect(() => { haalOp(); }, []);
 
   async function haalOp() {
-    // TIJDELIJK — verwijderen als backend klaar is
-    setEvaluatie({
-      status: "submitted",           // "open" | "submitted" | "evaluated"
-      student_naam: "Test Student",
-      bedrijf: "Test BV",
-      // Eindpresentatie student
-      presentation: "Dit is een testpresentatie van de student.",
-      document: null,                // bv. "/uploads/presentatie.pdf"
-      // Mentor
-      mentor_naam: "Test Mentor",
-      mentor_motivatie: "De student heeft gedurende de stage enorm veel progressie gemaakt.",
-      // Docent (eigen velden — worden gevuld na indienen)
-      final_score: null,
-      evaluatie_docent: "",
-      feedback_docent: "",
-    });
-    return;
-    // EINDE TIJDELIJK
+    
 
     try {
       const res = await fetch(`/api/finale-evaluatie/student/${studentId}/docent`);

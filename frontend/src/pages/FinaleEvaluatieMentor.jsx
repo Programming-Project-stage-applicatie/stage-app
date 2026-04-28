@@ -26,7 +26,7 @@ export default function FinaleEvaluatieMentor() {
       evaluatie_docent: "",
       feedback_docent: "",
     });
-    setFeedback("");
+   setFeedback(evaluatie.mentor_motivatie || "");
     return;
     // EINDE TIJDELIJK
   }

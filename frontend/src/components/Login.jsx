@@ -50,6 +50,7 @@ function Login() {
     <div className="login-page">
       <div className="login-card">
         <h1>{t("loginTitle")}</h1>
+        <h2>{t("loginTitle")}</h2>
 
         <form onSubmit={handleSubmit}>
           <label>{t("usernameLabel")}</label>

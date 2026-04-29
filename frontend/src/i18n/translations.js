@@ -17,6 +17,14 @@ const translations = {
       newRow: "Nieuwe lijn",
       save: "Opslaan",
       cancel: "Annuleren",
+      actions: "Acties",
+      edit: "Bewerken",
+      resetPassword: "Reset wachtwoord",
+      confirmResetPassword: "Geef een nieuw wachtwoord in voor deze gebruiker:",
+      passwordRequired: "Wachtwoord is verplicht.",
+      passwordResetSuccess: "Wachtwoord succesvol aangepast.",
+      delete: "Verwijderen",
+      confirmDelete: "Ben je zeker dat je deze gebruiker wil verwijderen?",
       allFieldsRequired: "Alle velden zijn verplicht.",
 
       fields: {
@@ -46,7 +54,23 @@ const translations = {
         success: "Gebruiker succesvol aangemaakt.",
         duplicateEmail: "Deze gebruiker (e-mail) bestaat al.",
         genericError: "Er is een fout opgetreden."
+      },
+
+      errors: {
+        requiredFields: "Alle verplichte velden moeten ingevuld zijn.",
+        emailTaken: "Dit e-mailadres is al in gebruik.",
+        usernameTaken: "Deze gebruikersnaam is al in gebruik.",
+        generic: "Er is een fout opgetreden."
       }
+    },
+
+    
+    dashboards: {
+      student: "Student dashboard",
+      teacher: "Docent dashboard",
+      mentor: "Mentor dashboard",
+      internship_committee: "Stagecommissie dashboard",
+      admin: "Administratie dashboard"
     }
 
   }

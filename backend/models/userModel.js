@@ -1,12 +1,26 @@
 const db = require("../db");
 
 module.exports = {
-  getAllUsers(callback) {
-    db.query(
-      "SELECT id, firstname, lastname, email, username, role, status FROM users",
-      callback
-    );
-  },
+  
+getAllUsers(role, callback) {
+  let query = `
+    SELECT
+      users.id,
+      users.firstname,
+      users.lastname,
+      users.role
+    FROM users
+  `;
+
+  const params = [];
+
+  if (role) {
+    query += " WHERE users.role = ?";
+    params.push(role);
+  }
+
+  db.query(query, params, callback);
+},
 
   createUser(user, callback) {
     db.query(
@@ -30,5 +44,64 @@ module.exports = {
 
   getUserByUsername(username, callback) {
     db.query("SELECT * FROM users WHERE username = ?", [username], callback);
+  },
+
+  
+  getUserByEmailExceptId(email, id, callback) {
+    db.query(
+      "SELECT id FROM users WHERE email = ? AND id != ?",
+      [email, id],
+      callback
+    );
+  },
+
+  
+  getUserByUsernameExceptId(username, id, callback) {
+    db.query(
+      "SELECT id FROM users WHERE username = ? AND id != ?",
+      [username, id],
+      callback
+    );
+  },
+
+  deleteUser(id, callback) {
+    db.query(
+      "DELETE FROM users WHERE id = ?",
+      [id],
+      callback
+    );
+  },
+
+  updateUser(id, user, callback) {
+  
+    db.query(
+      `
+        UPDATE users
+        SET firstname = ?,
+            lastname = ?,
+            email = ?,
+            username = ?,
+            role = ?,
+            status = ?
+          WHERE id = ?
+      `,
+      [
+        user.firstname,
+        user.lastname,
+        user.email,
+        user.username,
+        user.role,
+        user.status,
+        id],
+      callback
+    );
+ },
+
+  updatePassword(id, hashedPassword, callback) {
+    db.query(
+      "UPDATE users SET password = ? WHERE id = ?",
+      [hashedPassword, id],
+      callback
+    );
   }
 };

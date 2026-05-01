@@ -34,6 +34,7 @@ const translations = {
         username: "Gebruikersnaam",
         password: "Wachtwoord",
         role: "Rol",
+        studyprogram: "Opleiding",
         status: "Status"
       },
 

@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const mysql = require("mysql2/promise");
+const mysql = require("mysql2/promise");   // ← BELANGRIJK: promise versie
 require("dotenv").config();
 
 const app = express();
@@ -9,7 +9,9 @@ app.use(express.json());
 
 let db;
 
-// MySQL connectie (promise-based)
+/* ---------------------------------------------------------
+   DATABASE CONNECTIE (PROMISE-BASED)
+--------------------------------------------------------- */
 async function initDB() {
   try {
     db = await mysql.createConnection({
@@ -19,7 +21,7 @@ async function initDB() {
       database: process.env.DB_NAME
     });
 
-    console.log("Verbonden met MySQL database");
+    console.log("Verbonden met de MySQL database!");
   } catch (err) {
     console.error("MySQL fout:", err);
   }
@@ -27,27 +29,45 @@ async function initDB() {
 
 initDB();
 
-// Database beschikbaar maken voor routes
+/* ---------------------------------------------------------
+   DATABASE BESCHIKBAAR MAKEN IN REQUEST
+--------------------------------------------------------- */
 app.use((req, res, next) => {
-  req.db = db;
+  req.db = db;   // ← db is AL promise-based
   next();
 });
 
-// Routes
+/* ---------------------------------------------------------
+   AUTH ROUTES (GEEN JWT NODIG)
+--------------------------------------------------------- */
+const authRoutes = require("./routes/auth");
+app.use("/auth", authRoutes);
+
+/* ---------------------------------------------------------
+   JWT AUTHENTICATIE (VANAF HIER VERPLICHT)
+--------------------------------------------------------- */
+const authenticateJWT = require("./middleware/authenticateJWT");
+app.use(authenticateJWT);
+
+/* ---------------------------------------------------------
+   BEVEILIGDE ROUTES
+--------------------------------------------------------- */
 const internshipRequestsRoutes = require("./routes/internship_requests");
 app.use("/internship-requests", internshipRequestsRoutes);
 
 const userRoutes = require("./routes/users");
 app.use("/users", userRoutes);
 
-const authRoutes = require("./routes/auth");
-app.use("/auth", authRoutes);
-
-// Test route
+/* ---------------------------------------------------------
+   TEST ROUTE
+--------------------------------------------------------- */
 app.get("/", (req, res) => {
   res.send("Backend is running");
 });
 
+/* ---------------------------------------------------------
+   SERVER STARTEN
+--------------------------------------------------------- */
 app.listen(3000, () => {
   console.log("Server running on http://localhost:3000");
 });

@@ -1,24 +1,53 @@
 const express = require("express");
 const router = express.Router();
 
+// Controller voor status‑updates
+const internshipRequestsController = require("../controllers/internshipRequestsController");
+
 // Helper: check of datum geldig is
 function isValidDate(dateString) {
     const date = new Date(dateString);
     return !isNaN(date.getTime());
 }
 
-// GET all internship requests
+// ------------------------------------------------------------
+// GET internship requests (student ziet enkel eigen aanvragen)
+// ------------------------------------------------------------
 router.get("/", async (req, res) => {
     try {
-        const [results] = await req.db.query("SELECT * FROM internship_requests");
+        const role = req.user.role;
+        const userId = req.user.id;
+
+        let results;
+
+        if (role === "student") {
+            // Student ziet enkel zijn eigen aanvragen
+            [results] = await req.db.query(
+                "SELECT * FROM internship_requests WHERE student_id = ?",
+                [userId]
+            );
+        } 
+        else if (role === "internship_committee") {
+            // Commissie ziet alle aanvragen
+            [results] = await req.db.query(
+                "SELECT * FROM internship_requests"
+            );
+        } 
+        else {
+            return res.status(403).json({ error: "Onvoldoende rechten" });
+        }
+
         res.json(results);
+
     } catch (err) {
         console.error("Database error:", err);
         res.status(500).json({ error: "Database error" });
     }
 });
 
+// ------------------------------------------------------------
 // POST new internship request (student)
+// ------------------------------------------------------------
 router.post("/", async (req, res) => {
     const {
         student_id,
@@ -28,7 +57,6 @@ router.post("/", async (req, res) => {
         description,
         start_date,
         end_date
-        // ⚠️ internship_committee_id wordt hier NIET meer toegelaten
     } = req.body;
 
     // 1. Verplichte velden controleren
@@ -88,5 +116,10 @@ router.post("/", async (req, res) => {
         res.status(500).json({ error: "Database error" });
     }
 });
+
+// ------------------------------------------------------------
+// PATCH: update status + feedback + koppeling committee
+// ------------------------------------------------------------
+router.patch("/:id/status", internshipRequestsController.updateStatus);
 
 module.exports = router;

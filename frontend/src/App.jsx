@@ -8,6 +8,7 @@ import TeacherDashboard from "./pages/TeacherDashboard";
 import MentorDashboard from "./pages/MentorDashboard";
 import InternshipCommitteeDashboard from "./pages/InternshipCommitteeDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import StudentInternshipDetail from "./pages/StudentInternshipDetail";
 
 function App() {
   return (
@@ -34,6 +35,8 @@ function App() {
 
 
         <Route path="*" element={<Navigate to="/login" />} />
+
+        <Route path="/student/internships/:id" element={<StudentInternshipDetail />} />
       </Routes>
     </BrowserRouter>
   );

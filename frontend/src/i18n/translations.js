@@ -34,6 +34,7 @@ const translations = {
         username: "Gebruikersnaam",
         password: "Wachtwoord",
         role: "Rol",
+        studyprogram: "Opleiding",
         status: "Status"
       },
 
@@ -71,9 +72,56 @@ const translations = {
       mentor: "Mentor dashboard",
       internship_committee: "Stagecommissie dashboard",
       admin: "Administratie dashboard"
+    },
+
+    adminInternships: {
+      fetchError: "Kon stages niet ophalen",
+      detailFetchError: "Kon stage niet ophalen",
+      loading: "Laden...",
+      detailTitle: "Stage detail",
+      backToDashboard: "Terug naar dashboard",
+      company: "Bedrijf",
+      student: "Student",
+      period: "Periode",
+      status: "Status",
+      description: "Stageopdracht",
+      mentor: "Mentor",
+      teacher: "Docent",
+      notAssigned: "Nog niet toegewezen",
+      selectMentor: "Selecteer mentor",
+      selectTeacher: "Selecteer docent",
+      withoutMentor: "Stages zonder mentor",
+      withoutTeacher: "Stages zonder docent",
+      withoutBoth: "Stages zonder mentor en docent",
+      noneWithoutMentor: "Geen stages zonder mentor",
+      noneWithoutTeacher: "Geen stages zonder docent",
+      noneWithoutBoth: "Geen stages zonder mentor en docent",
+      save: "Opslaan",
+      saved: "Stage succesvol bijgewerkt",
+      saveError: "Opslaan mislukt" 
+    },
+
+    
+    studentDashboard: {
+      welcome: "Welkom",
+      title: "Mijn stages"
+    },
+
+    studentInternships: {
+      fetchError: "Kon stages niet ophalen",
+      none: "Je hebt momenteel geen stage",
+      period: "Stageperiode",
+      stage: "Stage",
+      logbooks: "Logboeken",
+      evaluation: "Finale evaluatie",
+      open: "Open"
     }
 
+
+    
   }
+
+  
 };
 
 // nl fixed for now

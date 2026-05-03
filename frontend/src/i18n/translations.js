@@ -62,6 +62,17 @@ const translations = {
         usernameTaken: "Deze gebruikersnaam is al in gebruik.",
         generic: "Er is een fout opgetreden."
       }
+
+    },
+
+    
+    dashboards: {
+      student: "Student dashboard",
+      teacher: "Docent dashboard",
+      mentor: "Mentor dashboard",
+      internship_committee: "Stagecommissie dashboard",
+      admin: "Administratie dashboard"
+
     }
 
   }

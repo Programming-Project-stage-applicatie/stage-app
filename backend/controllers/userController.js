@@ -3,8 +3,12 @@ const bcrypt = require("bcrypt");
 
 exports.getAllUsers = (req, res) => {
   userModel.getAllUsers((err, results) => {
-    if (err) return res.status(500).json(err);
-    res.json(results);
+    if (err) {
+      return res.status(500).json({
+        message: "Failed to fetch users"
+      });
+    }
+    res.status(200).json(results);
   });
 };
 
@@ -93,34 +97,6 @@ exports.createUser = (req, res) => {
   });
 };
 
-
-
-exports.deleteUser = (req, res) => {
-  const { id } = req.params;
-
-  userModel.deleteUser(id, (err, result) => {
-    if (err) {
-      console.error("DELETE USER ERROR:", err);
-      return res.status(500).json({
-        message: "Failed to delete user"
-      });
-    }
-
-    // result.affectedRows === 0 → user bestond niet
-    if (result.affectedRows === 0) {
-      return res.status(404).json({
-        message: "User not found"
-      });
-    }
-
-    return res.status(204).send();
-  });
-
-};
-
-
-
-
 exports.updateUser = (req, res) => {
   const { id } = req.params;
   const {
@@ -131,7 +107,6 @@ exports.updateUser = (req, res) => {
     role,
     status
   } = req.body;
-
 
   if (
     !firstname ||
@@ -201,6 +176,27 @@ exports.updateUser = (req, res) => {
   });
 };
 
+exports.deleteUser = (req, res) => {
+  const { id } = req.params;
+
+  userModel.deleteUser(id, (err, result) => {
+    if (err) {
+      console.error("DELETE USER ERROR:", err);
+      return res.status(500).json({
+        message: "Failed to delete user"
+      });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+
+    return res.status(204).send();
+  });
+};
+
 exports.resetPassword = async (req, res) => {
   const { id } = req.params;
   const { password } = req.body;
@@ -239,4 +235,3 @@ exports.resetPassword = async (req, res) => {
     });
   }
 };
-

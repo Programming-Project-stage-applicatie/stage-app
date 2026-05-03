@@ -177,6 +177,7 @@ code {
   margin-top: 20px;
   font-size: 14px;
   opacity: 0.85;
+
 }
 
 .admin-users-page {
@@ -344,4 +345,5 @@ button.danger {
 
 button.danger:hover {
   background: #fee2e2;
+
 }

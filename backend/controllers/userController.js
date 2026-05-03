@@ -12,106 +12,226 @@ exports.getAllUsers = (req, res) => {
   });
 };
 
-const VALID_ROLES = [
-  "admin",
-  "student",
-  "teacher",
-  "mentor",
-  "internship_committee"
-];
+exports.createUser = (req, res) => {
+  const {
+    firstname,
+    lastname,
+    email,
+    username,
+    password,
+    role,
+    status
+  } = req.body;
 
-const VALID_STATUS = ["active", "inactive"];
+  if (
+    !firstname ||
+    !lastname ||
+    !email ||
+    !username ||
+    !password ||
+    !role ||
+    !status
+  ) {
+    return res.status(400).json({
+      code: "REQUIRED_FIELDS"
+    });
+  }
 
-exports.createUser = async (req, res) => {
-  try {
-    const {
-      firstname,
-      lastname,
-      email,
-      username,
-      password,
-      role,
-      status
-    } = req.body;
+  userModel.getUserByEmail(email, (err, emailResult) => {
+    if (err) {
+      console.error("EMAIL CHECK ERROR:", err);
+      return res.status(500).json({ message: "Server error" });
+    }
 
-    if (!firstname || !lastname || !email || !username || !password || !role) {
+    if (emailResult.length > 0) {
       return res.status(400).json({
-        message: "All required fields must be provided"
+        code: "EMAIL_TAKEN"
       });
     }
 
-    if (!VALID_ROLES.includes(role)) {
-      return res.status(400).json({
-        message: "Invalid role"
-      });
-    }
-
-    const userStatus = status || "active";
-    if (!VALID_STATUS.includes(userStatus)) {
-      return res.status(400).json({
-        message: "Invalid status"
-      });
-    }
-
-    userModel.getUserByEmail(email, async (err, results) => {
+    userModel.getUserByUsername(username, (err, usernameResult) => {
       if (err) {
-        return res.status(500).json({
-          message: "Failed to check existing user"
+        console.error("USERNAME CHECK ERROR:", err);
+        return res.status(500).json({ message: "Server error" });
+      }
+
+      if (usernameResult.length > 0) {
+        return res.status(400).json({
+          code: "USERNAME_TAKEN"
         });
       }
 
-      if (results.length > 0) {
-        return res.status(409).json({
-          message: "User with this email already exists"
+      bcrypt.hash(password, 10, (hashErr, hashedPassword) => {
+        if (hashErr) {
+          console.error("BCRYPT ERROR:", hashErr);
+          return res.status(500).json({
+            message: "Password hashing failed"
+          });
+        }
+
+        const user = {
+          firstname,
+          lastname,
+          email,
+          username,
+          password: hashedPassword,
+          role,
+          status
+        };
+
+        userModel.createUser(user, (err, result) => {
+          if (err) {
+            console.error("CREATE USER ERROR:", err);
+            return res.status(500).json({
+              message: "Failed to create user"
+            });
+          }
+
+          return res.status(201).json({
+            message: "User created successfully",
+            userId: result.insertId
+          });
         });
+      });
+    });
+  });
+};
+
+exports.updateUser = (req, res) => {
+  const { id } = req.params;
+  const {
+    firstname,
+    lastname,
+    email,
+    username,
+    role,
+    status
+  } = req.body;
+
+  if (
+    !firstname ||
+    !lastname ||
+    !email ||
+    !username ||
+    !role ||
+    !status
+  ) {
+    return res.status(400).json({
+      code: "REQUIRED_FIELDS"
+    });
+  }
+
+  userModel.getUserByEmailExceptId(email, id, (err, emailResult) => {
+    if (err) {
+      console.error("EMAIL CHECK ERROR:", err);
+      return res.status(500).json({ message: "Server error" });
+    }
+
+    if (emailResult.length > 0) {
+      return res.status(400).json({
+        code: "EMAIL_TAKEN"
+      });
+    }
+
+    userModel.getUserByUsernameExceptId(username, id, (err, usernameResult) => {
+      if (err) {
+        console.error("USERNAME CHECK ERROR:", err);
+        return res.status(500).json({ message: "Server error" });
       }
 
-      const hashedPassword = await bcrypt.hash(password, 10);
+      if (usernameResult.length > 0) {
+        return res.status(400).json({
+          code: "USERNAME_TAKEN"
+        });
+      }
 
       const user = {
         firstname,
         lastname,
         email,
         username,
-        password: hashedPassword,
         role,
-        status: userStatus
+        status
       };
 
-      userModel.createUser(user, (err, results) => {
+      userModel.updateUser(id, user, (err, result) => {
         if (err) {
-
-          // Duplicate key (extra veiligheid)
-          if (err.code === "ER_DUP_ENTRY") {
-            return res.status(409).json({
-              message: "User with this email already exists"
-            });
-          }
-
-          if (
-            err.code === "ER_DATA_TRUNCATED" ||
-            err.code === "ER_BAD_NULL_ERROR"
-          ) {
-            return res.status(400).json({
-              message: "Invalid user data"
-            });
-          }
-
-          // Echte serverfout
+          console.error("UPDATE USER ERROR:", err);
           return res.status(500).json({
-            message: "Failed to create user"
+            message: "Failed to update user"
           });
         }
 
-        res.status(201).json({
-          message: "User created successfully",
-          userId: results.insertId
+        if (result.affectedRows === 0) {
+          return res.status(404).json({
+            message: "User not found"
+          });
+        }
+
+        return res.status(200).json({
+          message: "User updated"
         });
       });
     });
+  });
+};
+
+exports.deleteUser = (req, res) => {
+  const { id } = req.params;
+
+  userModel.deleteUser(id, (err, result) => {
+    if (err) {
+      console.error("DELETE USER ERROR:", err);
+      return res.status(500).json({
+        message: "Failed to delete user"
+      });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+
+    return res.status(204).send();
+  });
+};
+
+exports.resetPassword = async (req, res) => {
+  const { id } = req.params;
+  const { password } = req.body;
+
+  if (!password) {
+    return res.status(400).json({
+      code: "PASSWORD_REQUIRED"
+    });
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    userModel.updatePassword(id, hashedPassword, (err, result) => {
+      if (err) {
+        console.error("RESET PASSWORD ERROR:", err);
+        return res.status(500).json({
+          message: "Failed to reset password"
+        });
+      }
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({
+          message: "User not found"
+        });
+      }
+
+      return res.status(200).json({
+        message: "Password updated"
+      });
+    });
   } catch (error) {
-    res.status(500).json({
-      message: "Unexpected server error"
+    console.error("BCRYPT ERROR:", error);
+    return res.status(500).json({
+      message: "Password hashing failed"
     });
   }
 };

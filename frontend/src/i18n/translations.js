@@ -62,6 +62,7 @@ const translations = {
         usernameTaken: "Deze gebruikersnaam is al in gebruik.",
         generic: "Er is een fout opgetreden."
       }
+
     },
 
     
@@ -71,6 +72,7 @@ const translations = {
       mentor: "Mentor dashboard",
       internship_committee: "Stagecommissie dashboard",
       admin: "Administratie dashboard"
+
     }
 
   }

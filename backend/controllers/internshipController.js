@@ -1,11 +1,9 @@
 exports.getAllInternships = async (req, res) => {
   const pool = req.db;
-  let connection;
 
   try {
-    connection = await pool.getConnection();
-
-    const [rows] = await connection.execute(`
+    const [rows] = await pool.query(
+      `
       SELECT
         internships.id,
         internships.mentor_id,
@@ -28,7 +26,8 @@ exports.getAllInternships = async (req, res) => {
 
       LEFT JOIN students
         ON students.user_id = student.id
-    `);
+      `
+    );
 
     return res.json(rows);
 
@@ -38,9 +37,6 @@ exports.getAllInternships = async (req, res) => {
     return res.status(500).json({
       message: "Failed to fetch internships"
     });
-
-  } finally {
-    if (connection) connection.release();
   }
 };
 

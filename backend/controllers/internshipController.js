@@ -6,6 +6,8 @@ exports.getAllInternships = async (req, res) => {
       `
       SELECT
         internships.id,
+        internships.start_date,
+        internships.end_date,
         internships.mentor_id,
         internships.teacher_id,
 

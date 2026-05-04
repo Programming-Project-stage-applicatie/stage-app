@@ -19,17 +19,17 @@ async function updateStatus(req, res) {
 
   // 2. Basisvalidatie status
   if (!status) {
-    return res.status(400).json({ error: 'Status is verplicht' });
+    return res.status(400).json({ error: 'Status is mandatory' });
   }
 
   if (!ALLOWED_STATUSES.includes(status)) {
-    return res.status(400).json({ error: 'Ongeldige status' });
+    return res.status(400).json({ error: 'Invalid status' });
   }
 
   // 3. Feedback verplicht bij adjustment_required / rejected
   if ((status === 'adjustment_required' || status === 'rejected') && !feedbackSC) {
     return res.status(400).json({
-      error: 'Feedback is verplicht wanneer de status adjustment_required of rejected is'
+      error: 'Feedback is mandatory when the status is adjustment_required or rejected'
     });
   }
 
@@ -41,7 +41,7 @@ async function updateStatus(req, res) {
     );
 
     if (rows.length === 0) {
-      return res.status(404).json({ error: 'Stageaanvraag niet gevonden' });
+      return res.status(404).json({ error: 'Internship request not found' });
     }
 
     // 5. Update uitvoeren + koppeling met committee-lid
@@ -63,7 +63,7 @@ async function updateStatus(req, res) {
     return res.status(200).json(updated[0]);
   } catch (err) {
     console.error('Error updating internship request status:', err);
-    return res.status(500).json({ error: 'Interne serverfout' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 }
 

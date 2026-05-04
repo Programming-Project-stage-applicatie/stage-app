@@ -12,7 +12,10 @@ exports.getAllUsers = (req, res) => {
   });
 };
 
-exports.createUser = (req, res) => {
+exports.createUser = async (req, res) => {
+  const pool = req.db;
+  let connection;
+
   const {
     firstname,
     lastname,
@@ -20,7 +23,8 @@ exports.createUser = (req, res) => {
     username,
     password,
     role,
-    status
+    status,
+    studyprogram
   } = req.body;
 
   if (
@@ -37,76 +41,110 @@ exports.createUser = (req, res) => {
     });
   }
 
-  userModel.getUserByEmail(email, (err, emailResult) => {
-    if (err) {
-      console.error("EMAIL CHECK ERROR:", err);
-      return res.status(500).json({ message: "Server error" });
-    }
-
-    if (emailResult.length > 0) {
-      return res.status(400).json({
-        code: "EMAIL_TAKEN"
-      });
-    }
-
-    userModel.getUserByUsername(username, (err, usernameResult) => {
+  try {
+    // ✅ checks uit develop
+    userModel.getUserByEmail(email, async (err, emailResult) => {
       if (err) {
-        console.error("USERNAME CHECK ERROR:", err);
         return res.status(500).json({ message: "Server error" });
       }
 
-      if (usernameResult.length > 0) {
-        return res.status(400).json({
-          code: "USERNAME_TAKEN"
-        });
+      if (emailResult.length > 0) {
+        return res.status(400).json({ code: "EMAIL_TAKEN" });
       }
 
-      bcrypt.hash(password, 10, (hashErr, hashedPassword) => {
-        if (hashErr) {
-          console.error("BCRYPT ERROR:", hashErr);
-          return res.status(500).json({
-            message: "Password hashing failed"
-          });
+      userModel.getUserByUsername(username, async (err, usernameResult) => {
+        if (err) {
+          return res.status(500).json({ message: "Server error" });
         }
 
-        const user = {
-          firstname,
-          lastname,
-          email,
-          username,
-          password: hashedPassword,
-          role,
-          status
-        };
+        if (usernameResult.length > 0) {
+          return res.status(400).json({ code: "USERNAME_TAKEN" });
+        }
 
-        userModel.createUser(user, (err, result) => {
-          if (err) {
-            console.error("CREATE USER ERROR:", err);
-            return res.status(500).json({
-              message: "Failed to create user"
-            });
-          }
+        const hashedPassword = await bcrypt.hash(password, 10);
+        connection = await pool.getConnection();
+        await connection.beginTransaction();
 
-          return res.status(201).json({
-            message: "User created successfully",
-            userId: result.insertId
-          });
+        const [userResult] = await connection.execute(
+          `
+          INSERT INTO users
+          (firstname, lastname, email, username, password, role, status)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+          `,
+          [
+            firstname,
+            lastname,
+            email,
+            username,
+            hashedPassword,
+            role,
+            status
+          ]
+        );
+
+        const userId = userResult.insertId;
+
+        // ✅ ENIGE TOEVOEGING VAN DEZE FEATURE
+        switch (role) {
+          case "admin":
+            await connection.execute(
+              "INSERT INTO admins (user_id) VALUES (?)",
+              [userId]
+            );
+            break;
+
+          case "student":
+            await connection.execute(
+              "INSERT INTO students (user_id, studyprogram) VALUES (?, ?)",
+              [userId, studyprogram || "Onbekend"]
+            );
+            break;
+
+          case "teacher":
+            await connection.execute(
+              "INSERT INTO teachers (user_id) VALUES (?)",
+              [userId]
+            );
+            break;
+
+          case "mentor":
+            await connection.execute(
+              "INSERT INTO mentors (user_id) VALUES (?)",
+              [userId]
+            );
+            break;
+
+          case "internship_committee":
+            await connection.execute(
+              "INSERT INTO internship_committees (user_id) VALUES (?)",
+              [userId]
+            );
+            break;
+        }
+
+        await connection.commit();
+
+        res.status(201).json({
+          message: "User created successfully",
+          userId
         });
       });
     });
-  });
+  } catch (error) {
+    if (connection) await connection.rollback();
+
+    console.error("Create user failed:", error);
+    res.status(500).json({
+      message: "Failed to create user"
+    });
+  } finally {
+    if (connection) connection.release();
+  }
 };
 
 exports.updateUser = (req, res) => {
   const { id } = req.params;
-  const {
-    firstname,
-    lastname,
-    email,
-    username,
-    role,
-    status
-  } = req.body;
+  const { firstname, lastname, email, username, role, status } = req.body;
 
   if (
     !firstname ||
@@ -123,55 +161,43 @@ exports.updateUser = (req, res) => {
 
   userModel.getUserByEmailExceptId(email, id, (err, emailResult) => {
     if (err) {
-      console.error("EMAIL CHECK ERROR:", err);
       return res.status(500).json({ message: "Server error" });
     }
 
     if (emailResult.length > 0) {
-      return res.status(400).json({
-        code: "EMAIL_TAKEN"
-      });
+      return res.status(400).json({ code: "EMAIL_TAKEN" });
     }
 
     userModel.getUserByUsernameExceptId(username, id, (err, usernameResult) => {
       if (err) {
-        console.error("USERNAME CHECK ERROR:", err);
         return res.status(500).json({ message: "Server error" });
       }
 
       if (usernameResult.length > 0) {
-        return res.status(400).json({
-          code: "USERNAME_TAKEN"
-        });
+        return res.status(400).json({ code: "USERNAME_TAKEN" });
       }
 
-      const user = {
-        firstname,
-        lastname,
-        email,
-        username,
-        role,
-        status
-      };
+      userModel.updateUser(
+        id,
+        { firstname, lastname, email, username, role, status },
+        (err, result) => {
+          if (err) {
+            return res.status(500).json({
+              message: "Failed to update user"
+            });
+          }
 
-      userModel.updateUser(id, user, (err, result) => {
-        if (err) {
-          console.error("UPDATE USER ERROR:", err);
-          return res.status(500).json({
-            message: "Failed to update user"
+          if (result.affectedRows === 0) {
+            return res.status(404).json({
+              message: "User not found"
+            });
+          }
+
+          return res.status(200).json({
+            message: "User updated"
           });
         }
-
-        if (result.affectedRows === 0) {
-          return res.status(404).json({
-            message: "User not found"
-          });
-        }
-
-        return res.status(200).json({
-          message: "User updated"
-        });
-      });
+      );
     });
   });
 };
@@ -181,7 +207,6 @@ exports.deleteUser = (req, res) => {
 
   userModel.deleteUser(id, (err, result) => {
     if (err) {
-      console.error("DELETE USER ERROR:", err);
       return res.status(500).json({
         message: "Failed to delete user"
       });
@@ -212,7 +237,6 @@ exports.resetPassword = async (req, res) => {
 
     userModel.updatePassword(id, hashedPassword, (err, result) => {
       if (err) {
-        console.error("RESET PASSWORD ERROR:", err);
         return res.status(500).json({
           message: "Failed to reset password"
         });
@@ -229,7 +253,6 @@ exports.resetPassword = async (req, res) => {
       });
     });
   } catch (error) {
-    console.error("BCRYPT ERROR:", error);
     return res.status(500).json({
       message: "Password hashing failed"
     });

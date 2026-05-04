@@ -1,34 +1,53 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-
-//import usersRouter from "./routes/users.js";
-//import logboekRouter from "./routes/logboek.js";
-//import studentsRouter from "./routes/students.js";
-//import internshipsRouter from "./routes/internships.js";
-import finaleEvaluatieRouter from "./routes/finale_evaluatie.js";
-
-dotenv.config();
+const express = require("express");
+const cors = require("cors");
+const mysql = require("mysql2/promise");
+require("dotenv").config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Middleware
-app.use(cors({ origin: "http://localhost:5173" })); // Vite dev server
+app.use(cors());
 app.use(express.json());
 
-// Routes
-//app.use("/api/users", usersRouter);
-//app.use("/api/logboek", logboekRouter);
-//app.use("/api/students", studentsRouter);
-//app.use("/api/internships", internshipsRouter);
-app.use("/api/finale-evaluatie", finaleEvaluatieRouter);
+let db;
 
-// Health check
-app.get("/", (req, res) => {
-  res.json({ message: "API is actief 🚀" });
+// MySQL connectie (promise-based)
+async function initDB() {
+  try {
+    db = await mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME
+    });
+
+    console.log("Verbonden met MySQL database");
+  } catch (err) {
+    console.error("MySQL fout:", err);
+  }
+}
+
+initDB();
+
+// Database beschikbaar maken voor routes
+app.use((req, res, next) => {
+  req.db = db;
+  next();
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server draait op http://localhost:${PORT}`);
+// Routes
+const internshipRequestsRoutes = require("./routes/internship_requests");
+app.use("/internship-requests", internshipRequestsRoutes);
+
+const userRoutes = require("./routes/users");
+app.use("/users", userRoutes);
+
+const authRoutes = require("./routes/auth");
+app.use("/auth", authRoutes);
+
+// Test route
+app.get("/", (req, res) => {
+  res.send("Backend is running");
+});
+
+app.listen(3000, () => {
+  console.log("Server running on http://localhost:3000");
 });

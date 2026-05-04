@@ -63,6 +63,7 @@ const translations = {
         usernameTaken: "Deze gebruikersnaam is al in gebruik.",
         generic: "Er is een fout opgetreden."
       }
+
     },
 
     

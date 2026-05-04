@@ -1,10 +1,14 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { t } from "../i18n/translations";
+import { getDashboardRouteByRole } from "../utils/roleRedirect";
 
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,7 +36,11 @@ function Login() {
       }
 
       localStorage.setItem("token", data.token);
-      alert(t("loggedIn"));
+
+      const role = data.role;
+      const targetRoute = getDashboardRouteByRole(role);
+      navigate(targetRoute);
+
     } catch {
       setError(t("serverError"));
     }

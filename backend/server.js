@@ -7,7 +7,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-
 const db = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -18,12 +17,20 @@ const db = mysql.createPool({
   queueLimit: 0
 });
 
+
+// Database beschikbaar maken voor routes
+
 app.use((req, res, next) => {
   req.db = db;
   next();
 });
 
 // Routes
+
+const internshipRequestsRoutes = require("./routes/internship_requests");
+app.use("/internship-requests", internshipRequestsRoutes);
+
+
 const userRoutes = require("./routes/users");
 app.use("/users", userRoutes);
 
@@ -38,4 +45,4 @@ app.get("/", (req, res) => {
 app.listen(3000, () => {
   console.log("Server running on http://localhost:3000");
 });
-``
+

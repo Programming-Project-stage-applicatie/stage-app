@@ -37,6 +37,9 @@ app.use("/users", userRoutes);
 const authRoutes = require("./routes/auth");
 app.use("/auth", authRoutes);
 
+const internshipRoutes = require("./routes/internships");
+app.use("/internships", internshipRoutes);
+
 // Test route
 app.get("/", (req, res) => {
   res.send("Backend is running");

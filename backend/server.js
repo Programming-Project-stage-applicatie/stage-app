@@ -7,6 +7,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+/* ---------------------------------------------------------
+   DATABASE CONNECTIE (POOL - AANBEVOLEN)
+--------------------------------------------------------- */
 const db = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -17,35 +20,45 @@ const db = mysql.createPool({
   queueLimit: 0
 });
 
-
-// Database beschikbaar maken voor routes
-
+/* ---------------------------------------------------------
+   DATABASE BESCHIKBAAR MAKEN IN REQUEST
+--------------------------------------------------------- */
 app.use((req, res, next) => {
   req.db = db;
   next();
 });
 
-// Routes
+/* ---------------------------------------------------------
+   AUTH ROUTES (GEEN JWT NODIG)
+--------------------------------------------------------- */
+const authRoutes = require("./routes/auth");
+app.use("/auth", authRoutes);
 
+/* ---------------------------------------------------------
+   JWT AUTHENTICATIE (VANAF HIER VERPLICHT)
+--------------------------------------------------------- */
+const authenticateJWT = require("./middleware/authenticateJWT");
+app.use(authenticateJWT);
+
+/* ---------------------------------------------------------
+   BEVEILIGDE ROUTES
+--------------------------------------------------------- */
 const internshipRequestsRoutes = require("./routes/internship_requests");
 app.use("/internship-requests", internshipRequestsRoutes);
-
 
 const userRoutes = require("./routes/users");
 app.use("/users", userRoutes);
 
-const authRoutes = require("./routes/auth");
-app.use("/auth", authRoutes);
-
-const internshipRoutes = require("./routes/internships");
-app.use("/internships", internshipRoutes);
-
-// Test route
+/* ---------------------------------------------------------
+   TEST ROUTE
+--------------------------------------------------------- */
 app.get("/", (req, res) => {
   res.send("Backend is running");
 });
 
+/* ---------------------------------------------------------
+   SERVER STARTEN
+--------------------------------------------------------- */
 app.listen(3000, () => {
   console.log("Server running on http://localhost:3000");
 });
-

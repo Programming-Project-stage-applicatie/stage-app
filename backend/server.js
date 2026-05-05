@@ -1,39 +1,30 @@
 const express = require("express");
 const cors = require("cors");
-const mysql = require("mysql2/promise");   // ← BELANGRIJK: promise versie
+const mysql = require("mysql2/promise");
 require("dotenv").config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-let db;
-
 /* ---------------------------------------------------------
-   DATABASE CONNECTIE (PROMISE-BASED)
+   DATABASE CONNECTIE (POOL - AANBEVOLEN)
 --------------------------------------------------------- */
-async function initDB() {
-  try {
-    db = await mysql.createConnection({
-      host: process.env.DB_HOST,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME
-    });
-
-    console.log("Verbonden met de MySQL database!");
-  } catch (err) {
-    console.error("MySQL fout:", err);
-  }
-}
-
-initDB();
+const db = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
+});
 
 /* ---------------------------------------------------------
    DATABASE BESCHIKBAAR MAKEN IN REQUEST
 --------------------------------------------------------- */
 app.use((req, res, next) => {
-  req.db = db;   // ← db is AL promise-based
+  req.db = db;
   next();
 });
 

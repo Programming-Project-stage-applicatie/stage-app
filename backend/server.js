@@ -15,6 +15,7 @@ const db = mysql.createPool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  dateStrings: true, // ⭐ voorkomt timezone problemen
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
@@ -35,7 +36,7 @@ const authRoutes = require("./routes/auth");
 app.use("/auth", authRoutes);
 
 /* ---------------------------------------------------------
-   JWT AUTHENTICATIE (ALLEEN VOOR BEVEILIGDE ROUTES)
+   JWT AUTHENTICATIE (VANAF HIER VERPLICHT)
 --------------------------------------------------------- */
 const authenticateJWT = require("./middleware/authenticateJWT");
 

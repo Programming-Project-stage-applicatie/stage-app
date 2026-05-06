@@ -27,14 +27,12 @@ router.get(
 );
 
 
-
 router.get(
   "/:id",
   authenticateJWT,
   requireAdmin,
   internshipController.getInternshipById
 );
-
 
 
 router.put(

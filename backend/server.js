@@ -22,17 +22,26 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
-const userRoutes = require("./routes/users");
-app.use("/users", userRoutes);
-
 const authRoutes = require("./routes/auth");
 app.use("/auth", authRoutes);
 
-// Test route
+const authenticateJWT = require("./middleware/authenticateJWT");
+app.use(authenticateJWT);
+
+const userRoutes = require("./routes/users");
+app.use("/users", userRoutes);
+
+const internshipRequestsRoutes = require("./routes/internship_requests");
+app.use("/internship-requests", internshipRequestsRoutes);
+
+const internshipRoutes = require("./routes/internships");
+app.use("/internships", internshipRoutes);
+
+
 app.get("/", (req, res) => {
   res.send("Backend is running");
 });
+
 
 app.listen(3000, () => {
   console.log("Server running on http://localhost:3000");

@@ -9,6 +9,8 @@ import MentorDashboard from "./pages/MentorDashboard";
 import InternshipCommitteeDashboard from "./pages/InternshipCommitteeDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminUsers from "./pages/AdminUsers";
+import AdminInternshipDetail from "./pages/AdminInternshipDetail";
+import StudentInternshipDetail from "./pages/StudentInternshipDetail";
 
 function App() {
   return (
@@ -35,6 +37,10 @@ function App() {
 
         <Route path="/admin/users" element={<AdminUsers />} />
 
+        <Route path="/admin/internships/:id" element={<AdminInternshipDetail />} />
+    
+
+        <Route path="/student/internships/:id" element={<StudentInternshipDetail />} />
 
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>

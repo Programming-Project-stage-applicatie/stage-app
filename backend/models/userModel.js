@@ -1,23 +1,31 @@
 const db = require("../db");
 
 module.exports = {
-  getAllUsers(callback) {
-  const query = `
-    SELECT
-      users.id,
-      users.firstname,
-      users.lastname,
-      users.email,
-      users.username,
-      users.role,
-      users.status,
-      students.studyprogram
-    FROM users
-    LEFT JOIN students ON students.user_id = users.id
-  `;
 
-  db.query(query, callback);
-},
+  getAllUsers(role, callback) {
+    let query = `
+      SELECT
+        users.id,
+        users.firstname,
+        users.lastname,
+        users.email,
+        users.username,
+        users.role,
+        users.status,
+        students.studyprogram
+      FROM users
+      LEFT JOIN students ON students.user_id = users.id
+    `;
+
+    const params = [];
+
+    if (role) {
+      query += " WHERE users.role = ?";
+      params.push(role);
+    }
+
+    db.query(query, params, callback);
+  },
 
   createUser(user, callback) {
     db.query(
@@ -43,7 +51,6 @@ module.exports = {
     db.query("SELECT * FROM users WHERE username = ?", [username], callback);
   },
 
-  
   getUserByEmailExceptId(email, id, callback) {
     db.query(
       "SELECT id FROM users WHERE email = ? AND id != ?",
@@ -52,7 +59,6 @@ module.exports = {
     );
   },
 
-  
   getUserByUsernameExceptId(username, id, callback) {
     db.query(
       "SELECT id FROM users WHERE username = ? AND id != ?",
@@ -70,7 +76,6 @@ module.exports = {
   },
 
   updateUser(id, user, callback) {
-  
     db.query(
       `
         UPDATE users
@@ -80,7 +85,7 @@ module.exports = {
             username = ?,
             role = ?,
             status = ?
-          WHERE id = ?
+        WHERE id = ?
       `,
       [
         user.firstname,
@@ -89,10 +94,11 @@ module.exports = {
         user.username,
         user.role,
         user.status,
-        id],
+        id
+      ],
       callback
     );
- },
+  },
 
   updatePassword(id, hashedPassword, callback) {
     db.query(

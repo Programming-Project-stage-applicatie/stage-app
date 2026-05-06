@@ -6,7 +6,14 @@ const ALLOWED_STATUSES = [
 ];
 
 /* ============================================================
-   GET: detail van één stageaanvraag
+   Helper: valideer YYYY-MM-DD formaat
+   ============================================================ */
+function isValidDateString(str) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(str);
+}
+
+/* ============================================================
+   GET: detail van één stageaanvraag (met DATE_FORMAT)
    ============================================================ */
 async function getById(req, res) {
   try {
@@ -15,7 +22,23 @@ async function getById(req, res) {
     const role = req.user.role;
 
     const [rows] = await req.db.query(
-      "SELECT * FROM internship_requests WHERE id = ?",
+      `
+      SELECT 
+        id,
+        student_id,
+        internship_committee_id,
+        company,
+        description,
+        DATE_FORMAT(request_date, '%Y-%m-%d') AS request_date,
+        DATE_FORMAT(start_date, '%Y-%m-%d') AS start_date,
+        DATE_FORMAT(end_date, '%Y-%m-%d') AS end_date,
+        status,
+        mentor_firstName,
+        mentor_lastName,
+        feedbackSC
+      FROM internship_requests
+      WHERE id = ?
+      `,
       [id]
     );
 
@@ -25,17 +48,14 @@ async function getById(req, res) {
 
     const request = rows[0];
 
-    // Student mag enkel zijn eigen aanvraag zien
     if (role === "student" && request.student_id !== userId) {
       return res.status(403).json({ error: "No access to this request" });
     }
 
-    // Commissie mag alles zien
     if (role === "internship_committee") {
       return res.json(request);
     }
 
-    // Andere rollen niet toegestaan
     if (role !== "student") {
       return res.status(403).json({ error: "Insufficient rights" });
     }
@@ -49,14 +69,13 @@ async function getById(req, res) {
 }
 
 /* ============================================================
-   PATCH: student past aanvraag aan (alleen bij adjustment_required)
+   PATCH: student past aanvraag aan (met DATE_FORMAT)
    ============================================================ */
 async function updateByStudent(req, res) {
   try {
     const { id } = req.params;
     const userId = req.user.id;
 
-    // 1. Bestaat de aanvraag?
     const [rows] = await req.db.query(
       "SELECT * FROM internship_requests WHERE id = ?",
       [id]
@@ -68,19 +87,16 @@ async function updateByStudent(req, res) {
 
     const request = rows[0];
 
-    // 2. Student moet eigenaar zijn
     if (request.student_id !== userId) {
       return res.status(403).json({ error: "No access to this request" });
     }
 
-    // 3. Status moet adjustment_required zijn
     if (request.status !== "adjustment_required") {
       return res.status(403).json({
         error: "Request cannot be modified unless status = adjustment_required"
       });
     }
 
-    // 4. Velden uit body
     const {
       company,
       description,
@@ -90,19 +106,20 @@ async function updateByStudent(req, res) {
       mentor_lastName
     } = req.body;
 
-    // 5. Validatie verplichte velden
     if (!company || !description || !start_date || !end_date) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // 6. Datumvalidatie
-    if (new Date(start_date) >= new Date(end_date)) {
+    if (!isValidDateString(start_date) || !isValidDateString(end_date)) {
+      return res.status(400).json({ error: "Invalid date format (expected YYYY-MM-DD)" });
+    }
+
+    if (start_date >= end_date) {
       return res.status(400).json({
         error: "Start date must be before end date"
       });
     }
 
-    // 7. Update uitvoeren (zonder teacher velden)
     await req.db.query(
       `
       UPDATE internship_requests
@@ -127,9 +144,24 @@ async function updateByStudent(req, res) {
       ]
     );
 
-    // 8. Gewijzigde aanvraag teruggeven
     const [updated] = await req.db.query(
-      "SELECT * FROM internship_requests WHERE id = ?",
+      `
+      SELECT 
+        id,
+        student_id,
+        internship_committee_id,
+        company,
+        description,
+        DATE_FORMAT(request_date, '%Y-%m-%d') AS request_date,
+        DATE_FORMAT(start_date, '%Y-%m-%d') AS start_date,
+        DATE_FORMAT(end_date, '%Y-%m-%d') AS end_date,
+        status,
+        mentor_firstName,
+        mentor_lastName,
+        feedbackSC
+      FROM internship_requests
+      WHERE id = ?
+      `,
       [id]
     );
 
@@ -142,7 +174,7 @@ async function updateByStudent(req, res) {
 }
 
 /* ============================================================
-   PATCH: commissie wijzigt status + feedback
+   PATCH: commissie wijzigt status + feedback (met DATE_FORMAT)
    ============================================================ */
 async function updateStatus(req, res) {
   const { id } = req.params;
@@ -189,7 +221,23 @@ async function updateStatus(req, res) {
     );
 
     const [updated] = await req.db.query(
-      "SELECT * FROM internship_requests WHERE id = ?",
+      `
+      SELECT 
+        id,
+        student_id,
+        internship_committee_id,
+        company,
+        description,
+        DATE_FORMAT(request_date, '%Y-%m-%d') AS request_date,
+        DATE_FORMAT(start_date, '%Y-%m-%d') AS start_date,
+        DATE_FORMAT(end_date, '%Y-%m-%d') AS end_date,
+        status,
+        mentor_firstName,
+        mentor_lastName,
+        feedbackSC
+      FROM internship_requests
+      WHERE id = ?
+      `,
       [id]
     );
 

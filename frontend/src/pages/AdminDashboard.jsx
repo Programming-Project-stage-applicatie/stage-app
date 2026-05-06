@@ -55,6 +55,7 @@ export default function AdminDashboard() {
 
       {error && <p className="error">{error}</p>}
 
+      {/* WITHOUT MENTOR */}
       <h2>{t("adminInternships.withoutMentor")}</h2>
       {internshipsWithoutMentor.length === 0 ? (
         <p>{t("adminInternships.noneWithoutMentor")}</p>
@@ -72,6 +73,7 @@ export default function AdminDashboard() {
         </ul>
       )}
 
+      {/* WITHOUT TEACHER */}
       <h2>{t("adminInternships.withoutTeacher")}</h2>
       {internshipsWithoutTeacher.length === 0 ? (
         <p>{t("adminInternships.noneWithoutTeacher")}</p>
@@ -89,6 +91,7 @@ export default function AdminDashboard() {
         </ul>
       )}
 
+      {/* WITHOUT BOTH */}
       <h2>{t("adminInternships.withoutBoth")}</h2>
       {internshipsWithoutBoth.length === 0 ? (
         <p>{t("adminInternships.noneWithoutBoth")}</p>

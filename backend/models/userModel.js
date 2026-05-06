@@ -1,26 +1,31 @@
 const db = require("../db");
 
 module.exports = {
-  
-getAllUsers(role, callback) {
-  let query = `
-    SELECT
-      users.id,
-      users.firstname,
-      users.lastname,
-      users.role
-    FROM users
-  `;
 
-  const params = [];
+  getAllUsers(role, callback) {
+    let query = `
+      SELECT
+        users.id,
+        users.firstname,
+        users.lastname,
+        users.email,
+        users.username,
+        users.role,
+        users.status,
+        students.studyprogram
+      FROM users
+      LEFT JOIN students ON students.user_id = users.id
+    `;
 
-  if (role) {
-    query += " WHERE users.role = ?";
-    params.push(role);
-  }
+    const params = [];
 
-  db.query(query, params, callback);
-},
+    if (role) {
+      query += " WHERE users.role = ?";
+      params.push(role);
+    }
+
+    db.query(query, params, callback);
+  },
 
   createUser(user, callback) {
     db.query(
@@ -46,7 +51,6 @@ getAllUsers(role, callback) {
     db.query("SELECT * FROM users WHERE username = ?", [username], callback);
   },
 
-  
   getUserByEmailExceptId(email, id, callback) {
     db.query(
       "SELECT id FROM users WHERE email = ? AND id != ?",
@@ -55,7 +59,6 @@ getAllUsers(role, callback) {
     );
   },
 
-  
   getUserByUsernameExceptId(username, id, callback) {
     db.query(
       "SELECT id FROM users WHERE username = ? AND id != ?",
@@ -73,7 +76,6 @@ getAllUsers(role, callback) {
   },
 
   updateUser(id, user, callback) {
-  
     db.query(
       `
         UPDATE users
@@ -83,7 +85,7 @@ getAllUsers(role, callback) {
             username = ?,
             role = ?,
             status = ?
-          WHERE id = ?
+        WHERE id = ?
       `,
       [
         user.firstname,
@@ -92,10 +94,11 @@ getAllUsers(role, callback) {
         user.username,
         user.role,
         user.status,
-        id],
+        id
+      ],
       callback
     );
- },
+  },
 
   updatePassword(id, hashedPassword, callback) {
     db.query(
@@ -105,4 +108,3 @@ getAllUsers(role, callback) {
     );
   }
 };
-

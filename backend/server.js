@@ -9,12 +9,14 @@ app.use(express.json());
 
 /* ---------------------------------------------------------
    DATABASE CONNECTIE (POOL - AANBEVOLEN)
+   ⭐ FIX TOEGEVOEGD: dateStrings: true
 --------------------------------------------------------- */
 const db = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  dateStrings: true,          // <-- BELANGRIJK: voorkomt timezone shift
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0

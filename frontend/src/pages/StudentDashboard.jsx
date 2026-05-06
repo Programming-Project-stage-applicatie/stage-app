@@ -3,13 +3,12 @@ import { Link } from "react-router-dom";
 import { t } from "../i18n/translations";
 import "../styles/studentDashboard.css";
 
-function getUserFromToken() {
-  const token = localStorage.getItem("token");
-  if (!token) return null;
+function getUserFromStorage() {
+  const storedUser = localStorage.getItem("user");
+  if (!storedUser) return null;
 
   try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload;
+    return JSON.parse(storedUser);
   } catch {
     return null;
   }
@@ -25,12 +24,8 @@ export default function StudentDashboard() {
   const [internships, setInternships] = useState([]);
   const [error, setError] = useState("");
   const token = localStorage.getItem("token");
-  const user = getUserFromToken();
+  const user = getUserFromStorage();
 
-  const studentName =
-  internships.length > 0
-    ? internships[0].student_firstname
-    : null;
 
   const fetchStudentInternships = async () => {
     try {
@@ -53,9 +48,10 @@ export default function StudentDashboard() {
 
   return (
     <div className="student-dashboard-container">
-    <h1>
-      {t("studentDashboard.welcome")}
-      {studentName ? `, ${studentName}` : ""}
+    <h1>      
+      {user
+        ? `${t("studentDashboard.welcome")}, ${user.firstname || user.username}`
+        : t("studentDashboard.welcome")}
     </h1>
 
       <h2>{t("studentDashboard.title")}</h2>

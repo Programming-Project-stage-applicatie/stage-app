@@ -54,13 +54,40 @@ async function updateStatus(req, res) {
       [status, feedbackSC || null, committeeMemberId, id]
     );
 
-    // 6. Gewijzigde aanvraag teruggeven
+    // 6. Gewijzigde aanvraag ophalen
     const [updated] = await req.db.query(
       'SELECT * FROM internship_requests WHERE id = ?',
       [id]
     );
 
+    // ⭐ 7. NIEUW: automatisch internship aanmaken bij approved
+    if (status === "approved") {
+
+      // 7.1 Check of er al een internship bestaat
+      const [existing] = await req.db.query(
+        "SELECT * FROM internships WHERE internship_request_id = ?",
+        [id]
+      );
+
+      // 7.2 Als er nog geen internship bestaat → aanmaken
+      if (existing.length === 0) {
+        await req.db.query(
+          `
+          INSERT INTO internships (internship_request_id, start_date, end_date, mentor_id, teacher_id)
+          VALUES (?, ?, ?, NULL, NULL)
+          `,
+          [
+            updated[0].id,
+            updated[0].start_date,
+            updated[0].end_date
+          ]
+        );
+      }
+    }
+
+    // 8. Response teruggeven
     return res.status(200).json(updated[0]);
+
   } catch (err) {
     console.error('Error updating internship request status:', err);
     return res.status(500).json({ error: 'Internal server error' });

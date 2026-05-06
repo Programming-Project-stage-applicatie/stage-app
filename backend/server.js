@@ -22,12 +22,11 @@ app.use((req, res, next) => {
   next();
 });
 
+// Public routes
 const authRoutes = require("./routes/auth");
 app.use("/auth", authRoutes);
 
-const authenticateJWT = require("./middleware/authenticateJWT");
-app.use(authenticateJWT);
-
+// Protected routes (each route handles its own authenticateJWT)
 const internshipRequestsRoutes = require("./routes/internship_requests");
 app.use("/internship-requests", internshipRequestsRoutes);
 

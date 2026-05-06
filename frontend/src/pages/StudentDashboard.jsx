@@ -19,8 +19,6 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString("nl-BE");
 };
 
-
-
 export default function StudentDashboard() {
   const [internships, setInternships] = useState([]);
   const [error, setError] = useState("");
@@ -28,9 +26,9 @@ export default function StudentDashboard() {
   const user = getUserFromToken();
 
   const studentName =
-  internships.length > 0
-    ? internships[0].student_firstname
-    : null;
+    internships.length > 0
+      ? internships[0].student_firstname
+      : null;
 
   const fetchStudentInternships = async () => {
     try {
@@ -53,10 +51,15 @@ export default function StudentDashboard() {
 
   return (
     <div className="student-dashboard-container">
-    <h1>
-      {t("studentDashboard.welcome")}
-      {studentName ? `, ${studentName}` : ""}
-    </h1>
+      <h1>
+        {t("studentDashboard.welcome")}
+        {studentName ? `, ${studentName}` : ""}
+      </h1>
+
+      {/* ⭐ Nieuwe knop */}
+      <Link className="dashboard-button" to="/student/new-request">
+        Nieuwe stageaanvraag
+      </Link>
 
       <h2>{t("studentDashboard.title")}</h2>
 

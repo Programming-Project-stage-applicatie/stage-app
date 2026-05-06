@@ -11,6 +11,30 @@ function isValidDate(dateString) {
 }
 
 // ------------------------------------------------------------
+// GET single internship request by ID  ⭐ NIEUW TOEGEVOEGD
+// ------------------------------------------------------------
+router.get("/:id", async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const [rows] = await req.db.query(
+            "SELECT * FROM internship_requests WHERE id = ?",
+            [id]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: "Internship request not found" });
+        }
+
+        res.json(rows[0]);
+
+    } catch (err) {
+        console.error("Database error:", err);
+        res.status(500).json({ error: "Database error" });
+    }
+});
+
+// ------------------------------------------------------------
 // GET internship requests (student ziet enkel eigen aanvragen)
 // ------------------------------------------------------------
 router.get("/", async (req, res) => {
@@ -21,14 +45,12 @@ router.get("/", async (req, res) => {
         let results;
 
         if (role === "student") {
-            // Student ziet enkel zijn eigen aanvragen
             [results] = await req.db.query(
                 "SELECT * FROM internship_requests WHERE student_id = ?",
                 [userId]
             );
         } 
         else if (role === "internship_committee") {
-            // Commissie ziet alle aanvragen
             [results] = await req.db.query(
                 "SELECT * FROM internship_requests"
             );
@@ -59,17 +81,14 @@ router.post("/", async (req, res) => {
         end_date
     } = req.body;
 
-    // 1. Verplichte velden controleren
     if (!student_id || !company || !description || !start_date || !end_date) {
         return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // 2. Datumformaat controleren
     if (!isValidDate(start_date) || !isValidDate(end_date)) {
         return res.status(400).json({ error: "Invalid date format" });
     }
 
-    // 3. start_date < end_date
     if (new Date(start_date) >= new Date(end_date)) {
         return res.status(400).json({
             error: "Start date must be before end date"
@@ -77,7 +96,6 @@ router.post("/", async (req, res) => {
     }
 
     try {
-        // 4. Check of student bestaat
         const [student] = await req.db.query(
             "SELECT * FROM users WHERE id = ?",
             [student_id]
@@ -87,7 +105,6 @@ router.post("/", async (req, res) => {
             return res.status(404).json({ error: "Student does not exist" });
         }
 
-        // 5. Insert: committee_id is ALTIJD NULL bij aanmaak
         const sql = `
             INSERT INTO internship_requests 
             (student_id, company, mentor_firstName, mentor_lastName, description, request_date, start_date, end_date, internship_committee_id, status)

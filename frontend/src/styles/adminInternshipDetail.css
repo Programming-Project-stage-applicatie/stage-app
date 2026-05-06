@@ -1,0 +1,60 @@
+.admin-detail-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.admin-detail-title {
+  font-size: 1.8rem;
+  margin-bottom: 2rem;
+}
+
+.admin-detail-section {
+  margin-bottom: 2rem;
+}
+
+.admin-detail-row {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.admin-detail-label {
+  font-weight: 600;
+  color: #444;
+}
+
+.admin-detail-value {
+  color: #222;
+}
+
+.admin-detail-description {
+  padding: 1rem;
+  background-color: #f6f6f6;
+  border-radius: 4px;
+  white-space: pre-wrap;
+}
+
+.admin-detail-select {
+  padding: 0.4rem;
+  min-width: 250px;
+}
+
+.admin-detail-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.admin-detail-actions button {
+  padding: 0.5rem 1.2rem;
+  cursor: pointer;
+}
+
+.admin-detail-back {
+  text-decoration: none;
+  color: #333;
+  margin-top: 1rem;
+  display: inline-block;
+}

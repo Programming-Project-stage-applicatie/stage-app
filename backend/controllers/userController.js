@@ -2,13 +2,13 @@ const userModel = require("../models/userModel");
 const bcrypt = require("bcrypt");
 
 exports.getAllUsers = (req, res) => {
-  userModel.getAllUsers((err, results) => {
+  const role = req.query.role;
+
+  userModel.getAllUsers(role, (err, results) => {
     if (err) {
-      return res.status(500).json({
-        message: "Failed to fetch users"
-      });
+      return res.status(500).json(err);
     }
-    res.status(200).json(results);
+    res.json(results);
   });
 };
 
@@ -34,7 +34,8 @@ exports.createUser = async (req, res) => {
     !username ||
     !password ||
     !role ||
-    !status
+    !status ||
+    (role === "student" && !studyprogram)
   ) {
     return res.status(400).json({
       code: "REQUIRED_FIELDS"
@@ -42,109 +43,106 @@ exports.createUser = async (req, res) => {
   }
 
   try {
-    // ✅ checks uit develop
-    userModel.getUserByEmail(email, async (err, emailResult) => {
-      if (err) {
-        return res.status(500).json({ message: "Server error" });
-      }
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-      if (emailResult.length > 0) {
-        return res.status(400).json({ code: "EMAIL_TAKEN" });
-      }
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
 
-      userModel.getUserByUsername(username, async (err, usernameResult) => {
-        if (err) {
-          return res.status(500).json({ message: "Server error" });
-        }
+    const [userResult] = await connection.execute(
+      `
+      INSERT INTO users
+      (firstname, lastname, email, username, password, role, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+      `,
+      [
+        firstname,
+        lastname,
+        email,
+        username,
+        hashedPassword,
+        role,
+        status
+      ]
+    );
 
-        if (usernameResult.length > 0) {
-          return res.status(400).json({ code: "USERNAME_TAKEN" });
-        }
+    const userId = userResult.insertId;
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-        connection = await pool.getConnection();
-        await connection.beginTransaction();
-
-        const [userResult] = await connection.execute(
-          `
-          INSERT INTO users
-          (firstname, lastname, email, username, password, role, status)
-          VALUES (?, ?, ?, ?, ?, ?, ?)
-          `,
-          [
-            firstname,
-            lastname,
-            email,
-            username,
-            hashedPassword,
-            role,
-            status
-          ]
+    switch (role) {
+      case "admin":
+        await connection.execute(
+          "INSERT INTO admins (user_id) VALUES (?)",
+          [userId]
         );
+        break;
 
-        const userId = userResult.insertId;
+      case "student":
+        await connection.execute(
+          "INSERT INTO students (user_id, studyprogram) VALUES (?, ?)",
+          [userId, studyprogram]
+        );
+        break;
 
-        // ✅ ENIGE TOEVOEGING VAN DEZE FEATURE
-        switch (role) {
-          case "admin":
-            await connection.execute(
-              "INSERT INTO admins (user_id) VALUES (?)",
-              [userId]
-            );
-            break;
+      case "teacher":
+        await connection.execute(
+          "INSERT INTO teachers (user_id) VALUES (?)",
+          [userId]
+        );
+        break;
 
-          case "student":
-            await connection.execute(
-              "INSERT INTO students (user_id, studyprogram) VALUES (?, ?)",
-              [userId, studyprogram || "Onbekend"]
-            );
-            break;
+      case "mentor":
+        await connection.execute(
+          "INSERT INTO mentors (user_id) VALUES (?)",
+          [userId]
+        );
+        break;
 
-          case "teacher":
-            await connection.execute(
-              "INSERT INTO teachers (user_id) VALUES (?)",
-              [userId]
-            );
-            break;
+      case "internship_committee":
+        await connection.execute(
+          "INSERT INTO internship_committees (user_id) VALUES (?)",
+          [userId]
+        );
+        break;
 
-          case "mentor":
-            await connection.execute(
-              "INSERT INTO mentors (user_id) VALUES (?)",
-              [userId]
-            );
-            break;
-
-          case "internship_committee":
-            await connection.execute(
-              "INSERT INTO internship_committees (user_id) VALUES (?)",
-              [userId]
-            );
-            break;
-        }
-
-        await connection.commit();
-
-        res.status(201).json({
-          message: "User created successfully",
-          userId
+      default:
+        await connection.rollback();
+        return res.status(400).json({
+          message: "Invalid role"
         });
-      });
+    }
+
+    await connection.commit();
+
+    return res.status(201).json({
+      message: "User created successfully",
+      userId
     });
+
   } catch (error) {
     if (connection) await connection.rollback();
 
     console.error("Create user failed:", error);
-    res.status(500).json({
+    return res.status(500).json({
       message: "Failed to create user"
     });
+
   } finally {
     if (connection) connection.release();
   }
 };
 
-exports.updateUser = (req, res) => {
-  const { id } = req.params;
-  const { firstname, lastname, email, username, role, status } = req.body;
+exports.updateUser = async (req, res) => {
+  const pool = req.db;
+  const userId = req.params.id;
+
+  const {
+    firstname,
+    lastname,
+    email,
+    username,
+    role,
+    status,
+    studyprogram
+  } = req.body;
 
   if (
     !firstname ||
@@ -159,70 +157,150 @@ exports.updateUser = (req, res) => {
     });
   }
 
-  userModel.getUserByEmailExceptId(email, id, (err, emailResult) => {
-    if (err) {
-      return res.status(500).json({ message: "Server error" });
+  let connection;
+
+  try {
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    const [rows] = await connection.execute(
+      "SELECT role FROM users WHERE id = ?",
+      [userId]
+    );
+
+    if (rows.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: "User not found" });
     }
 
-    if (emailResult.length > 0) {
-      return res.status(400).json({ code: "EMAIL_TAKEN" });
+    if (role === "student" && !studyprogram) {
+      await connection.rollback();
+      return res.status(400).json({
+        code: "STUDYPROGRAM_REQUIRED"
+      });
     }
 
-    userModel.getUserByUsernameExceptId(username, id, (err, usernameResult) => {
-      if (err) {
-        return res.status(500).json({ message: "Server error" });
-      }
+    await connection.execute(
+      `
+      UPDATE users
+      SET firstname = ?, lastname = ?, email = ?, username = ?, role = ?, status = ?
+      WHERE id = ?
+      `,
+      [
+        firstname,
+        lastname,
+        email,
+        username,
+        role,
+        status,
+        userId
+      ]
+    );
 
-      if (usernameResult.length > 0) {
-        return res.status(400).json({ code: "USERNAME_TAKEN" });
-      }
-
-      userModel.updateUser(
-        id,
-        { firstname, lastname, email, username, role, status },
-        (err, result) => {
-          if (err) {
-            return res.status(500).json({
-              message: "Failed to update user"
-            });
-          }
-
-          if (result.affectedRows === 0) {
-            return res.status(404).json({
-              message: "User not found"
-            });
-          }
-
-          return res.status(200).json({
-            message: "User updated"
-          });
-        }
+    if (role === "student") {
+      const [studentRows] = await connection.execute(
+        "SELECT user_id FROM students WHERE user_id = ?",
+        [userId]
       );
+
+      if (studentRows.length === 0) {
+        await connection.execute(
+          "INSERT INTO students (user_id, studyprogram) VALUES (?, ?)",
+          [userId, studyprogram]
+        );
+      } else {
+        await connection.execute(
+          "UPDATE students SET studyprogram = ? WHERE user_id = ?",
+          [studyprogram, userId]
+        );
+      }
+    }
+
+    await connection.commit();
+
+    return res.status(200).json({
+      message: "User updated successfully"
     });
-  });
+
+  } catch (error) {
+    if (connection) await connection.rollback();
+
+    console.error("Update user failed:", error);
+    return res.status(500).json({
+      message: "Failed to update user"
+    });
+
+  } finally {
+    if (connection) connection.release();
+  }
 };
 
-exports.deleteUser = (req, res) => {
-  const { id } = req.params;
+exports.deleteUser = async (req, res) => {
+  const pool = req.db;
+  const userId = req.params.id;
+  let connection;
 
-  userModel.deleteUser(id, (err, result) => {
-    if (err) {
-      return res.status(500).json({
-        message: "Failed to delete user"
-      });
+  try {
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    const [rows] = await connection.execute(
+      "SELECT role FROM users WHERE id = ?",
+      [userId]
+    );
+
+    if (rows.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: "User not found" });
     }
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({
-        message: "User not found"
-      });
+    const role = rows[0].role;
+
+    switch (role) {
+      case "admin":
+        await connection.execute("DELETE FROM admins WHERE user_id = ?", [userId]);
+        break;
+      case "student":
+        await connection.execute("DELETE FROM students WHERE user_id = ?", [userId]);
+        break;
+      case "teacher":
+        await connection.execute("DELETE FROM teachers WHERE user_id = ?", [userId]);
+        break;
+      case "mentor":
+        await connection.execute("DELETE FROM mentors WHERE user_id = ?", [userId]);
+        break;
+      case "internship_committee":
+        await connection.execute(
+          "DELETE FROM internship_committees WHERE user_id = ?",
+          [userId]
+        );
+        break;
     }
 
-    return res.status(204).send();
-  });
+    await connection.execute(
+      "DELETE FROM users WHERE id = ?",
+      [userId]
+    );
+
+    await connection.commit();
+
+    return res.json({ message: "User deleted successfully" });
+
+  } catch (error) {
+    if (connection) await connection.rollback();
+
+    console.error("Delete user failed:", error);
+    return res.status(500).json({
+      message: "Failed to delete user"
+    });
+
+  } finally {
+    if (connection) connection.release();
+  }
 };
 
 exports.resetPassword = async (req, res) => {
+  const pool = req.db;
   const { id } = req.params;
   const { password } = req.body;
 
@@ -232,29 +310,28 @@ exports.resetPassword = async (req, res) => {
     });
   }
 
+  let connection;
+
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
+    connection = await pool.getConnection();
 
-    userModel.updatePassword(id, hashedPassword, (err, result) => {
-      if (err) {
-        return res.status(500).json({
-          message: "Failed to reset password"
-        });
-      }
+    await connection.execute(
+      "UPDATE users SET password = ? WHERE id = ?",
+      [hashedPassword, id]
+    );
 
-      if (result.affectedRows === 0) {
-        return res.status(404).json({
-          message: "User not found"
-        });
-      }
-
-      return res.status(200).json({
-        message: "Password updated"
-      });
+    return res.status(200).json({
+      message: "Password updated"
     });
+
   } catch (error) {
+    console.error("RESET PASSWORD ERROR:", error);
     return res.status(500).json({
-      message: "Password hashing failed"
+      message: "Failed to reset password"
     });
+
+  } finally {
+    if (connection) connection.release();
   }
 };

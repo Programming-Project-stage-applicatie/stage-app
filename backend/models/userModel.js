@@ -1,12 +1,26 @@
 const db = require("../db");
 
 module.exports = {
-  getAllUsers(callback) {
-    db.query(
-      "SELECT id, firstname, lastname, email, username, role, status FROM users",
-      callback
-    );
-  },
+  
+getAllUsers(role, callback) {
+  let query = `
+    SELECT
+      users.id,
+      users.firstname,
+      users.lastname,
+      users.role
+    FROM users
+  `;
+
+  const params = [];
+
+  if (role) {
+    query += " WHERE users.role = ?";
+    params.push(role);
+  }
+
+  db.query(query, params, callback);
+},
 
   createUser(user, callback) {
     db.query(

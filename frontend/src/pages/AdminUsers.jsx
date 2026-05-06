@@ -81,6 +81,7 @@ export default function AdminUsers() {
         role: "student",
         status: "active",
         studyprogram: ""
+
       });
       fetchUsers();
     } catch {
@@ -177,10 +178,6 @@ export default function AdminUsers() {
         setError(t("adminUsers.errors.requiredFields"));
         return;
     }
-
-    
-
-
 
     if (data.code === "EMAIL_TAKEN") {
         setError(t("adminUsers.errors.emailTaken"));
@@ -337,6 +334,7 @@ export default function AdminUsers() {
                 <span>-</span>
             )}
         </td>
+
         <td>
           <select
             value={editUser.status}

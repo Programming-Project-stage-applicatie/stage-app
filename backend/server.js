@@ -22,17 +22,21 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes
-const userRoutes = require("./routes/users");
-app.use("/users", userRoutes);
-
 const authRoutes = require("./routes/auth");
 app.use("/auth", authRoutes);
+
+const authenticateJWT = require("./middleware/authenticateJWT");
+app.use(authenticateJWT);
+
+const internshipRequestsRoutes = require("./routes/internship_requests");
+app.use("/internship-requests", internshipRequestsRoutes);
+
+const userRoutes = require("./routes/users");
+app.use("/users", userRoutes);
 
 const internshipRoutes = require("./routes/internships");
 app.use("/internships", internshipRoutes);
 
-// Test route
 app.get("/", (req, res) => {
   res.send("Backend is running");
 });

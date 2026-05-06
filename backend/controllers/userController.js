@@ -1,7 +1,6 @@
 const userModel = require("../models/userModel");
 const bcrypt = require("bcrypt");
 
-
 exports.getAllUsers = (req, res) => {
   const role = req.query.role;
 
@@ -12,7 +11,6 @@ exports.getAllUsers = (req, res) => {
     res.json(results);
   });
 };
-
 
 exports.createUser = async (req, res) => {
   const pool = req.db;
@@ -46,6 +44,7 @@ exports.createUser = async (req, res) => {
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
+
     connection = await pool.getConnection();
     await connection.beginTransaction();
 
@@ -106,7 +105,9 @@ exports.createUser = async (req, res) => {
 
       default:
         await connection.rollback();
-        return res.status(400).json({ message: "Invalid role" });
+        return res.status(400).json({
+          message: "Invalid role"
+        });
     }
 
     await connection.commit();
@@ -118,8 +119,8 @@ exports.createUser = async (req, res) => {
 
   } catch (error) {
     if (connection) await connection.rollback();
-    console.error("Create user failed:", error);
 
+    console.error("Create user failed:", error);
     return res.status(500).json({
       message: "Failed to create user"
     });
@@ -128,71 +129,6 @@ exports.createUser = async (req, res) => {
     if (connection) connection.release();
   }
 };
-
-
-exports.deleteUser = async (req, res) => {
-  const pool = req.db;
-  const userId = req.params.id;
-  let connection;
-
-  try {
-    connection = await pool.getConnection();
-    await connection.beginTransaction();
-
-    const [rows] = await connection.execute(
-      "SELECT role FROM users WHERE id = ?",
-      [userId]
-    );
-
-    if (rows.length === 0) {
-      await connection.rollback();
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    const role = rows[0].role;
-
-    switch (role) {
-      case "admin":
-        await connection.execute("DELETE FROM admins WHERE user_id = ?", [userId]);
-        break;
-      case "student":
-        await connection.execute("DELETE FROM students WHERE user_id = ?", [userId]);
-        break;
-      case "teacher":
-        await connection.execute("DELETE FROM teachers WHERE user_id = ?", [userId]);
-        break;
-      case "mentor":
-        await connection.execute("DELETE FROM mentors WHERE user_id = ?", [userId]);
-        break;
-      case "internship_committee":
-        await connection.execute(
-          "DELETE FROM internship_committees WHERE user_id = ?",
-          [userId]
-        );
-        break;
-    }
-
-    await connection.execute(
-      "DELETE FROM users WHERE id = ?",
-      [userId]
-    );
-
-    await connection.commit();
-    return res.json({ message: "User deleted successfully" });
-
-  } catch (error) {
-    if (connection) await connection.rollback();
-    console.error("Delete user failed:", error);
-
-    return res.status(500).json({
-      message: "Failed to delete user"
-    });
-
-  } finally {
-    if (connection) connection.release();
-  }
-};
-
 
 exports.updateUser = async (req, res) => {
   const pool = req.db;
@@ -278,11 +214,6 @@ exports.updateUser = async (req, res) => {
           [studyprogram, userId]
         );
       }
-    } else {
-      await connection.execute(
-        "DELETE FROM students WHERE user_id = ?",
-        [userId]
-      );
     }
 
     await connection.commit();
@@ -293,8 +224,8 @@ exports.updateUser = async (req, res) => {
 
   } catch (error) {
     if (connection) await connection.rollback();
-    console.error("Update user failed:", error);
 
+    console.error("Update user failed:", error);
     return res.status(500).json({
       message: "Failed to update user"
     });
@@ -304,8 +235,72 @@ exports.updateUser = async (req, res) => {
   }
 };
 
+exports.deleteUser = async (req, res) => {
+  const pool = req.db;
+  const userId = req.params.id;
+  let connection;
+
+  try {
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    const [rows] = await connection.execute(
+      "SELECT role FROM users WHERE id = ?",
+      [userId]
+    );
+
+    if (rows.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const role = rows[0].role;
+
+    switch (role) {
+      case "admin":
+        await connection.execute("DELETE FROM admins WHERE user_id = ?", [userId]);
+        break;
+      case "student":
+        await connection.execute("DELETE FROM students WHERE user_id = ?", [userId]);
+        break;
+      case "teacher":
+        await connection.execute("DELETE FROM teachers WHERE user_id = ?", [userId]);
+        break;
+      case "mentor":
+        await connection.execute("DELETE FROM mentors WHERE user_id = ?", [userId]);
+        break;
+      case "internship_committee":
+        await connection.execute(
+          "DELETE FROM internship_committees WHERE user_id = ?",
+          [userId]
+        );
+        break;
+    }
+
+    await connection.execute(
+      "DELETE FROM users WHERE id = ?",
+      [userId]
+    );
+
+    await connection.commit();
+
+    return res.json({ message: "User deleted successfully" });
+
+  } catch (error) {
+    if (connection) await connection.rollback();
+
+    console.error("Delete user failed:", error);
+    return res.status(500).json({
+      message: "Failed to delete user"
+    });
+
+  } finally {
+    if (connection) connection.release();
+  }
+};
 
 exports.resetPassword = async (req, res) => {
+  const pool = req.db;
   const { id } = req.params;
   const { password } = req.body;
 
@@ -315,31 +310,28 @@ exports.resetPassword = async (req, res) => {
     });
   }
 
+  let connection;
+
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
+    connection = await pool.getConnection();
 
-    userModel.updatePassword(id, hashedPassword, (err, result) => {
-      if (err) {
-        console.error("RESET PASSWORD ERROR:", err);
-        return res.status(500).json({
-          message: "Failed to reset password"
-        });
-      }
+    await connection.execute(
+      "UPDATE users SET password = ? WHERE id = ?",
+      [hashedPassword, id]
+    );
 
-      if (result.affectedRows === 0) {
-        return res.status(404).json({
-          message: "User not found"
-        });
-      }
-
-      return res.status(200).json({
-        message: "Password updated"
-      });
+    return res.status(200).json({
+      message: "Password updated"
     });
+
   } catch (error) {
-    console.error("BCRYPT ERROR:", error);
+    console.error("RESET PASSWORD ERROR:", error);
     return res.status(500).json({
-      message: "Password hashing failed"
+      message: "Failed to reset password"
     });
+
+  } finally {
+    if (connection) connection.release();
   }
 };

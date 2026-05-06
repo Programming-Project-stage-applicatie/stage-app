@@ -105,3 +105,4 @@ getAllUsers(role, callback) {
     );
   }
 };
+

@@ -7,11 +7,25 @@ const requireAdmin = require("../middleware/requireAdmin");
 
 
 router.get(
+  "/student",
+  authenticateJWT,
+  internshipController.getStudentInternships
+);
+
+
+router.get(
+  "/student/:id",
+  authenticateJWT,
+  internshipController.getStudentInternshipById
+);
+
+router.get(
   "/",
   authenticateJWT,
   requireAdmin,
   internshipController.getAllInternships
 );
+
 
 router.get(
   "/:id",
@@ -19,6 +33,7 @@ router.get(
   requireAdmin,
   internshipController.getInternshipById
 );
+
 
 router.put(
   "/:id/mentor",

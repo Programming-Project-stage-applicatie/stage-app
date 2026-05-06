@@ -63,6 +63,7 @@ const translations = {
         usernameTaken: "Deze gebruikersnaam is al in gebruik.",
         generic: "Er is een fout opgetreden."
       }
+
     },
 
     
@@ -99,9 +100,29 @@ const translations = {
       save: "Opslaan",
       saved: "Stage succesvol bijgewerkt",
       saveError: "Opslaan mislukt" 
+    },
+
+    
+    studentDashboard: {
+      welcome: "Welkom",
+      title: "Mijn stages"
+    },
+
+    studentInternships: {
+      fetchError: "Kon stages niet ophalen",
+      none: "Je hebt momenteel geen stage",
+      period: "Stageperiode",
+      stage: "Stage",
+      logbooks: "Logboeken",
+      evaluation: "Finale evaluatie",
+      open: "Open"
     }
 
+
+    
   }
+
+  
 };
 
 // nl fixed for now

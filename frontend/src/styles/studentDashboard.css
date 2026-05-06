@@ -1,0 +1,39 @@
+.student-dashboard-container {
+  padding: 2rem;
+}
+
+.student-dashboard-header h1 {
+  margin-bottom: 0.5rem;
+}
+
+.student-dashboard-header h2 {
+  margin-bottom: 2rem;
+  font-weight: 500;
+}
+
+.student-stages-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.student-stages-table th,
+.student-stages-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+.student-stages-table th.stage-col,
+.student-stages-table td.stage-col {
+  
+  font-weight: 600;
+}
+
+.student-stages-table a {
+  text-decoration: none;
+  color: #000;
+}
+
+.student-stages-table a:hover {
+  text-decoration: underline;
+}

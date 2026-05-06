@@ -39,6 +39,7 @@ exports.getAllInternships = async (req, res) => {
     return res.status(500).json({
       message: "Failed to fetch internships"
     });
+
   }
 };
 
@@ -249,4 +250,104 @@ exports.getInternshipById = async (req, res) => {
   } finally {
     if (connection) connection.release();
   }
+
+};
+
+
+exports.getStudentInternships = async (req, res) => {
+  const pool = req.db;
+  const studentId = req.user.id;
+
+  try {
+    const [rows] = await pool.query(
+      `
+      SELECT
+        internships.id,
+        internships.start_date,
+        internships.end_date,
+        internships.mentor_id,
+        internships.teacher_id,
+        internship_requests.status,
+
+        
+        users.firstname AS student_firstname,
+        users.lastname AS student_lastname
+
+      FROM internships
+      JOIN internship_requests
+        ON internships.internship_request_id = internship_requests.id
+        
+      JOIN users
+        ON internship_requests.student_id = users.id
+      WHERE internship_requests.student_id = ?
+
+      `,
+      [studentId]
+    );
+
+    return res.json(rows);
+
+  } catch (error) {
+    console.error("Fetch student internships failed:", error);
+    return res.status(500).json({
+      message: "Failed to fetch student internships"
+    });
+  }
+
+  
+};
+
+exports.getStudentInternshipById = async (req, res) => {
+  const pool = req.db;
+  const internshipId = req.params.id;
+  const studentId = req.user.id;
+
+  try {
+    const [rows] = await pool.query(
+      `
+      SELECT
+        internships.id,
+        internships.start_date,
+        internships.end_date,
+        internship_requests.company,
+        internship_requests.description,
+        internship_requests.status,
+
+        mentor.firstname AS mentor_firstname,
+        mentor.lastname AS mentor_lastname,
+
+        teacher.firstname AS teacher_firstname,
+        teacher.lastname AS teacher_lastname
+
+      FROM internships
+      JOIN internship_requests
+        ON internships.internship_request_id = internship_requests.id
+
+      LEFT JOIN users AS mentor
+        ON internships.mentor_id = mentor.id
+
+      LEFT JOIN users AS teacher
+        ON internships.teacher_id = teacher.id
+
+      WHERE internships.id = ?
+        AND internship_requests.student_id = ?
+      `,
+      [internshipId, studentId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        message: "Internship not found"
+      });
+    }
+
+    return res.json(rows[0]);
+
+  } catch (error) {
+    console.error("Fetch student internship detail failed:", error);
+    return res.status(500).json({
+      message: "Failed to fetch internship"
+    });
+  }
+
 };

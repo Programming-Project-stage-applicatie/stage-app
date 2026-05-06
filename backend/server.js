@@ -35,22 +35,24 @@ const authRoutes = require("./routes/auth");
 app.use("/auth", authRoutes);
 
 /* ---------------------------------------------------------
-   JWT AUTHENTICATIE (VANAF HIER VERPLICHT)
+   JWT AUTHENTICATIE (ALLEEN VOOR BEVEILIGDE ROUTES)
 --------------------------------------------------------- */
 const authenticateJWT = require("./middleware/authenticateJWT");
-app.use(authenticateJWT);
 
 /* ---------------------------------------------------------
    BEVEILIGDE ROUTES
 --------------------------------------------------------- */
 const internshipRequestsRoutes = require("./routes/internship_requests");
-app.use("/internship-requests", internshipRequestsRoutes);
+app.use("/internship-requests", authenticateJWT, internshipRequestsRoutes);
 
 const userRoutes = require("./routes/users");
-app.use("/users", userRoutes);
+app.use("/users", authenticateJWT, userRoutes);
+
+const internshipRoutes = require("./routes/internships");
+app.use("/internships", authenticateJWT, internshipRoutes);
 
 /* ---------------------------------------------------------
-   TEST ROUTE
+   TEST ROUTE (GEEN JWT)
 --------------------------------------------------------- */
 app.get("/", (req, res) => {
   res.send("Backend is running");

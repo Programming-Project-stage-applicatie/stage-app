@@ -7,6 +7,7 @@ const requireAdmin = require("../middleware/requireAdmin");
 
 router.get("/", authenticateJWT, requireAdmin, userController.getAllUsers);
 router.post("/", authenticateJWT, requireAdmin, userController.createUser);
+
 router.delete("/:id", authenticateJWT, requireAdmin, userController.deleteUser);
 router.put("/:id", authenticateJWT, requireAdmin, userController.updateUser);
 router.put("/:id/password", authenticateJWT, requireAdmin, userController.resetPassword);

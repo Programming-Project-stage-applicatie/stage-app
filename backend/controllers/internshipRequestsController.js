@@ -7,14 +7,14 @@ const ALLOWED_STATUSES = [
 
 /* ============================================================
    Helper: valideer YYYY-MM-DD formaat
-   ============================================================ */
+============================================================ */
 function isValidDateString(str) {
   return /^\d{4}-\d{2}-\d{2}$/.test(str);
 }
 
 /* ============================================================
    GET: detail van één stageaanvraag (met DATE_FORMAT)
-   ============================================================ */
+============================================================ */
 async function getById(req, res) {
   try {
     const { id } = req.params;
@@ -70,7 +70,7 @@ async function getById(req, res) {
 
 /* ============================================================
    PATCH: student past aanvraag aan (met DATE_FORMAT)
-   ============================================================ */
+============================================================ */
 async function updateByStudent(req, res) {
   try {
     const { id } = req.params;
@@ -174,8 +174,9 @@ async function updateByStudent(req, res) {
 }
 
 /* ============================================================
-   PATCH: commissie wijzigt status + feedback (met DATE_FORMAT)
-   ============================================================ */
+   PATCH: commissie wijzigt status + feedback
+   ⭐ MET automatische internship-aanmaak
+============================================================ */
 async function updateStatus(req, res) {
   const { id } = req.params;
   const { status, feedbackSC } = req.body;
@@ -211,6 +212,8 @@ async function updateStatus(req, res) {
       return res.status(404).json({ error: "Internship request not found" });
     }
 
+    const existing = rows[0];
+
     await req.db.query(
       `
       UPDATE internship_requests
@@ -219,6 +222,29 @@ async function updateStatus(req, res) {
       `,
       [status, feedbackSC || null, committeeMemberId, id]
     );
+
+    // ⭐ Automatische internship-aanmaak bij approved
+    if (status === "approved") {
+      const [existingInternship] = await req.db.query(
+        "SELECT * FROM internships WHERE internship_request_id = ?",
+        [id]
+      );
+
+      if (existingInternship.length === 0) {
+        await req.db.query(
+          `
+          INSERT INTO internships 
+          (internship_request_id, start_date, end_date, mentor_id, teacher_id)
+          VALUES (?, ?, ?, NULL, NULL)
+          `,
+          [
+            existing.id,
+            existing.start_date,
+            existing.end_date
+          ]
+        );
+      }
+    }
 
     const [updated] = await req.db.query(
       `

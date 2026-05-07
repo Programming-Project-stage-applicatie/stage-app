@@ -9,14 +9,14 @@ app.use(express.json());
 
 /* ---------------------------------------------------------
    DATABASE CONNECTIE (POOL - AANBEVOLEN)
-   ⭐ FIX TOEGEVOEGD: dateStrings: true
+   ⭐ FIX: dateStrings voorkomt timezone shifts
 --------------------------------------------------------- */
 const db = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  dateStrings: true,          // <-- BELANGRIJK: voorkomt timezone shift
+  dateStrings: true, // ⭐ voorkomt timezone problemen
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
@@ -40,19 +40,21 @@ app.use("/auth", authRoutes);
    JWT AUTHENTICATIE (VANAF HIER VERPLICHT)
 --------------------------------------------------------- */
 const authenticateJWT = require("./middleware/authenticateJWT");
-app.use(authenticateJWT);
 
 /* ---------------------------------------------------------
    BEVEILIGDE ROUTES
 --------------------------------------------------------- */
 const internshipRequestsRoutes = require("./routes/internship_requests");
-app.use("/internship-requests", internshipRequestsRoutes);
+app.use("/internship-requests", authenticateJWT, internshipRequestsRoutes);
 
 const userRoutes = require("./routes/users");
-app.use("/users", userRoutes);
+app.use("/users", authenticateJWT, userRoutes);
+
+const internshipRoutes = require("./routes/internships");
+app.use("/internships", authenticateJWT, internshipRoutes);
 
 /* ---------------------------------------------------------
-   TEST ROUTE
+   TEST ROUTE (GEEN JWT)
 --------------------------------------------------------- */
 app.get("/", (req, res) => {
   res.send("Backend is running");

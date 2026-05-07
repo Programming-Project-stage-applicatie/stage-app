@@ -9,6 +9,7 @@ app.use(express.json());
 
 /* ---------------------------------------------------------
    DATABASE CONNECTIE (POOL - AANBEVOLEN)
+   ⭐ FIX: dateStrings voorkomt timezone shifts
 --------------------------------------------------------- */
 const db = mysql.createPool({
   host: process.env.DB_HOST,

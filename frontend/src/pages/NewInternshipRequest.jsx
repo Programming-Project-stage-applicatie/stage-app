@@ -6,13 +6,15 @@ function NewInternshipRequest() {
   const navigate = useNavigate();
 
   const [student, setStudent] = useState(null);
+
   const [company, setCompany] = useState("");
   const [mentorFirstName, setMentorFirstName] = useState("");
   const [mentorLastName, setMentorLastName] = useState("");
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [error, setError] = useState("");
+
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     async function fetchStudent() {
@@ -33,9 +35,36 @@ function NewInternshipRequest() {
     fetchStudent();
   }, []);
 
+  function validateForm() {
+    const newErrors = {};
+
+    if (!company.trim()) {
+      newErrors.company = "Gelieve een bedrijf in te vullen.";
+    }
+
+    if (!description.trim()) {
+      newErrors.description = "Gelieve een opdracht in te vullen.";
+    }
+
+    if (!startDate || !endDate) {
+      newErrors.period = "Gelieve een geldige periode te selecteren.";
+    }
+
+    if (startDate && endDate && startDate > endDate) {
+      newErrors.period = "De startdatum moet vóór de einddatum liggen.";
+    }
+
+    return newErrors;
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
-    setError("");
+    const validationErrors = validateForm();
+    setErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length > 0) {
+      return; // Stop submit
+    }
 
     const body = {
       student_id: student.id,
@@ -60,14 +89,14 @@ function NewInternshipRequest() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Er ging iets mis");
+        setErrors({ general: data.error || "Er ging iets mis bij het indienen." });
         return;
       }
 
       navigate("/student/request/" + data.request_id);
     } catch (err) {
       console.error("Error submitting request:", err);
-      setError("Er ging iets mis bij het indienen");
+      setErrors({ general: "Er ging iets mis bij het indienen." });
     }
   }
 
@@ -84,9 +113,9 @@ function NewInternshipRequest() {
         <strong>Opleiding:</strong> {student.studyprogram}
       </p>
 
-      {error && <p className="error-message">{error}</p>}
+      {errors.general && <p className="error-message">{errors.general}</p>}
 
-      <form className="request-form" onSubmit={handleSubmit}>
+      <form className="request-form" noValidate onSubmit={handleSubmit}>
 
         <div className="request-field">
           <label>Bedrijf *</label>
@@ -94,8 +123,8 @@ function NewInternshipRequest() {
             type="text"
             value={company}
             onChange={(e) => setCompany(e.target.value)}
-            required
           />
+          {errors.company && <p className="error-message">{errors.company}</p>}
         </div>
 
         <div className="request-field">
@@ -121,10 +150,9 @@ function NewInternshipRequest() {
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Beschrijf hier de opdracht van je stage"
-            required
             rows={5}
           />
+          {errors.description && <p className="error-message">{errors.description}</p>}
         </div>
 
         <div className="request-field">
@@ -133,7 +161,6 @@ function NewInternshipRequest() {
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            required
           />
         </div>
 
@@ -143,11 +170,10 @@ function NewInternshipRequest() {
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            required
           />
+          {errors.period && <p className="error-message">{errors.period}</p>}
         </div>
 
-        {/* ⭐ Knoppen onderaan */}
         <div className="request-buttons">
           <button className="request-submit" type="submit">
             Indienen

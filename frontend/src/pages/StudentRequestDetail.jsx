@@ -5,6 +5,14 @@ import "../styles/studentRequestDetail.css";
 const formatDate = (dateString) =>
   new Date(dateString).toLocaleDateString("nl-BE");
 
+// ⭐ Mapping backend → Nederlands
+const statusMapping = {
+  submitted: "Ingediend – wacht op goedkeuring",
+  approved: "Goedgekeurd",
+  rejected: "Afgekeurd",
+  adjustment_required: "Aanpassingen vereist",
+};
+
 export default function StudentRequestDetail() {
   const { id } = useParams();
   const [request, setRequest] = useState(null);
@@ -18,8 +26,8 @@ export default function StudentRequestDetail() {
           `http://localhost:3000/internship-requests/${id}`,
           {
             headers: {
-              Authorization: `Bearer ${token}`
-            }
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
 
@@ -43,15 +51,15 @@ export default function StudentRequestDetail() {
 
   return (
     <div className="student-request-container">
-      <h2 className="student-request-title">
-        Stageaanvraag
-      </h2>
+      <h2 className="student-request-title">Stageaanvraag</h2>
 
       {/* ===== Status, bedrijf, periode ===== */}
       <div className="student-request-section">
         <div className="student-request-row">
           <span className="student-request-label">Status:</span>
-          <span className="student-request-value">{request.status}</span>
+          <span className="student-request-value">
+            {statusMapping[request.status] || "Onbekende status"}
+          </span>
         </div>
 
         <div className="student-request-row">

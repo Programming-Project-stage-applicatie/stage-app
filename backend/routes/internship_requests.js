@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const authenticateJWT = require("../middleware/authenticateJWT");
 
 // Controller voor status‑updates
 const internshipRequestsController = require("../controllers/internshipRequestsController");
@@ -11,7 +12,32 @@ function isValidDate(dateString) {
 }
 
 // ------------------------------------------------------------
-// GET single internship request by ID  ⭐ NIEUW TOEGEVOEGD
+// Alle routes hieronder vereisen JWT
+// ------------------------------------------------------------
+router.use(authenticateJWT);
+
+// ------------------------------------------------------------
+// GET /internship-requests/me  → student ziet eigen aanvragen
+// ------------------------------------------------------------
+router.get("/me", async (req, res) => {
+    try {
+        const studentId = req.user.id;
+
+        const [rows] = await req.db.query(
+            "SELECT * FROM internship_requests WHERE student_id = ? ORDER BY id DESC",
+            [studentId]
+        );
+
+        res.json(rows);
+
+    } catch (err) {
+        console.error("Database error:", err);
+        res.status(500).json({ error: "Database error" });
+    }
+});
+
+// ------------------------------------------------------------
+// GET single internship request by ID
 // ------------------------------------------------------------
 router.get("/:id", async (req, res) => {
     const { id } = req.params;
@@ -35,7 +61,8 @@ router.get("/:id", async (req, res) => {
 });
 
 // ------------------------------------------------------------
-// GET internship requests (student ziet enkel eigen aanvragen)
+// GET /internship-requests  → student: eigen aanvragen
+//                              commissie: alle aanvragen
 // ------------------------------------------------------------
 router.get("/", async (req, res) => {
     try {
@@ -46,13 +73,13 @@ router.get("/", async (req, res) => {
 
         if (role === "student") {
             [results] = await req.db.query(
-                "SELECT * FROM internship_requests WHERE student_id = ?",
+                "SELECT * FROM internship_requests WHERE student_id = ? ORDER BY id DESC",
                 [userId]
             );
         } 
         else if (role === "internship_committee") {
             [results] = await req.db.query(
-                "SELECT * FROM internship_requests"
+                "SELECT * FROM internship_requests ORDER BY id DESC"
             );
         } 
         else {

@@ -5,7 +5,7 @@
   margin: 0 auto;
 }
 
-/* ===== Header ===== */
+/* ===== Headers ===== */
 .student-dashboard-container h1 {
   margin-bottom: 0.5rem;
   font-size: 2rem;
@@ -43,6 +43,7 @@
   background: white;
   border-radius: 8px;
   overflow: hidden;
+  margin-bottom: 1.5rem;
 }
 
 .student-stages-table th,
@@ -51,6 +52,7 @@
   border-bottom: 1px solid #ddd;
   text-align: left;
   font-size: 0.95rem;
+  white-space: nowrap; /* voorkomt afbreken in ALLE kolommen */
 }
 
 .student-stages-table th {
@@ -63,7 +65,33 @@
   font-weight: 600;
 }
 
-/* Links in tabel */
+/* ===== Kolombreedtes ===== */
+/* Bedrijf */
+.student-stages-table td:nth-child(1),
+.student-stages-table th:nth-child(1) {
+  width: 22%;
+}
+
+/* Periode */
+.student-stages-table td:nth-child(2),
+.student-stages-table th:nth-child(2) {
+  width: 26%;
+}
+
+/* Status */
+.student-stages-table td:nth-child(3),
+.student-stages-table th:nth-child(3) {
+  width: 32%;
+}
+
+/* Actie */
+.student-stages-table td:last-child,
+.student-stages-table th:last-child {
+  width: 20%;
+  text-align: right;
+}
+
+/* ===== Links in tabel ===== */
 .student-stages-table a {
   text-decoration: none;
   color: #0066cc;
@@ -74,7 +102,17 @@
   text-decoration: underline;
 }
 
-/* Error message */
+/* ===== Lege sectie ===== */
+.empty-message {
+  padding: 1rem;
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+/* ===== Error message ===== */
 .error {
   color: red;
   margin-bottom: 1rem;

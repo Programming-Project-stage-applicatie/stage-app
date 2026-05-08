@@ -19,8 +19,16 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString("nl-BE");
 };
 
+const statusMapping = {
+  submitted: "Ingediend – wacht op goedkeuring",
+  approved: "Goedgekeurd",
+  rejected: "Afgekeurd",
+  adjustment_required: "Aanpassingen vereist",
+};
+
 export default function StudentDashboard() {
   const [internships, setInternships] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [error, setError] = useState("");
   const token = localStorage.getItem("token");
   const user = getUserFromToken();
@@ -34,8 +42,8 @@ export default function StudentDashboard() {
     try {
       const res = await fetch("http://localhost:3000/internships/student", {
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (!res.ok) throw new Error();
@@ -45,8 +53,24 @@ export default function StudentDashboard() {
     }
   };
 
+  const fetchRequests = async () => {
+    try {
+      const res = await fetch("http://localhost:3000/internship-requests/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error();
+      setRequests(await res.json());
+    } catch {
+      setError("Kon stageaanvragen niet ophalen.");
+    }
+  };
+
   useEffect(() => {
     fetchStudentInternships();
+    fetchRequests();
   }, []);
 
   return (
@@ -56,10 +80,43 @@ export default function StudentDashboard() {
         {studentName ? `, ${studentName}` : ""}
       </h1>
 
-      {/* ⭐ Nieuwe knop */}
       <Link className="dashboard-button" to="/student/new-request">
         Nieuwe stageaanvraag
       </Link>
+
+      <h2>Mijn stageaanvragen</h2>
+
+      {requests.length === 0 ? (
+        <p>Je hebt nog geen stageaanvragen ingediend.</p>
+      ) : (
+        <table className="student-stages-table">
+          <thead>
+            <tr>
+              <th>Bedrijf</th>
+              <th>Periode</th>
+              <th>Status</th>
+              <th>Actie</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {requests.map((req) => (
+              <tr key={req.id}>
+                <td>{req.company}</td>
+                <td>
+                  {formatDate(req.start_date)} – {formatDate(req.end_date)}
+                </td>
+                <td>{statusMapping[req.status] || "Onbekende status"}</td>
+                <td>
+                  <Link to={`/student/request/${req.id}`}>
+                    Bekijk aanvraag
+                  </Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
       <h2>{t("studentDashboard.title")}</h2>
 

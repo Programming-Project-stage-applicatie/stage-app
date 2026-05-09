@@ -1,0 +1,113 @@
+/* ============================
+   CONTAINER & TITEL
+============================ */
+.committee-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.committee-title {
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.committee-divider {
+  margin: 16px 0 24px 0;
+  border: none;
+  border-top: 2px solid #ddd;
+}
+
+.committee-subtitle {
+  font-size: 24px;
+  margin-bottom: 24px;
+}
+
+/* ============================
+   STATUS GRID
+============================ */
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+  margin-bottom: 48px;
+}
+
+/* ============================
+   STATUS CARDS (clean Tiffany look)
+============================ */
+.status-card {
+  background: #f9f9f9;
+  padding: 22px;
+  border-radius: 12px;
+  text-align: center;
+  border: 3px solid transparent;
+  transition: transform 0.15s ease, border-color 0.2s ease;
+
+  /* ⭐ BELANGRIJK: label boven, cijfer onder */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Zachtere borderkleuren */
+.status-yellow { border-color: #f7e4a8; }   /* zacht geel */
+.status-green { border-color: #a8e6b1; }    /* zacht groen */
+.status-red { border-color: #f5b5b0; }      /* zacht rood */
+.status-orange { border-color: #ffd1a3; }   /* zacht oranje */
+
+/* Hover effect */
+.status-card:hover {
+  transform: translateY(-3px);
+}
+
+/* ============================
+   LABEL & COUNT
+============================ */
+.status-label {
+  font-size: 18px;
+  font-weight: 600;
+  white-space: nowrap; /* altijd op 1 lijn */
+  margin-bottom: 14px; /* ⭐ mooie spatie boven het cijfer */
+}
+
+.status-count {
+  font-size: 34px;
+  font-weight: bold;
+  line-height: 1.1;
+  margin-top: 0;
+}
+
+/* ============================
+   BUTTON
+============================ */
+.overview-button-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.overview-button {
+  background: #4a4aff;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.overview-button:hover {
+  background: #3a3ae6;
+}
+
+/* ============================
+   ERROR
+============================ */
+.error {
+  color: #e53935;
+  margin-bottom: 16px;
+  font-weight: 500;
+}

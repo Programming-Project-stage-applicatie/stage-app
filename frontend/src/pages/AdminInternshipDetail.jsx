@@ -22,6 +22,11 @@ export default function AdminInternshipDetail() {
     return ln !== 0 ? ln : a.firstname.localeCompare(b.firstname);
   };
 
+  const formatDate = (date) => {
+  if (!date) return "";
+  return new Date(date).toLocaleDateString("nl-BE");
+  };
+
   const fetchInternship = async () => {
     try {
       const res = await fetch(`http://localhost:3000/internships/${id}`, {
@@ -148,7 +153,7 @@ export default function AdminInternshipDetail() {
               {t("adminInternships.period")}
             </div>
             <div className="admin-detail-value">
-              {internship.start_date} → {internship.end_date}
+              {formatDate(internship.start_date)} → {formatDate(internship.end_date)}
             </div>
           </div>
 

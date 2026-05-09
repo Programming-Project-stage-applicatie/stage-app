@@ -71,16 +71,16 @@ export default function AdminDashboard() {
     }
 }, []);
 
+  const internshipsWithoutBoth = internships.filter(
+  (i) => i.mentor_id === null && i.teacher_id === null
+  );
+
   const internshipsWithoutMentor = internships.filter(
-    (i) => i.mentor_id === null
+    (i) => i.mentor_id === null && i.teacher_id !== null
   );
 
   const internshipsWithoutTeacher = internships.filter(
-    (i) => i.teacher_id === null
-  );
-
-  const internshipsWithoutBoth = internships.filter(
-    (i) => i.mentor_id === null && i.teacher_id === null
+    (i) => i.mentor_id !== null && i.teacher_id === null
   );
 
 return (

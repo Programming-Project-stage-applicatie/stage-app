@@ -4,12 +4,19 @@ module.exports = {
   
 getAllUsers(role, callback) {
   let query = `
+    
     SELECT
       users.id,
       users.firstname,
       users.lastname,
-      users.role
+      users.email,
+      users.username,
+      users.role,
+      users.status,
+      students.studyprogram
     FROM users
+    LEFT JOIN students ON students.user_id = users.id
+
   `;
 
   const params = [];

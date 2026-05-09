@@ -1,18 +1,19 @@
 const express = require("express");
 const router = express.Router();
 
-// Controller voor status‑updates
 const internshipRequestsController = require("../controllers/internshipRequestsController");
 
-// Helper: check of datum geldig is
+// Helper: check if date is valid
 function isValidDate(dateString) {
     const date = new Date(dateString);
     return !isNaN(date.getTime());
 }
 
-// ------------------------------------------------------------
-// GET internship requests (student ziet enkel eigen aanvragen)
-// ------------------------------------------------------------
+/* ============================================================
+   GET: lijst van aanvragen
+   - student ziet enkel eigen aanvragen
+   - commissie ziet alles
+============================================================ */
 router.get("/", async (req, res) => {
     try {
         const role = req.user.role;
@@ -21,20 +22,16 @@ router.get("/", async (req, res) => {
         let results;
 
         if (role === "student") {
-            // Student ziet enkel zijn eigen aanvragen
             [results] = await req.db.query(
                 "SELECT * FROM internship_requests WHERE student_id = ?",
                 [userId]
             );
-        } 
-        else if (role === "internship_committee") {
-            // Commissie ziet alle aanvragen
+        } else if (role === "internship_committee") {
             [results] = await req.db.query(
                 "SELECT * FROM internship_requests"
             );
-        } 
-        else {
-            return res.status(403).json({ error: "Onvoldoende rechten" });
+        } else {
+            return res.status(403).json({ error: "Insufficient permissions" });
         }
 
         res.json(results);
@@ -45,9 +42,14 @@ router.get("/", async (req, res) => {
     }
 });
 
-// ------------------------------------------------------------
-// POST new internship request (student)
-// ------------------------------------------------------------
+/* ============================================================
+   GET: detail van één aanvraag
+============================================================ */
+router.get("/:id", internshipRequestsController.getById);
+
+/* ============================================================
+   POST: nieuwe stageaanvraag door student
+============================================================ */
 router.post("/", async (req, res) => {
     const {
         student_id,
@@ -59,17 +61,16 @@ router.post("/", async (req, res) => {
         end_date
     } = req.body;
 
-    // 1. Verplichte velden controleren
+    // Required fields
     if (!student_id || !company || !description || !start_date || !end_date) {
         return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // 2. Datumformaat controleren
+    // Date validation
     if (!isValidDate(start_date) || !isValidDate(end_date)) {
         return res.status(400).json({ error: "Invalid date format" });
     }
 
-    // 3. start_date < end_date
     if (new Date(start_date) >= new Date(end_date)) {
         return res.status(400).json({
             error: "Start date must be before end date"
@@ -77,7 +78,7 @@ router.post("/", async (req, res) => {
     }
 
     try {
-        // 4. Check of student bestaat
+        // Check if student exists
         const [student] = await req.db.query(
             "SELECT * FROM users WHERE id = ?",
             [student_id]
@@ -87,7 +88,7 @@ router.post("/", async (req, res) => {
             return res.status(404).json({ error: "Student does not exist" });
         }
 
-        // 5. Insert: committee_id is ALTIJD NULL bij aanmaak
+        // Insert new internship request
         const sql = `
             INSERT INTO internship_requests 
             (student_id, company, mentor_firstName, mentor_lastName, description, request_date, start_date, end_date, internship_committee_id, status)
@@ -117,9 +118,15 @@ router.post("/", async (req, res) => {
     }
 });
 
-// ------------------------------------------------------------
-// PATCH: update status + feedback + koppeling committee
-// ------------------------------------------------------------
+/* ============================================================
+   PATCH: student past aanvraag aan (alleen bij adjustment_required)
+============================================================ */
+router.patch("/:id", internshipRequestsController.updateByStudent);
+
+/* ============================================================
+   PATCH: commissie wijzigt status + feedback
+   (auto‑internship‑aanmaak gebeurt in controller)
+============================================================ */
 router.patch("/:id/status", internshipRequestsController.updateStatus);
 
 module.exports = router;

@@ -1,6 +1,9 @@
 const userModel = require("../models/userModel");
 const bcrypt = require("bcrypt");
 
+// =========================
+// GET ALL USERS (ADMIN)
+// =========================
 exports.getAllUsers = (req, res) => {
   const role = req.query.role;
 
@@ -12,6 +15,47 @@ exports.getAllUsers = (req, res) => {
   });
 };
 
+// =========================
+// GET LOGGED-IN USER (STUDENT / ANY ROLE)
+// =========================
+exports.getMe = async (req, res) => {
+  const pool = req.db;
+  const userId = req.user.id;
+
+  try {
+    const [rows] = await pool.query(
+      `
+      SELECT 
+        u.id,
+        u.firstname,
+        u.lastname,
+        u.email,
+        u.username,
+        u.role,
+        u.status,
+        s.studyprogram
+      FROM users u
+      LEFT JOIN students s ON s.user_id = u.id
+      WHERE u.id = ?
+      `,
+      [userId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.json(rows[0]);
+
+  } catch (error) {
+    console.error("GET ME ERROR:", error);
+    return res.status(500).json({ message: "Failed to fetch user" });
+  }
+};
+
+// =========================
+// CREATE USER (ADMIN)
+// =========================
 exports.createUser = async (req, res) => {
   const pool = req.db;
   let connection;
@@ -130,6 +174,9 @@ exports.createUser = async (req, res) => {
   }
 };
 
+// =========================
+// UPDATE USER (ADMIN)
+// =========================
 exports.updateUser = async (req, res) => {
   const pool = req.db;
   const userId = req.params.id;
@@ -240,6 +287,9 @@ exports.updateUser = async (req, res) => {
   }
 };
 
+// =========================
+// DELETE USER (ADMIN)
+// =========================
 exports.deleteUser = async (req, res) => {
   const pool = req.db;
   const userId = req.params.id;
@@ -304,6 +354,9 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
+// =========================
+// RESET PASSWORD (ADMIN)
+// =========================
 exports.resetPassword = async (req, res) => {
   const pool = req.db;
   const { id } = req.params;

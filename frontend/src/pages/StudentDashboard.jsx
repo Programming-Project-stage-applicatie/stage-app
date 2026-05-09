@@ -3,13 +3,12 @@ import { Link } from "react-router-dom";
 import { t } from "../i18n/translations";
 import "../styles/studentDashboard.css";
 
-function getUserFromToken() {
-  const token = localStorage.getItem("token");
-  if (!token) return null;
+function getUserFromStorage() {
+  const storedUser = localStorage.getItem("user");
+  if (!storedUser) return null;
 
   try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload;
+    return JSON.parse(storedUser);
   } catch {
     return null;
   }
@@ -31,12 +30,7 @@ export default function StudentDashboard() {
   const [requests, setRequests] = useState([]);
   const [error, setError] = useState("");
   const token = localStorage.getItem("token");
-  const user = getUserFromToken();
-
-  const studentName =
-    internships.length > 0
-      ? internships[0].student_firstname
-      : null;
+  const user = getUserFromStorage();
 
   const fetchStudentInternships = async () => {
     try {
@@ -75,15 +69,20 @@ export default function StudentDashboard() {
 
   return (
     <div className="student-dashboard-container">
+
+      {/* ⭐ Welkomsttitel (develop-versie) */}
       <h1>
-        {t("studentDashboard.welcome")}
-        {studentName ? `, ${studentName}` : ""}
+        {user
+          ? `${t("studentDashboard.welcome")}, ${user.firstname || user.username}`
+          : t("studentDashboard.welcome")}
       </h1>
 
+      {/* ⭐ Nieuwe stageaanvraag knop */}
       <Link className="dashboard-button" to="/student/new-request">
         Nieuwe stageaanvraag
       </Link>
 
+      {/* ⭐ Mijn stageaanvragen */}
       <h2>Mijn stageaanvragen</h2>
 
       {requests.length === 0 ? (
@@ -118,6 +117,7 @@ export default function StudentDashboard() {
         </table>
       )}
 
+      {/* ⭐ Mijn stages (develop-sectie) */}
       <h2>{t("studentDashboard.title")}</h2>
 
       {error && <p className="error">{error}</p>}

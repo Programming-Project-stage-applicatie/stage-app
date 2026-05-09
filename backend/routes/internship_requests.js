@@ -2,10 +2,9 @@ const express = require("express");
 const router = express.Router();
 const authenticateJWT = require("../middleware/authenticateJWT");
 
-// Controller voor status‑updates
 const internshipRequestsController = require("../controllers/internshipRequestsController");
 
-// Helper: check of datum geldig is
+// Helper: check if date is valid
 function isValidDate(dateString) {
     const date = new Date(dateString);
     return !isNaN(date.getTime());
@@ -36,34 +35,11 @@ router.get("/me", async (req, res) => {
     }
 });
 
-// ------------------------------------------------------------
-// GET single internship request by ID
-// ------------------------------------------------------------
-router.get("/:id", async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const [rows] = await req.db.query(
-            "SELECT * FROM internship_requests WHERE id = ?",
-            [id]
-        );
-
-        if (rows.length === 0) {
-            return res.status(404).json({ error: "Internship request not found" });
-        }
-
-        res.json(rows[0]);
-
-    } catch (err) {
-        console.error("Database error:", err);
-        res.status(500).json({ error: "Database error" });
-    }
-});
-
-// ------------------------------------------------------------
-// GET /internship-requests  → student: eigen aanvragen
-//                              commissie: alle aanvragen
-// ------------------------------------------------------------
+/* ============================================================
+   GET: lijst van aanvragen
+   - student ziet enkel eigen aanvragen
+   - commissie ziet alles
+============================================================ */
 router.get("/", async (req, res) => {
     try {
         const role = req.user.role;
@@ -76,14 +52,12 @@ router.get("/", async (req, res) => {
                 "SELECT * FROM internship_requests WHERE student_id = ? ORDER BY id DESC",
                 [userId]
             );
-        } 
-        else if (role === "internship_committee") {
+        } else if (role === "internship_committee") {
             [results] = await req.db.query(
                 "SELECT * FROM internship_requests ORDER BY id DESC"
             );
-        } 
-        else {
-            return res.status(403).json({ error: "Onvoldoende rechten" });
+        } else {
+            return res.status(403).json({ error: "Insufficient permissions" });
         }
 
         res.json(results);
@@ -94,9 +68,14 @@ router.get("/", async (req, res) => {
     }
 });
 
-// ------------------------------------------------------------
-// POST new internship request (student)
-// ------------------------------------------------------------
+/* ============================================================
+   GET: detail van één aanvraag
+============================================================ */
+router.get("/:id", internshipRequestsController.getById);
+
+/* ============================================================
+   POST: nieuwe stageaanvraag door student
+============================================================ */
 router.post("/", async (req, res) => {
     const {
         student_id,
@@ -108,10 +87,12 @@ router.post("/", async (req, res) => {
         end_date
     } = req.body;
 
+    // Required fields
     if (!student_id || !company || !description || !start_date || !end_date) {
         return res.status(400).json({ error: "Missing required fields" });
     }
 
+    // Date validation
     if (!isValidDate(start_date) || !isValidDate(end_date)) {
         return res.status(400).json({ error: "Invalid date format" });
     }
@@ -123,6 +104,7 @@ router.post("/", async (req, res) => {
     }
 
     try {
+        // Check if student exists
         const [student] = await req.db.query(
             "SELECT * FROM users WHERE id = ?",
             [student_id]
@@ -132,6 +114,7 @@ router.post("/", async (req, res) => {
             return res.status(404).json({ error: "Student does not exist" });
         }
 
+        // Insert new internship request
         const sql = `
             INSERT INTO internship_requests 
             (student_id, company, mentor_firstName, mentor_lastName, description, request_date, start_date, end_date, internship_committee_id, status)
@@ -161,9 +144,15 @@ router.post("/", async (req, res) => {
     }
 });
 
-// ------------------------------------------------------------
-// PATCH: update status + feedback + koppeling committee
-// ------------------------------------------------------------
+/* ============================================================
+   PATCH: student past aanvraag aan (alleen bij adjustment_required)
+============================================================ */
+router.patch("/:id", internshipRequestsController.updateByStudent);
+
+/* ============================================================
+   PATCH: commissie wijzigt status + feedback
+   (auto‑internship‑aanmaak gebeurt in controller)
+============================================================ */
 router.patch("/:id/status", internshipRequestsController.updateStatus);
 
 module.exports = router;

@@ -75,7 +75,7 @@ exports.assignMentor = async (req, res) => {
 
 
     const [mentors] = await connection.execute(
-      "SELECT id FROM users WHERE id = ? AND role = 'mentor'",
+      "SELECT users.id FROM users JOIN mentors ON mentors.user_id = users.id WHERE users.id = ? ",
       [mentor_id]
     );
 
@@ -142,7 +142,7 @@ exports.assignTeacher = async (req, res) => {
     }
 
     const [teachers] = await connection.execute(
-      "SELECT id FROM users WHERE id = ? AND role = 'teacher'",
+      "SELECT users.id FROM users JOIN teachers ON teachers.user_id = users.id WHERE users.id = ? ",
       [teacher_id]
     );
 

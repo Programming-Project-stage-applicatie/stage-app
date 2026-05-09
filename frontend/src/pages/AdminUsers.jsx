@@ -1,5 +1,8 @@
 import { useEffect, useState, Fragment } from "react";
 import { t } from "../i18n/translations";
+import { useNavigate } from "react-router-dom";
+import "../styles/adminUsers.css";
+
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
@@ -22,6 +25,8 @@ export default function AdminUsers() {
     status: "active",
     studyprogram: ""
   });
+
+  const navigate = useNavigate();
 
   const fetchUsers = async () => {
     try {
@@ -205,6 +210,11 @@ export default function AdminUsers() {
 
   return (
     <div className="admin-users-page">
+        
+    <button className="secondary back-button" onClick={() => navigate("/dashboard/admin")}>
+    ← {t("adminUsers.backToDashboard")}
+    </button>
+
       <h1>{t("adminUsers.title")}</h1>
 
       {error && <p className="error">{error}</p>}

@@ -11,9 +11,16 @@ const translations = {
     accountInactive: "Je account is niet actief.",
     requiredFields: "Alle velden zijn verplicht.",
     serverError: "Kan geen verbinding maken met de server.",
+    stages: "Stages",
 
+    status_pending: "In behandeling",
+    status_approved: "Goedgekeurd",
+    status_rejected: "Afgewezen",
+
+    
     adminUsers: {
       title: "Gebruikers",
+      backToDashboard: "Terug naar dashboard",
       newRow: "Nieuwe lijn",
       save: "Opslaan",
       cancel: "Annuleren",
@@ -62,7 +69,9 @@ const translations = {
         emailTaken: "Dit e-mailadres is al in gebruik.",
         usernameTaken: "Deze gebruikersnaam is al in gebruik.",
         generic: "Er is een fout opgetreden."
-      }
+      },
+
+
 
     },
 
@@ -110,6 +119,19 @@ const translations = {
 
     studentInternships: {
       fetchError: "Kon stages niet ophalen",
+      
+      backToDashboard: "Terug naar dashboard",
+      detailTitle: "Stage details",
+      company: "Bedrijf",
+      period: "Stageperiode",
+      status: "Status",
+      description: "Beschrijving",
+      mentor: "Mentor",
+      teacher: "Docent",
+      notAssigned: "Niet toegewezen",
+      loading: "Laden...",
+      detailFetchError: "Fout bij ophalen stagegegevens",
+
       none: "Je hebt momenteel geen stage",
       period: "Stageperiode",
       stage: "Stage",

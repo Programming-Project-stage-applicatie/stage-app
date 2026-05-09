@@ -10,6 +10,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminUsers from "./pages/AdminUsers";
 import AdminInternshipDetail from "./pages/AdminInternshipDetail";
 import StudentInternshipDetail from "./pages/StudentInternshipDetail";
+import TeacherStudentLogbooks from "./pages/TeacherStudentLogbooks";
+import TeacherLogbookDetail from "./pages/TeacherLogbookDetail";
 
 // ⭐ Nieuwe import voor jouw nieuwe pagina
 import NewInternshipRequest from "./pages/NewInternshipRequest";
@@ -40,6 +42,11 @@ function App() {
 
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/internships/:id" element={<AdminInternshipDetail />} />
+
+        <Route path="/logbooks/internship/:internshipId"element={<TeacherStudentLogbooks />}/>
+
+        <Route path="/logbook/detail/:id" element={<TeacherLogbookDetail />}/>
+
 
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>

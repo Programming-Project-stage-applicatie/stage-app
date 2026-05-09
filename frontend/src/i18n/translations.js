@@ -12,6 +12,50 @@ const translations = {
     requiredFields: "Alle velden zijn verplicht.",
     serverError: "Kan geen verbinding maken met de server.",
 
+    logbook: {
+      title: "Logboek",
+      week: "Week",
+      tasks: "Taken",
+      reflection: "Reflectie",
+      problems: "Problemen",
+      feedback: "Feedback",
+      status: "Status",
+      none: "Leeg",
+      back: "Terug",
+      create: "Logboek aanmaken",
+      save: "Opslaan",
+      submit: "Indienen",
+      giveFeedback: "Feedback geven",
+      feedbackSaved: "Feedback opgeslagen",
+      saved: "Logboek succesvol opgeslagen",
+      submitted: "Logboek succesvol ingediend",
+      supervisorOverview: "Logboeken overzicht",
+      supervisorSubtitle: "Overzicht van studenten en hun laatste logboek",
+      lastWeek: "Laatste week",
+      noStudents: "Geen studenten gevonden",
+      viewOverview: "Bekijken",
+      loading: "Laden...",
+      fetchError: "Fout bij ophalen",
+      filter: {
+        all: "Alle statussen"
+      },
+
+
+      statuses: {
+        open: "Open",
+        submitted: "Ingediend",
+        approved: "Goedgekeurd",
+        adjustment_required: "Aanpassing vereist"
+      },
+
+      errors: {
+        load: "Fout bij ophalen logboeken",
+        save: "Fout bij opslaan logboek",
+        submit: "Fout bij indienen logboek",
+        exists: "Er bestaat al een logboek voor deze week"
+      }
+    },
+
     adminUsers: {
       title: "Gebruikers",
       newRow: "Nieuwe lijn",

@@ -29,6 +29,8 @@ function Login() {
       });
 
       const data = await response.json();
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
       if (!response.ok) {
         setError(data.message || t("invalidCredentials"));
@@ -51,7 +53,7 @@ function Login() {
   return (
     <div className="login-page">
       <div className="login-card">
-        <h1>{t("loginTitle")}</h1>
+        <h1>Stage Monitoring Tool</h1>
         <h2>{t("loginTitle")}</h2>
 
         <form onSubmit={handleSubmit}>

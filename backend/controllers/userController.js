@@ -163,8 +163,8 @@ exports.createUser = async (req, res) => {
 
   } catch (error) {
     if (connection) await connection.rollback();
-
     console.error("Create user failed:", error);
+
     return res.status(500).json({
       message: "Failed to create user"
     });
@@ -261,6 +261,11 @@ exports.updateUser = async (req, res) => {
           [studyprogram, userId]
         );
       }
+    } else {
+      await connection.execute(
+        "DELETE FROM students WHERE user_id = ?",
+        [userId]
+      );
     }
 
     await connection.commit();
@@ -271,8 +276,8 @@ exports.updateUser = async (req, res) => {
 
   } catch (error) {
     if (connection) await connection.rollback();
-
     console.error("Update user failed:", error);
+
     return res.status(500).json({
       message: "Failed to update user"
     });
@@ -338,8 +343,8 @@ exports.deleteUser = async (req, res) => {
 
   } catch (error) {
     if (connection) await connection.rollback();
-
     console.error("Delete user failed:", error);
+
     return res.status(500).json({
       message: "Failed to delete user"
     });

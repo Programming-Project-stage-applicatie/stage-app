@@ -18,7 +18,7 @@ import NewInternshipRequest from "./pages/NewInternshipRequest";
 import StudentRequestDetail from "./pages/StudentRequestDetail";
 import StudentInternshipDetail from "./pages/StudentInternshipDetail";
 
-// Commissie pages
+// Commissie pages (M10 + M11)
 import InternshipCommitteeOverview from "./pages/InternshipCommitteeOverview";   // M10
 import InternshipCommitteeRequestDetail from "./pages/InternshipCommitteeRequestDetail"; // M11
 
@@ -43,14 +43,14 @@ function App() {
         />
         <Route path="/dashboard/admin" element={<AdminDashboard />} />
 
-        {/* Admin pages */}
-        <Route path="/admin/users" element={<AdminUsers />} />
-        <Route path="/admin/internships/:id" element={<AdminInternshipDetail />} />
-
         {/* Student pages */}
         <Route path="/student/new-request" element={<NewInternshipRequest />} />
         <Route path="/student/request/:id" element={<StudentRequestDetail />} />
         <Route path="/student/internships/:id" element={<StudentInternshipDetail />} />
+
+        {/* Admin pages */}
+        <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/admin/internships/:id" element={<AdminInternshipDetail />} />
 
         {/* Commissie pages */}
         {/* M10 – Overzicht */}

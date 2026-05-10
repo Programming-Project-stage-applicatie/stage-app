@@ -17,25 +17,29 @@
 
 /* ============================
    DETAILSECTIES
+   → GRID ipv flex, top alignment
 ============================ */
 .m11-section {
   margin-bottom: 24px;
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: 180px 1fr; /* label + waarde */
+  column-gap: 16px;
+  align-items: start; /* ⭐ bovenkanten uitlijnen */
 }
 
 .m11-section label {
-  width: 180px;
   font-weight: bold;
 }
 
-.m11-textbox {
+/* ============================
+   STAGEOPDRACHT – zelfde startlijn als datum
+============================ */
+.m11-description {
+  display: inline-block;
   background: #f7f7f7;
-  padding: 14px;
+  padding: 2px 3px;
   border-radius: 8px;
-  width: 100%;
-  line-height: 1.5;
+  /* geen width: 100%, geen speciale line-height */
 }
 
 /* ============================
@@ -57,19 +61,9 @@
   border: 1px solid #ddd;
   padding: 16px;
   border-radius: 8px;
-  margin-bottom: 32px; /* extra ruimte tussen beslissing en feedback */
+  margin-bottom: 32px;
   font-size: 16px;
   line-height: 1.5;
-}
-
-/* ============================
-   INFO MESSAGE (niet meer bewerkbaar)
-============================ */
-.info-message {
-  font-size: 14px;
-  color: #555;
-  margin-top: 4px;
-  margin-bottom: 20px;
 }
 
 /* ============================
@@ -90,7 +84,7 @@
 }
 
 /* ============================
-   FEEDBACK (editable)
+   FEEDBACK
 ============================ */
 .m11-feedback {
   width: 100%;
@@ -113,7 +107,7 @@
 }
 
 .m11-submit {
-  background: #7b61ff; /* Tiffany paars */
+  background: #7b61ff;
   color: white;
   padding: 12px 28px;
   border-radius: 8px;
@@ -125,11 +119,6 @@
 
 .m11-submit:hover {
   background: #6a52e0;
-}
-
-.m11-submit:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 .m11-cancel {

@@ -90,7 +90,6 @@ export default function InternshipCommitteeOverview() {
         <tbody>
           {requests.map((req) => (
             <tr key={req.id}>
-              {/* Studentnaam uit backend JOIN */}
               <td>
                 {req.student_firstname} {req.student_lastname}
               </td>
@@ -110,7 +109,11 @@ export default function InternshipCommitteeOverview() {
               <td>
                 <Link
                   to={`/committee/requests/${req.id}/overview`}
-                  className="open-button"
+                  className={
+                    req.status === "submitted"
+                      ? "open-button-active"   // paarse Tiffany button
+                      : "open-button-neutral"  // grijze maar klikbare button
+                  }
                 >
                   OPEN
                 </Link>

@@ -31,8 +31,7 @@ export default function InternshipCommitteeRequestDetail() {
         const data = await res.json();
         setRequest(data);
 
-        // Prefill read-only values
-        setDecision(data.status || "");
+        // Decision is NOT prefilled anymore — must choose manually
         setFeedback(data.feedbackSC || "");
       } catch (err) {
         setError("Kon aanvraag niet laden.");
@@ -48,6 +47,13 @@ export default function InternshipCommitteeRequestDetail() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // ❗ NEW VALIDATION: decision is required
+    if (!decision) {
+      setError("Gelieve een beslissing te selecteren.");
+      return;
+    }
+
+    // Feedback verplicht bij rejected / adjustment_required
     if (
       (decision === "rejected" || decision === "adjustment_required") &&
       feedback.trim() === ""
@@ -109,10 +115,15 @@ export default function InternshipCommitteeRequestDetail() {
 
   const isEditable = request.status === "submitted";
 
+  const studentName =
+    `${request.student_firstname || ""} ${request.student_lastname || ""}`.trim() ||
+    request.student_name ||
+    "";
+
   return (
     <div className="m11-container">
       <h1 className="m11-title">
-        Stageaanvraag – {request.student_firstname} {request.student_lastname}
+        Stageaanvraag{studentName ? ` – ${studentName}` : ""}
       </h1>
 
       {error && <p className="error">{error}</p>}
@@ -146,7 +157,7 @@ export default function InternshipCommitteeRequestDetail() {
 
       <div className="m11-section">
         <label>Stageopdracht:</label>
-        <div className="m11-textbox">{request.description}</div>
+        <span className="m11-description">{request.description}</span>
       </div>
 
       {/* ============================

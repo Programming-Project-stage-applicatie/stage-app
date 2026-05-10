@@ -42,24 +42,49 @@ export default function InternshipCommitteeDashboard() {
     loadData();
   }, []);
 
+  /* ============================
+     LOADING STATE
+  ============================ */
   if (loading) {
     return (
-      <div className="committee-container">
-        <h1 className="committee-title">Welkom...</h1>
-        <p>Aanvragen laden...</p>
+      <div className="committee-page">
+        <div className="committee-header">
+          <div className="header-left">Logo school</div>
+          <div className="header-center">Stagecommissie</div>
+          <div className="header-right">Profiel</div>
+        </div>
+
+        <div className="committee-container">
+          <h1 className="committee-title">Welkom...</h1>
+          <p>Aanvragen laden...</p>
+        </div>
       </div>
     );
   }
 
+  /* ============================
+     ERROR STATE
+  ============================ */
   if (error) {
     return (
-      <div className="committee-container">
-        <h1 className="committee-title">Dashboard stagecommissie</h1>
-        <p className="error">{error}</p>
+      <div className="committee-page">
+        <div className="committee-header">
+          <div className="header-left">Logo school</div>
+          <div className="header-center">Stagecommissie</div>
+          <div className="header-right">Profiel</div>
+        </div>
+
+        <div className="committee-container">
+          <h1 className="committee-title">Dashboard stagecommissie</h1>
+          <p className="error">{error}</p>
+        </div>
       </div>
     );
   }
 
+  /* ============================
+     DATA
+  ============================ */
   const firstName = user.firstname;
 
   const countSubmitted = requests.filter((r) => r.status === "submitted").length;
@@ -67,45 +92,56 @@ export default function InternshipCommitteeDashboard() {
   const countRejected = requests.filter((r) => r.status === "rejected").length;
   const countAdjust = requests.filter((r) => r.status === "adjustment_required").length;
 
+  /* ============================
+     MAIN RENDER
+  ============================ */
   return (
-    <div className="committee-container">
-      <h1 className="committee-title">Welkom, {firstName}</h1>
-      <hr className="committee-divider" />
+    <div className="committee-page">
 
-      <h2 className="committee-subtitle">Stageaanvragen</h2>
-
-      <div className="status-grid">
-
-        <div className="status-card status-yellow">
-          <div className="status-bar yellow"></div>
-          <span className="status-label">Ingediend</span>
-          <span className="status-count">{countSubmitted}</span>
-        </div>
-
-        <div className="status-card status-green">
-          <div className="status-bar green"></div>
-          <span className="status-label">Goedgekeurd</span>
-          <span className="status-count">{countApproved}</span>
-        </div>
-
-        <div className="status-card status-red">
-          <div className="status-bar red"></div>
-          <span className="status-label">Afgekeurd</span>
-          <span className="status-count">{countRejected}</span>
-        </div>
-
-        <div className="status-card status-orange">
-          <div className="status-bar orange"></div>
-          <span className="status-label">Aanpassingen vereist</span>
-          <span className="status-count">{countAdjust}</span>
-        </div>
-
+      {/* ⭐ Tiffany-style top menu */}
+      <div className="committee-header">
+        <div className="header-left">Logo school</div>
+        <div className="header-center">Stagecommissie</div>
+        <div className="header-right">Profiel</div>
       </div>
 
-      <div className="overview-button-container">
-        <Link to="/committee/overview" className="overview-button">
-          Ga naar overzicht
-        </Link>
+      <div className="committee-container">
+
+        <h1 className="committee-title">Welkom, {firstName}</h1>
+        <hr className="committee-divider" />
+
+        <h2 className="committee-subtitle">Stageaanvragen</h2>
+
+        <div className="status-grid">
+
+          <div className="status-card status-yellow">
+            <span className="status-label">Ingediend</span>
+            <span className="status-count">{countSubmitted}</span>
+          </div>
+
+          <div className="status-card status-green">
+            <span className="status-label">Goedgekeurd</span>
+            <span className="status-count">{countApproved}</span>
+          </div>
+
+          <div className="status-card status-red">
+            <span className="status-label">Afgekeurd</span>
+            <span className="status-count">{countRejected}</span>
+          </div>
+
+          <div className="status-card status-orange">
+            <span className="status-label">Aanpassingen vereist</span>
+            <span className="status-count">{countAdjust}</span>
+          </div>
+
+        </div>
+
+        <div className="overview-button-container">
+          <Link to="/committee/overview" className="overview-button">
+            Ga naar overzicht
+          </Link>
+        </div>
+
       </div>
     </div>
   );

@@ -1,12 +1,64 @@
 /* ============================
-   CONTAINER & TITEL
+   PAGE WRAPPER
+============================ */
+.committee-page {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  background: #ffffff;
+}
+
+/* ============================
+   TOP MENU (Tiffany style)
+============================ */
+.committee-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  /* ⭐ Niet full-width */
+  max-width: 1200px;
+  margin: 0 auto;
+
+  padding: 14px 32px;
+  border-bottom: 1px solid #ddd;
+  background: #ffffff;
+}
+
+.header-left,
+.header-center,
+.header-right {
+  flex: 1;
+}
+
+.header-left {
+  text-align: left;
+  font-weight: 600;
+}
+
+.header-center {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.header-right {
+  text-align: right;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* ============================
+   CONTAINER (nu hoger!)
 ============================ */
 .committee-container {
   max-width: 900px;
   margin: 0 auto;
-  padding: 32px;
+  padding: 16px 32px;
+  padding-top: 12px;
 }
 
+/* TITELS */
 .committee-title {
   font-size: 32px;
   font-weight: bold;
@@ -14,14 +66,14 @@
 }
 
 .committee-divider {
-  margin: 16px 0 24px 0;
+  margin: 12px 0 20px 0;
   border: none;
   border-top: 2px solid #ddd;
 }
 
 .committee-subtitle {
   font-size: 24px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 /* ============================
@@ -31,65 +83,56 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 32px;
-  margin-bottom: 48px;
+  margin-bottom: 40px;
 }
 
-/* ============================
-   STATUS CARDS (clean Tiffany look)
-============================ */
+/* STATUS CARDS */
 .status-card {
   background: #f9f9f9;
   padding: 22px;
   border-radius: 12px;
   text-align: center;
   border: 3px solid transparent;
-  transition: transform 0.15s ease, border-color 0.2s ease;
+  transition: transform 0.15s ease;
 
-  /* ⭐ BELANGRIJK: label boven, cijfer onder */
   display: flex;
-  flex-direction: column;
+  flex-direction: column;      /* ⭐ label boven, cijfer onder */
   align-items: center;
   justify-content: center;
 }
 
-/* Zachtere borderkleuren */
-.status-yellow { border-color: #f7e4a8; }   /* zacht geel */
-.status-green { border-color: #a8e6b1; }    /* zacht groen */
-.status-red { border-color: #f5b5b0; }      /* zacht rood */
-.status-orange { border-color: #ffd1a3; }   /* zacht oranje */
+.status-yellow { border-color: #f7e4a8; }
+.status-green { border-color: #a8e6b1; }
+.status-red { border-color: #f5b5b0; }
+.status-orange { border-color: #ffd1a3; }
 
-/* Hover effect */
 .status-card:hover {
   transform: translateY(-3px);
 }
 
-/* ============================
-   LABEL & COUNT
-============================ */
 .status-label {
   font-size: 18px;
   font-weight: 600;
-  white-space: nowrap; /* altijd op 1 lijn */
-  margin-bottom: 14px; /* ⭐ mooie spatie boven het cijfer */
+  white-space: nowrap; /* ⭐ altijd op 1 lijn */
+  margin-bottom: 14px;
 }
 
 .status-count {
   font-size: 34px;
   font-weight: bold;
   line-height: 1.1;
-  margin-top: 0;
 }
 
 /* ============================
-   BUTTON
+   BUTTON (Tiffany paars)
 ============================ */
 .overview-button-container {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 .overview-button {
-  background: #4a4aff;
+  background: #7b61ff;
   color: white;
   padding: 12px 24px;
   border-radius: 8px;
@@ -100,12 +143,10 @@
 }
 
 .overview-button:hover {
-  background: #3a3ae6;
+  background: #6a52e0;
 }
 
-/* ============================
-   ERROR
-============================ */
+/* ERROR */
 .error {
   color: #e53935;
   margin-bottom: 16px;

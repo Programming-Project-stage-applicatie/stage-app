@@ -147,7 +147,7 @@ export default function StudentRequestDetail() {
     }
   }
 
-  if (error) return <p className="error-message">{error}</p>;
+  // ❗ FIX: geen early return meer bij error
   if (!request) return <p>Bezig met laden...</p>;
 
   /* ============================================================
@@ -158,7 +158,6 @@ export default function StudentRequestDetail() {
       <div className="student-request-container">
         <h2 className="student-request-title">Stageaanvraag</h2>
 
-        {/* ===== Status, bedrijf, periode ===== */}
         <div className="student-request-section">
           <div className="student-request-row">
             <span className="student-request-label">Status:</span>
@@ -180,7 +179,6 @@ export default function StudentRequestDetail() {
           </div>
         </div>
 
-        {/* ===== Opdracht ===== */}
         <div className="student-request-section">
           <span className="student-request-label">Opdracht:</span>
           <div className="student-request-description">
@@ -188,7 +186,6 @@ export default function StudentRequestDetail() {
           </div>
         </div>
 
-        {/* ===== Feedback stagecommissie ===== */}
         {request.feedbackSC && (
           <div className="student-request-section">
             <span className="student-request-label">
@@ -200,7 +197,6 @@ export default function StudentRequestDetail() {
           </div>
         )}
 
-        {/* ===== Terug naar dashboard ===== */}
         <Link className="student-request-back" to="/dashboard/student">
           ← Terug naar dashboard
         </Link>

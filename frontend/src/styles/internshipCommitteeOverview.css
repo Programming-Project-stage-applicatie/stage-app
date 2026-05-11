@@ -19,7 +19,7 @@
    TERUG-LINK
 ============================ */
 .back-link {
-  color: #0055aa;
+  color: #4a4aff; /* Tiffany blauw/paars */
   text-decoration: none;
   font-weight: 500;
   font-size: 16px;
@@ -42,7 +42,7 @@
 }
 
 .overview-table th {
-  background: #f0f0f0;
+  background: #f7f7f7;
   padding: 16px;
   text-align: left;
   font-size: 16px;
@@ -56,7 +56,7 @@
 }
 
 /* ============================
-   STATUS (GEEN BOLLETJES MEER)
+   STATUS
 ============================ */
 .status-default {
   font-weight: 500;
@@ -69,18 +69,36 @@
 }
 
 /* ============================
-   OPEN BUTTON
+   OPEN BUTTON — TIFFANY STYLE
 ============================ */
-.open-button {
-  background: #4caf50;
+
+/* Actieve paarse button (bij submitted) */
+.open-button-active {
+  background: #7b61ff;
   color: white;
   padding: 10px 20px;
   border-radius: 8px;
   text-decoration: none;
-  font-weight: bold;
+  font-weight: 600;
   transition: background 0.2s ease;
 }
 
-.open-button:hover {
-  background: #3e8f41;
+.open-button-active:hover {
+  background: #6a52e0;
+}
+
+/* Neutrale grijze button (bij approved/rejected/adjustment_required)
+   ⭐ blijft volledig klikbaar */
+.open-button-neutral {
+  background: #e0e0e0;
+  color: #444;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.open-button-neutral:hover {
+  background: #d5d5d5;
 }

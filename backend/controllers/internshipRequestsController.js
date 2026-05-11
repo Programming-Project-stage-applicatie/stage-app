@@ -13,7 +13,7 @@ function isValidDateString(str) {
 }
 
 /* ============================================================
-   GET: detail van één stageaanvraag (met DATE_FORMAT)
+   GET: detail van één stageaanvraag (MET JOIN STUDENT)
 ============================================================ */
 async function getById(req, res) {
   try {
@@ -24,20 +24,23 @@ async function getById(req, res) {
     const [rows] = await req.db.query(
       `
       SELECT 
-        id,
-        student_id,
-        internship_committee_id,
-        company,
-        description,
-        DATE_FORMAT(request_date, '%Y-%m-%d') AS request_date,
-        DATE_FORMAT(start_date, '%Y-%m-%d') AS start_date,
-        DATE_FORMAT(end_date, '%Y-%m-%d') AS end_date,
-        status,
-        mentor_firstName,
-        mentor_lastName,
-        feedbackSC
-      FROM internship_requests
-      WHERE id = ?
+        ir.id,
+        ir.student_id,
+        ir.internship_committee_id,
+        ir.company,
+        ir.description,
+        DATE_FORMAT(ir.request_date, '%Y-%m-%d') AS request_date,
+        DATE_FORMAT(ir.start_date, '%Y-%m-%d') AS start_date,
+        DATE_FORMAT(ir.end_date, '%Y-%m-%d') AS end_date,
+        ir.status,
+        ir.mentor_firstName,
+        ir.mentor_lastName,
+        ir.feedbackSC,
+        u.firstName AS student_firstname,
+        u.lastName AS student_lastname
+      FROM internship_requests ir
+      JOIN users u ON u.id = ir.student_id
+      WHERE ir.id = ?
       `,
       [id]
     );
@@ -69,7 +72,38 @@ async function getById(req, res) {
 }
 
 /* ============================================================
-   PATCH: student past aanvraag aan (met DATE_FORMAT)
+   GET ALL: overzicht (MET JOIN STUDENT)
+============================================================ */
+async function getAll(req, res) {
+  try {
+    const [rows] = await req.db.query(
+      `
+      SELECT 
+        ir.id,
+        ir.student_id,
+        ir.company,
+        ir.description,
+        DATE_FORMAT(ir.start_date, '%Y-%m-%d') AS start_date,
+        DATE_FORMAT(ir.end_date, '%Y-%m-%d') AS end_date,
+        ir.status,
+        u.firstName AS student_firstname,
+        u.lastName AS student_lastname
+      FROM internship_requests ir
+      JOIN users u ON u.id = ir.student_id
+      ORDER BY ir.request_date DESC
+      `
+    );
+
+    return res.json(rows);
+
+  } catch (err) {
+    console.error("Error fetching internship requests:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+/* ============================================================
+   PATCH: student past aanvraag aan
 ============================================================ */
 async function updateByStudent(req, res) {
   try {
@@ -147,20 +181,23 @@ async function updateByStudent(req, res) {
     const [updated] = await req.db.query(
       `
       SELECT 
-        id,
-        student_id,
-        internship_committee_id,
-        company,
-        description,
-        DATE_FORMAT(request_date, '%Y-%m-%d') AS request_date,
-        DATE_FORMAT(start_date, '%Y-%m-%d') AS start_date,
-        DATE_FORMAT(end_date, '%Y-%m-%d') AS end_date,
-        status,
-        mentor_firstName,
-        mentor_lastName,
-        feedbackSC
-      FROM internship_requests
-      WHERE id = ?
+        ir.id,
+        ir.student_id,
+        ir.internship_committee_id,
+        ir.company,
+        ir.description,
+        DATE_FORMAT(ir.request_date, '%Y-%m-%d') AS request_date,
+        DATE_FORMAT(ir.start_date, '%Y-%m-%d') AS start_date,
+        DATE_FORMAT(ir.end_date, '%Y-%m-%d') AS end_date,
+        ir.status,
+        ir.mentor_firstName,
+        ir.mentor_lastName,
+        ir.feedbackSC,
+        u.firstName AS student_firstname,
+        u.lastName AS student_lastname
+      FROM internship_requests ir
+      JOIN users u ON u.id = ir.student_id
+      WHERE ir.id = ?
       `,
       [id]
     );
@@ -175,7 +212,6 @@ async function updateByStudent(req, res) {
 
 /* ============================================================
    PATCH: commissie wijzigt status + feedback
-   ⭐ MET automatische internship-aanmaak
 ============================================================ */
 async function updateStatus(req, res) {
   const { id } = req.params;
@@ -249,20 +285,23 @@ async function updateStatus(req, res) {
     const [updated] = await req.db.query(
       `
       SELECT 
-        id,
-        student_id,
-        internship_committee_id,
-        company,
-        description,
-        DATE_FORMAT(request_date, '%Y-%m-%d') AS request_date,
-        DATE_FORMAT(start_date, '%Y-%m-%d') AS start_date,
-        DATE_FORMAT(end_date, '%Y-%m-%d') AS end_date,
-        status,
-        mentor_firstName,
-        mentor_lastName,
-        feedbackSC
-      FROM internship_requests
-      WHERE id = ?
+        ir.id,
+        ir.student_id,
+        ir.internship_committee_id,
+        ir.company,
+        ir.description,
+        DATE_FORMAT(ir.request_date, '%Y-%m-%d') AS request_date,
+        DATE_FORMAT(ir.start_date, '%Y-%m-%d') AS start_date,
+        DATE_FORMAT(ir.end_date, '%Y-%m-%d') AS end_date,
+        ir.status,
+        ir.mentor_firstName,
+        ir.mentor_lastName,
+        ir.feedbackSC,
+        u.firstName AS student_firstname,
+        u.lastName AS student_lastname
+      FROM internship_requests ir
+      JOIN users u ON u.id = ir.student_id
+      WHERE ir.id = ?
       `,
       [id]
     );
@@ -277,6 +316,7 @@ async function updateStatus(req, res) {
 
 module.exports = {
   getById,
+  getAll,
   updateByStudent,
   updateStatus
 };

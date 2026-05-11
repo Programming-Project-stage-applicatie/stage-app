@@ -23,7 +23,13 @@ router.get("/me", async (req, res) => {
         const studentId = req.user.id;
 
         const [rows] = await req.db.query(
-            "SELECT * FROM internship_requests WHERE student_id = ? ORDER BY id DESC",
+            `SELECT ir.*, 
+                    u.firstname AS student_firstname,
+                    u.lastname AS student_lastname
+             FROM internship_requests ir
+             JOIN users u ON u.id = ir.student_id
+             WHERE ir.student_id = ?
+             ORDER BY ir.id DESC`,
             [studentId]
         );
 
@@ -49,12 +55,23 @@ router.get("/", async (req, res) => {
 
         if (role === "student") {
             [results] = await req.db.query(
-                "SELECT * FROM internship_requests WHERE student_id = ? ORDER BY id DESC",
+                `SELECT ir.*, 
+                        u.firstname AS student_firstname,
+                        u.lastname AS student_lastname
+                 FROM internship_requests ir
+                 JOIN users u ON u.id = ir.student_id
+                 WHERE ir.student_id = ?
+                 ORDER BY ir.id DESC`,
                 [userId]
             );
         } else if (role === "internship_committee") {
             [results] = await req.db.query(
-                "SELECT * FROM internship_requests ORDER BY id DESC"
+                `SELECT ir.*, 
+                        u.firstname AS student_firstname,
+                        u.lastname AS student_lastname
+                 FROM internship_requests ir
+                 JOIN users u ON u.id = ir.student_id
+                 ORDER BY ir.id DESC`
             );
         } else {
             return res.status(403).json({ error: "Insufficient permissions" });
@@ -69,7 +86,7 @@ router.get("/", async (req, res) => {
 });
 
 /* ============================================================
-   GET: detail van één aanvraag
+   GET: detail van één aanvraag (develop controller)
 ============================================================ */
 router.get("/:id", internshipRequestsController.getById);
 

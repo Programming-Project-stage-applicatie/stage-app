@@ -1,0 +1,104 @@
+/* ============================
+   CONTAINER & TITEL
+============================ */
+.overview-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.overview-title {
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 12px;
+}
+
+/* ============================
+   TERUG-LINK
+============================ */
+.back-link {
+  color: #4a4aff; /* Tiffany blauw/paars */
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+/* ============================
+   TABEL
+============================ */
+.overview-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.overview-table th {
+  background: #f7f7f7;
+  padding: 16px;
+  text-align: left;
+  font-size: 16px;
+  color: #444;
+}
+
+.overview-table td {
+  padding: 16px;
+  border-bottom: 1px solid #eee;
+  font-size: 15px;
+}
+
+/* ============================
+   STATUS
+============================ */
+.status-default {
+  font-weight: 500;
+  color: #444;
+}
+
+.status-submitted {
+  font-weight: 700;
+  color: #b8860b; /* goudkleurig */
+}
+
+/* ============================
+   OPEN BUTTON — TIFFANY STYLE
+============================ */
+
+/* Actieve paarse button (bij submitted) */
+.open-button-active {
+  background: #7b61ff;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.open-button-active:hover {
+  background: #6a52e0;
+}
+
+/* Neutrale grijze button (bij approved/rejected/adjustment_required)
+   ⭐ blijft volledig klikbaar */
+.open-button-neutral {
+  background: #e0e0e0;
+  color: #444;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.open-button-neutral:hover {
+  background: #d5d5d5;
+}

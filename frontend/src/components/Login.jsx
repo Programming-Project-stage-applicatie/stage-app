@@ -37,10 +37,12 @@ function Login() {
         return;
       }
 
+      // BEIDE opslaan: token + rol
       localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.role);
 
-      const role = data.role;
-      const targetRoute = getDashboardRouteByRole(role);
+      // Dashboard bepalen op basis van rol
+      const targetRoute = getDashboardRouteByRole(data.role);
       navigate(targetRoute);
 
     } catch {

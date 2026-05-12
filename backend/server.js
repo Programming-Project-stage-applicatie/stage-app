@@ -56,6 +56,10 @@ app.use("/internships", authenticateJWT, internshipRoutes);
 const logbooksRoutes = require("./routes/logbooks");
 app.use("/api/logbooks", logbooksRoutes);
 
+
+const supervisorLogbooksRoutes = require("./routes/supervisorLogbooks");
+app.use("/api/supervisor", supervisorLogbooksRoutes);
+
 /* ---------------------------------------------------------
    TEST ROUTE (GEEN JWT)
 --------------------------------------------------------- */

@@ -1,22 +1,21 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { t } from '../i18n/translations';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
 const STATUS_CONFIG = {
-  submitted: { label: t('logbook.statuses.submitted'),           bg: '#fde68a', color: '#78350f' },
-  approved:  { label: t('logbook.statuses.approved'),            bg: '#86efac', color: '#14532d' },
-  revision:  { label: t('logbook.statuses.adjustment_required'), bg: '#fb923c', color: '#fff'    },
-  none:      { label: t('logbook.statuses.none'),                bg: '#e5e7eb', color: '#6b7280' },
+  submitted:           { label: 'Ingediend',            bg: '#fbbf24', color: '#fff' },
+  approved:            { label: 'Goedgekeurd',          bg: '#22c55e', color: '#fff' },
+  adjustment_required: { label: 'Aanpassingen vereist', bg: '#f97316', color: '#fff' },
+  none:                { label: 'Nog geen logboeken',   bg: '#d1d5db', color: '#374151' },
 };
 
 const FILTER_OPTIONS = [
-  { value: 'all',       label: t('logbook.filter.all')        },
-  { value: 'submitted', label: t('logbook.statuses.submitted')  },
-  { value: 'approved',  label: t('logbook.statuses.approved')   },
-  { value: 'revision',  label: t('logbook.statuses.adjustment_required') },
-  { value: 'none',      label: t('logbook.statuses.none')       },
+  { value: 'all',                 label: 'Filter'                },
+  { value: 'submitted',           label: 'Ingediend'             },
+  { value: 'approved',            label: 'Goedgekeurd'           },
+  { value: 'adjustment_required', label: 'Aanpassingen vereist'  },
+  { value: 'none',                label: 'Nog geen logboeken'    },
 ];
 
 function StatusBadge({ status }) {
@@ -33,15 +32,14 @@ function StatusBadge({ status }) {
 
 function StatCard({ count, label, bg, color }) {
   return (
-    <div style={{ background: bg, color, borderRadius: 8, padding: '14px 20px', minWidth: 90, textAlign: 'center' }}>
+    <div style={{ background: bg, color, borderRadius: 8, padding: '14px 20px', minWidth: 90, textAlign: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.10)' }}>
       <div style={{ fontSize: 28, fontWeight: 800, lineHeight: 1 }}>{count}</div>
       <div style={{ fontSize: 11, fontWeight: 700, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</div>
     </div>
   );
 }
 
-export default function DocentLogboekOverzicht() {
-  const token = localStorage.getItem("token");
+export default function TeacherLogbookOverview() {
   const navigate = useNavigate();
   const [students, setStudents] = useState([]);
   const [loading, setLoading]   = useState(true);
@@ -49,6 +47,7 @@ export default function DocentLogboekOverzicht() {
   const [filter, setFilter]     = useState('all');
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
     fetch(`${API_BASE}/api/supervisor/teacher/logbooks`, {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -56,32 +55,28 @@ export default function DocentLogboekOverzicht() {
       .then(json => setStudents(json.data || []))
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
-  }, [token]);
+  }, []);
 
   const filtered = filter === 'all'
     ? students
     : students.filter(s => (s.status || 'none') === filter);
 
   const stats = {
-    submitted: students.filter(s => s.status === 'submitted').length,
-    approved:  students.filter(s => s.status === 'approved').length,
-    revision:  students.filter(s => s.status === 'adjustment_required').length,
+    submitted:           students.filter(s => s.status === 'submitted').length,
+    approved:            students.filter(s => s.status === 'approved').length,
+    adjustment_required: students.filter(s => s.status === 'adjustment_required').length,
   };
 
   return (
     <div style={s.page}>
-      <div style={s.headerRow}>
-        <div>
-          <h1 style={s.title}>{t('logbooks.supervisorOverview')}</h1>
-          <p style={s.subtitle}>{t('logbooks.supervisorSubtitle')}</p>
-        </div>
-      </div>
+      <h1 style={s.title}>Logboek opvolging</h1>
+      <p style={s.subtitle}>Overzicht van alle studenten</p>
 
       {!loading && !error && (
         <div style={s.statsRow}>
-          <StatCard count={stats.submitted} label={t('logbook.statuses.submitted')}           bg="#fde68a" color="#78350f" />
-          <StatCard count={stats.approved}  label={t('logbook.statuses.approved')}            bg="#86efac" color="#14532d" />
-          <StatCard count={stats.revision}  label={t('logbook.statuses.adjustment_required')} bg="#fb923c" color="#fff"    />
+          <StatCard count={stats.submitted}           label="Ingediend"            bg="#fbbf24" color="#fff" />
+          <StatCard count={stats.approved}            label="Goedgekeurd"          bg="#22c55e" color="#fff" />
+          <StatCard count={stats.adjustment_required} label="Aanpassingen vereist" bg="#f97316" color="#fff" />
           <div style={{ marginLeft: 'auto', alignSelf: 'center' }}>
             <select value={filter} onChange={e => setFilter(e.target.value)} style={s.select}>
               {FILTER_OPTIONS.map(o => (
@@ -92,7 +87,7 @@ export default function DocentLogboekOverzicht() {
         </div>
       )}
 
-      {loading && <p style={s.info}>{t('logbooks.loading')}</p>}
+      {loading && <p style={s.info}>Laden...</p>}
       {error   && <p style={{ ...s.info, color: '#dc2626' }}>{error}</p>}
 
       {!loading && !error && (
@@ -101,7 +96,8 @@ export default function DocentLogboekOverzicht() {
             <thead>
               <tr>
                 <th style={s.th}>Student</th>
-                <th style={s.th}>{t('logbooks.lastWeek')}</th>
+                <th style={s.th}>Bedrijf</th>
+                <th style={s.th}>Laatste week</th>
                 <th style={s.th}>Status</th>
                 <th style={s.th}></th>
               </tr>
@@ -109,19 +105,23 @@ export default function DocentLogboekOverzicht() {
             <tbody>
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={4} style={{ ...s.td, color: '#9ca3af', textAlign: 'center' }}>
-                    {t('logbooks.noStudents')}
+                  <td colSpan={5} style={{ ...s.td, color: '#9ca3af', textAlign: 'center' }}>
+                    Geen studenten gevonden
                   </td>
                 </tr>
               )}
               {filtered.map((student, i) => (
                 <tr key={student.id} style={{ background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
                   <td style={s.td}>{student.name}</td>
-                  <td style={s.td}>{student.last_week ? `${t('logbooks.week')} ${student.last_week}` : '—'}</td>
+                  <td style={s.td}>{student.company || '—'}</td>
+                  <td style={s.td}>{student.last_week ? `Week ${student.last_week}` : '—'}</td>
                   <td style={s.td}><StatusBadge status={student.status || 'none'} /></td>
                   <td style={s.td}>
-                    <button style={s.btn} onClick={() => navigate(`/logbook/${student.id}`)}>
-                      {t('logbooks.viewOverview')}
+                    <button
+                      style={s.btn}
+                      onClick={() => navigate(`/logbooks/internship/${student.internship_id || student.id}`)}
+                    >
+                      Bekijk overzicht
                     </button>
                   </td>
                 </tr>
@@ -135,12 +135,11 @@ export default function DocentLogboekOverzicht() {
 }
 
 const s = {
-  page:      { padding: '28px 32px', maxWidth: 860, margin: '0 auto', fontFamily: "'Segoe UI', sans-serif" },
-  headerRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 },
+  page:      { padding: '28px 32px', maxWidth: 900, margin: '0 auto', fontFamily: "'Segoe UI', sans-serif" },
   title:     { fontSize: 26, fontWeight: 800, margin: '0 0 4px', color: '#111827' },
-  subtitle:  { fontSize: 14, color: '#6b7280', margin: 0 },
+  subtitle:  { fontSize: 14, color: '#6b7280', margin: '0 0 20px' },
   statsRow:  { display: 'flex', gap: 12, alignItems: 'center', marginBottom: 20, flexWrap: 'wrap' },
-  select:    { padding: '7px 12px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, background: '#fff', cursor: 'pointer' },
+  select:    { padding: '7px 12px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, background: '#fff', cursor: 'pointer', minWidth: 180 },
   info:      { textAlign: 'center', color: '#9ca3af', padding: 32 },
   tableWrap: { borderRadius: 10, border: '1px solid #e5e7eb', overflow: 'hidden' },
   table:     { width: '100%', borderCollapse: 'collapse', fontSize: 14 },

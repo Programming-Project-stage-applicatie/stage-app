@@ -8,6 +8,7 @@ import TeacherDashboard from "./pages/TeacherDashboard";
 import MentorDashboard from "./pages/MentorDashboard";
 import InternshipCommitteeDashboard from "./pages/InternshipCommitteeDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import StudentLogbooksPage from "./pages/StudentLogbooksPage";
 
 function App() {
   return (
@@ -31,7 +32,7 @@ function App() {
           element={<InternshipCommitteeDashboard />}
         />
         <Route path="/dashboard/admin" element={<AdminDashboard />} />
-
+<Route path="/logbooks" element={<StudentLogbooksPage />} />
 
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>

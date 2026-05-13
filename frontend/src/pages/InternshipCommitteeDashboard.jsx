@@ -1,13 +1,3 @@
-<<<<<<< HEAD
-import { t } from "../i18n/translations";
-export default function InternshipCommitteeDashboard() {
-  return (
-    <div className="dashboard-page">
-      <h1>{t("dashboards.internship_committee")}</h1>
-    </div>
-  );
-}
-=======
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/internshipCommitteeDashboard.css";
@@ -156,4 +146,3 @@ export default function InternshipCommitteeDashboard() {
     </div>
   );
 }
->>>>>>> origin/develop

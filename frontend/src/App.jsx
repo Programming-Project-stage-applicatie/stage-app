@@ -1,10 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./components/Login";
-<<<<<<< HEAD
-=======
 
 // Dashboards
->>>>>>> origin/develop
 import StudentDashboard from "./pages/StudentDashboard";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import MentorDashboard from "./pages/MentorDashboard";
@@ -29,10 +26,6 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-<<<<<<< HEAD
-        <Route path="/" element={<Navigate to="/login" />} />
-        <Route path="/login" element={<Login />} />
-=======
 
         {/* Default redirect */}
         <Route path="/" element={<Navigate to="/login" />} />
@@ -41,15 +34,12 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         {/* Dashboards */}
->>>>>>> origin/develop
         <Route path="/dashboard/student" element={<StudentDashboard />} />
         <Route path="/dashboard/teacher" element={<TeacherDashboard />} />
         <Route path="/dashboard/mentor" element={<MentorDashboard />} />
         <Route path="/dashboard/internship-committee" element={<InternshipCommitteeDashboard />} />
         <Route path="/dashboard/admin" element={<AdminDashboard />} />
-<<<<<<< HEAD
         <Route path="/finale-evaluatie" element={<FinaleEvaluatie />} />
-=======
 
         {/* Student pages */}
         <Route path="/student/new-request" element={<NewInternshipRequest />} />
@@ -74,16 +64,11 @@ function App() {
         />
 
         {/* Catch-all */}
->>>>>>> origin/develop
         <Route path="*" element={<Navigate to="/login" />} />
 
       </Routes>
     </BrowserRouter>
   );
 }
-<<<<<<< HEAD
-export default App;
-=======
 
 export default App;
->>>>>>> origin/develop

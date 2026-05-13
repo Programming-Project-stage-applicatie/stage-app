@@ -1,18 +1,65 @@
 const userModel = require("../models/userModel");
 const bcrypt = require("bcrypt");
 
+// =========================
+// GET ALL USERS (ADMIN)
+// =========================
 exports.getAllUsers = (req, res) => {
-  userModel.getAllUsers((err, results) => {
+  const role = req.query.role;
+
+  userModel.getAllUsers(role, (err, results) => {
     if (err) {
-      return res.status(500).json({
-        message: "Failed to fetch users"
-      });
+      return res.status(500).json(err);
     }
-    res.status(200).json(results);
+    res.json(results);
   });
 };
 
-exports.createUser = (req, res) => {
+// =========================
+// GET LOGGED-IN USER (STUDENT / ANY ROLE)
+// =========================
+exports.getMe = async (req, res) => {
+  const pool = req.db;
+  const userId = req.user.id;
+
+  try {
+    const [rows] = await pool.query(
+      `
+      SELECT 
+        u.id,
+        u.firstname,
+        u.lastname,
+        u.email,
+        u.username,
+        u.role,
+        u.status,
+        s.studyprogram
+      FROM users u
+      LEFT JOIN students s ON s.user_id = u.id
+      WHERE u.id = ?
+      `,
+      [userId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.json(rows[0]);
+
+  } catch (error) {
+    console.error("GET ME ERROR:", error);
+    return res.status(500).json({ message: "Failed to fetch user" });
+  }
+};
+
+// =========================
+// CREATE USER (ADMIN)
+// =========================
+exports.createUser = async (req, res) => {
+  const pool = req.db;
+  let connection;
+
   const {
     firstname,
     lastname,
@@ -20,7 +67,8 @@ exports.createUser = (req, res) => {
     username,
     password,
     role,
-    status
+    status,
+    studyprogram
   } = req.body;
 
   if (
@@ -30,82 +78,117 @@ exports.createUser = (req, res) => {
     !username ||
     !password ||
     !role ||
-    !status
+    !status ||
+    (role === "student" && !studyprogram)
   ) {
     return res.status(400).json({
       code: "REQUIRED_FIELDS"
     });
   }
 
-  userModel.getUserByEmail(email, (err, emailResult) => {
-    if (err) {
-      console.error("EMAIL CHECK ERROR:", err);
-      return res.status(500).json({ message: "Server error" });
-    }
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    if (emailResult.length > 0) {
-      return res.status(400).json({
-        code: "EMAIL_TAKEN"
-      });
-    }
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
 
-    userModel.getUserByUsername(username, (err, usernameResult) => {
-      if (err) {
-        console.error("USERNAME CHECK ERROR:", err);
-        return res.status(500).json({ message: "Server error" });
-      }
+    const [userResult] = await connection.execute(
+      `
+      INSERT INTO users
+      (firstname, lastname, email, username, password, role, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+      `,
+      [
+        firstname,
+        lastname,
+        email,
+        username,
+        hashedPassword,
+        role,
+        status
+      ]
+    );
 
-      if (usernameResult.length > 0) {
+    const userId = userResult.insertId;
+
+    switch (role) {
+      case "admin":
+        await connection.execute(
+          "INSERT INTO admins (user_id) VALUES (?)",
+          [userId]
+        );
+        break;
+
+      case "student":
+        await connection.execute(
+          "INSERT INTO students (user_id, studyprogram) VALUES (?, ?)",
+          [userId, studyprogram]
+        );
+        break;
+
+      case "teacher":
+        await connection.execute(
+          "INSERT INTO teachers (user_id) VALUES (?)",
+          [userId]
+        );
+        break;
+
+      case "mentor":
+        await connection.execute(
+          "INSERT INTO mentors (user_id) VALUES (?)",
+          [userId]
+        );
+        break;
+
+      case "internship_committee":
+        await connection.execute(
+          "INSERT INTO internship_committees (user_id) VALUES (?)",
+          [userId]
+        );
+        break;
+
+      default:
+        await connection.rollback();
         return res.status(400).json({
-          code: "USERNAME_TAKEN"
+          message: "Invalid role"
         });
-      }
+    }
 
-      bcrypt.hash(password, 10, (hashErr, hashedPassword) => {
-        if (hashErr) {
-          console.error("BCRYPT ERROR:", hashErr);
-          return res.status(500).json({
-            message: "Password hashing failed"
-          });
-        }
+    await connection.commit();
 
-        const user = {
-          firstname,
-          lastname,
-          email,
-          username,
-          password: hashedPassword,
-          role,
-          status
-        };
-
-        userModel.createUser(user, (err, result) => {
-          if (err) {
-            console.error("CREATE USER ERROR:", err);
-            return res.status(500).json({
-              message: "Failed to create user"
-            });
-          }
-
-          return res.status(201).json({
-            message: "User created successfully",
-            userId: result.insertId
-          });
-        });
-      });
+    return res.status(201).json({
+      message: "User created successfully",
+      userId
     });
-  });
+
+  } catch (error) {
+    if (connection) await connection.rollback();
+    console.error("Create user failed:", error);
+
+    return res.status(500).json({
+      message: "Failed to create user"
+    });
+
+  } finally {
+    if (connection) connection.release();
+  }
 };
 
-exports.updateUser = (req, res) => {
-  const { id } = req.params;
+// =========================
+// UPDATE USER (ADMIN)
+// =========================
+exports.updateUser = async (req, res) => {
+  const pool = req.db;
+  const userId = req.params.id;
+
   const {
     firstname,
     lastname,
     email,
     username,
     role,
-    status
+    status,
+    studyprogram
   } = req.body;
 
   if (
@@ -121,83 +204,161 @@ exports.updateUser = (req, res) => {
     });
   }
 
-  userModel.getUserByEmailExceptId(email, id, (err, emailResult) => {
-    if (err) {
-      console.error("EMAIL CHECK ERROR:", err);
-      return res.status(500).json({ message: "Server error" });
+  let connection;
+
+  try {
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    const [rows] = await connection.execute(
+      "SELECT role FROM users WHERE id = ?",
+      [userId]
+    );
+
+    if (rows.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: "User not found" });
     }
 
-    if (emailResult.length > 0) {
+    if (role === "student" && !studyprogram) {
+      await connection.rollback();
       return res.status(400).json({
-        code: "EMAIL_TAKEN"
+        code: "STUDYPROGRAM_REQUIRED"
       });
     }
 
-    userModel.getUserByUsernameExceptId(username, id, (err, usernameResult) => {
-      if (err) {
-        console.error("USERNAME CHECK ERROR:", err);
-        return res.status(500).json({ message: "Server error" });
-      }
-
-      if (usernameResult.length > 0) {
-        return res.status(400).json({
-          code: "USERNAME_TAKEN"
-        });
-      }
-
-      const user = {
+    await connection.execute(
+      `
+      UPDATE users
+      SET firstname = ?, lastname = ?, email = ?, username = ?, role = ?, status = ?
+      WHERE id = ?
+      `,
+      [
         firstname,
         lastname,
         email,
         username,
         role,
-        status
-      };
+        status,
+        userId
+      ]
+    );
 
-      userModel.updateUser(id, user, (err, result) => {
-        if (err) {
-          console.error("UPDATE USER ERROR:", err);
-          return res.status(500).json({
-            message: "Failed to update user"
-          });
-        }
+    if (role === "student") {
+      const [studentRows] = await connection.execute(
+        "SELECT user_id FROM students WHERE user_id = ?",
+        [userId]
+      );
 
-        if (result.affectedRows === 0) {
-          return res.status(404).json({
-            message: "User not found"
-          });
-        }
+      if (studentRows.length === 0) {
+        await connection.execute(
+          "INSERT INTO students (user_id, studyprogram) VALUES (?, ?)",
+          [userId, studyprogram]
+        );
+      } else {
+        await connection.execute(
+          "UPDATE students SET studyprogram = ? WHERE user_id = ?",
+          [studyprogram, userId]
+        );
+      }
+    } else {
+      await connection.execute(
+        "DELETE FROM students WHERE user_id = ?",
+        [userId]
+      );
+    }
 
-        return res.status(200).json({
-          message: "User updated"
-        });
-      });
+    await connection.commit();
+
+    return res.status(200).json({
+      message: "User updated successfully"
     });
-  });
+
+  } catch (error) {
+    if (connection) await connection.rollback();
+    console.error("Update user failed:", error);
+
+    return res.status(500).json({
+      message: "Failed to update user"
+    });
+
+  } finally {
+    if (connection) connection.release();
+  }
 };
 
-exports.deleteUser = (req, res) => {
-  const { id } = req.params;
+// =========================
+// DELETE USER (ADMIN)
+// =========================
+exports.deleteUser = async (req, res) => {
+  const pool = req.db;
+  const userId = req.params.id;
+  let connection;
 
-  userModel.deleteUser(id, (err, result) => {
-    if (err) {
-      console.error("DELETE USER ERROR:", err);
-      return res.status(500).json({
-        message: "Failed to delete user"
-      });
+  try {
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    const [rows] = await connection.execute(
+      "SELECT role FROM users WHERE id = ?",
+      [userId]
+    );
+
+    if (rows.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: "User not found" });
     }
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({
-        message: "User not found"
-      });
+    const role = rows[0].role;
+
+    switch (role) {
+      case "admin":
+        await connection.execute("DELETE FROM admins WHERE user_id = ?", [userId]);
+        break;
+      case "student":
+        await connection.execute("DELETE FROM students WHERE user_id = ?", [userId]);
+        break;
+      case "teacher":
+        await connection.execute("DELETE FROM teachers WHERE user_id = ?", [userId]);
+        break;
+      case "mentor":
+        await connection.execute("DELETE FROM mentors WHERE user_id = ?", [userId]);
+        break;
+      case "internship_committee":
+        await connection.execute(
+          "DELETE FROM internship_committees WHERE user_id = ?",
+          [userId]
+        );
+        break;
     }
 
-    return res.status(204).send();
-  });
+    await connection.execute(
+      "DELETE FROM users WHERE id = ?",
+      [userId]
+    );
+
+    await connection.commit();
+
+    return res.json({ message: "User deleted successfully" });
+
+  } catch (error) {
+    if (connection) await connection.rollback();
+    console.error("Delete user failed:", error);
+
+    return res.status(500).json({
+      message: "Failed to delete user"
+    });
+
+  } finally {
+    if (connection) connection.release();
+  }
 };
 
+// =========================
+// RESET PASSWORD (ADMIN)
+// =========================
 exports.resetPassword = async (req, res) => {
+  const pool = req.db;
   const { id } = req.params;
   const { password } = req.body;
 
@@ -207,31 +368,28 @@ exports.resetPassword = async (req, res) => {
     });
   }
 
+  let connection;
+
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
+    connection = await pool.getConnection();
 
-    userModel.updatePassword(id, hashedPassword, (err, result) => {
-      if (err) {
-        console.error("RESET PASSWORD ERROR:", err);
-        return res.status(500).json({
-          message: "Failed to reset password"
-        });
-      }
+    await connection.execute(
+      "UPDATE users SET password = ? WHERE id = ?",
+      [hashedPassword, id]
+    );
 
-      if (result.affectedRows === 0) {
-        return res.status(404).json({
-          message: "User not found"
-        });
-      }
-
-      return res.status(200).json({
-        message: "Password updated"
-      });
+    return res.status(200).json({
+      message: "Password updated"
     });
+
   } catch (error) {
-    console.error("BCRYPT ERROR:", error);
+    console.error("RESET PASSWORD ERROR:", error);
     return res.status(500).json({
-      message: "Password hashing failed"
+      message: "Failed to reset password"
     });
+
+  } finally {
+    if (connection) connection.release();
   }
 };

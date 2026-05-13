@@ -1,0 +1,149 @@
+/* ============================
+   CONTAINER & TITEL
+============================ */
+.m11-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.m11-title {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 28px;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 12px;
+}
+
+/* ============================
+   DETAILSECTIES
+   → GRID ipv flex, top alignment
+============================ */
+.m11-section {
+  margin-bottom: 24px;
+  display: grid;
+  grid-template-columns: 180px 1fr; /* label + waarde */
+  column-gap: 16px;
+  align-items: start; /* ⭐ bovenkanten uitlijnen */
+}
+
+.m11-section label {
+  font-weight: bold;
+}
+
+/* ============================
+   STAGEOPDRACHT – zelfde startlijn als datum
+============================ */
+.m11-description {
+  display: inline-block;
+  background: #f7f7f7;
+  padding: 2px 3px;
+  border-radius: 8px;
+  /* geen width: 100%, geen speciale line-height */
+}
+
+/* ============================
+   TITELS (FORM + READ-ONLY)
+============================ */
+.m11-form h2,
+.readonly-title {
+  margin-top: 40px;
+  margin-bottom: 12px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* ============================
+   READ-ONLY BOXES
+============================ */
+.readonly-box {
+  background: #fafafa;
+  border: 1px solid #ddd;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 32px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* ============================
+   RADIOBUTTONS
+============================ */
+.m11-radio-group {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 24px;
+}
+
+.m11-radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* ============================
+   FEEDBACK
+============================ */
+.m11-feedback {
+  width: 100%;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  margin-bottom: 32px;
+  font-size: 16px;
+  line-height: 1.5;
+  background: #fff;
+}
+
+/* ============================
+   BUTTONS
+============================ */
+.m11-buttons {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.m11-submit {
+  background: #7b61ff;
+  color: white;
+  padding: 12px 28px;
+  border-radius: 8px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s ease, opacity 0.2s ease;
+}
+
+.m11-submit:hover {
+  background: #6a52e0;
+}
+
+.m11-cancel {
+  background: #ddd;
+  padding: 12px 28px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.m11-cancel:hover {
+  background: #cfcfcf;
+}
+
+/* ============================
+   LOADING & ERROR
+============================ */
+.loading {
+  padding: 32px;
+  font-size: 18px;
+}
+
+.error {
+  color: #e53935;
+  margin-bottom: 16px;
+  font-weight: 500;
+}

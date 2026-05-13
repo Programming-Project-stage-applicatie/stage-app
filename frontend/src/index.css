@@ -347,3 +347,9 @@ button.danger:hover {
   background: #fee2e2;
 
 }
+.dashboard-page {
+  color: var(--text-h);
+  background: var(--bg);
+  min-height: 100vh;
+  padding: 32px;
+}

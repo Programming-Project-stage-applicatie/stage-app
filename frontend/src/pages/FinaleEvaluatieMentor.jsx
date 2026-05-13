@@ -1,34 +1,35 @@
 import { useState, useEffect } from "react";
 
 export default function FinaleEvaluatieMentor() {
-  const [evaluatie, setEvaluatie]       = useState(null);
-  const [feedback, setFeedback]         = useState("");
-  const [fout, setFout]                 = useState("");
-  const [succes, setSucces]             = useState("");
-  const [bezig, setBezig]               = useState(false);
+  const [evaluatie, setEvaluatie] = useState(null);
+  const [feedback, setFeedback]   = useState("");
+  const [fout, setFout]           = useState("");
+  const [succes, setSucces]       = useState("");
+  const [bezig, setBezig]         = useState(false);
 
   const user      = JSON.parse(localStorage.getItem("user") || "{}");
+  const token     = localStorage.getItem("token");
   const mentorId  = user.id || 1;
   const studentId = user.studentId || 1;
 
   useEffect(() => { haalOp(); }, []);
 
   async function haalOp() {
-    // TIJDELIJK — verwijderen als backend klaar is
-    setEvaluatie({
-      status: "submitted",
-      student_naam: "Test Student",
-      bedrijf: "Test BV",
-      presentation: "Dit is een testpresentatie.",
-      document: null,
-      mentor_motivatie: "",
-      final_score: null,
-      evaluatie_docent: "",
-      feedback_docent: "",
-    });
-   setFeedback(evaluatie.mentor_motivatie || "");
-    return;
-    // EINDE TIJDELIJK
+    try {
+      const res = await fetch(
+        `http://localhost:3000/finale-evaluatie/student/${studentId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!res.ok) {
+        setFout("Kon evaluatie niet ophalen.");
+        return;
+      }
+      const data = await res.json();
+      setEvaluatie(data);
+      setFeedback(data.mentor_motivatie || "");
+    } catch {
+      setFout("Er ging iets mis bij het ophalen.");
+    }
   }
 
   async function handleBevestigen() {
@@ -40,24 +41,23 @@ export default function FinaleEvaluatieMentor() {
     setFout("");
     setSucces("");
     setBezig(true);
-// TIJDELIJK — verwijderen als backend klaar is
-  setSucces("Feedback succesvol opgeslagen.");
-  setBezig(false);
-  return;
-  // EINDE TIJDELIJK
     try {
-      const res = await fetch(`/api/finale-evaluatie/student/${studentId}/mentor-motivatie`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mentor_motivatie: feedback, mentor_id: mentorId }),
-      });
-
+      const res = await fetch(
+        `http://localhost:3000/finale-evaluatie/student/${studentId}/mentor-motivatie`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ mentor_motivatie: feedback, mentor_id: mentorId }),
+        }
+      );
       if (!res.ok) {
         const d = await res.json();
         setFout(d.error || "Opslaan mislukt.");
         return;
       }
-
       setSucces("Feedback succesvol opgeslagen.");
       await haalOp();
     } catch {
@@ -69,9 +69,9 @@ export default function FinaleEvaluatieMentor() {
 
   function vertaalStatus(status) {
     const vertalingen = {
-      open:       "Open",
-      submitted:  "Ingediend",
-      evaluated:  "Geëvalueerd",
+      open:      "Open",
+      submitted: "Ingediend",
+      evaluated: "Geëvalueerd",
     };
     return vertalingen[status] || status || "Onbekend";
   }
@@ -125,7 +125,6 @@ export default function FinaleEvaluatieMentor() {
         </div>
       )}
 
-      {/* Eindpresentatie van de student — alleen lezen */}
       <section style={s.sectie}>
         <h2 style={s.sectietitel}>Eindpresentatie Student</h2>
         <label style={s.label}>Omschrijving eindpresentatie</label>
@@ -144,7 +143,6 @@ export default function FinaleEvaluatieMentor() {
 
       <hr style={s.lijn} />
 
-      {/* Feedback van de mentor — bewerkbaar zolang status "submitted" is */}
       <section style={s.sectie}>
         <h2 style={s.sectietitel}>Feedback Mentor</h2>
         <label style={s.label}>
@@ -173,7 +171,6 @@ export default function FinaleEvaluatieMentor() {
 
       <hr style={s.lijn} />
 
-      {/* Beoordeling van de docent — altijd alleen lezen voor de mentor */}
       <section style={s.sectie}>
         <h2 style={s.sectietitel}>Beoordeling Docent</h2>
 
@@ -183,7 +180,6 @@ export default function FinaleEvaluatieMentor() {
           </div>
         ) : (
           <>
-            {/* Eindscore = de punten die de docent geeft (bv. 14/20) */}
             <label style={s.label}>Eindscore docent:</label>
             <div style={s.scoreBlok}>
               <span style={s.scoreGetal}>
@@ -194,7 +190,6 @@ export default function FinaleEvaluatieMentor() {
               )}
             </div>
 
-            {/* Evaluatie docent = de schriftelijke beoordeling/motivatie van de punten */}
             <label style={{ ...s.label, marginTop: "1rem" }}>
               Evaluatie docent:
             </label>
@@ -205,7 +200,6 @@ export default function FinaleEvaluatieMentor() {
               placeholder="Nog geen evaluatie ingevoerd door de docent."
             />
 
-            {/* Feedback docent = bijkomende opmerkingen of verbeterpunten */}
             <label style={{ ...s.label, marginTop: "1rem" }}>
               Feedback docent:
             </label>
@@ -280,16 +274,16 @@ const s = {
     fontSize: "0.85rem",
     marginBottom: "1rem",
     background:
-      status === "open"       ? "#fef9c3" :
-      status === "submitted"  ? "#dbeafe" :
-      status === "evaluated"  ? "#f0fdf4" : "#f3f4f6",
+      status === "open"      ? "#fef9c3" :
+      status === "submitted" ? "#dbeafe" :
+      status === "evaluated" ? "#f0fdf4" : "#f3f4f6",
     color:
-      status === "open"       ? "#854d0e" :
-      status === "submitted"  ? "#1e40af" :
-      status === "evaluated"  ? "#166534" : "#374151",
+      status === "open"      ? "#854d0e" :
+      status === "submitted" ? "#1e40af" :
+      status === "evaluated" ? "#166534" : "#374151",
     border:
-      status === "open"       ? "1px solid #fde047" :
-      status === "submitted"  ? "1px solid #93c5fd" :
-      status === "evaluated"  ? "1px solid #86efac" : "1px solid #d1d5db",
+      status === "open"      ? "1px solid #fde047" :
+      status === "submitted" ? "1px solid #93c5fd" :
+      status === "evaluated" ? "1px solid #86efac" : "1px solid #d1d5db",
   }),
 };

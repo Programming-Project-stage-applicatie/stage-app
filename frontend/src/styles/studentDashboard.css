@@ -1,5 +1,5 @@
 /* ============================================================
-   STUDENT DASHBOARD (jouw code)
+   STUDENT DASHBOARD — TIFFANY STYLE
 ============================================================ */
 
 /* ===== Container ===== */
@@ -14,59 +14,66 @@
   margin-bottom: 0.5rem;
   font-size: 2rem;
   font-weight: 600;
+  color: #333;
 }
 
 .student-dashboard-container h2 {
   margin-top: 1.5rem;
-  margin-bottom: 1.5rem;
-  font-weight: 500;
-  font-size: 1.4rem;
+  margin-bottom: 1.2rem;
+  font-weight: 600;
+  font-size: 1.35rem;
+  color: #444;
 }
 
-/* ===== Nieuwe stageaanvraag knop ===== */
+/* ============================================================
+   Nieuwe stageaanvraag knop — Tiffany paars
+============================================================ */
 .dashboard-button {
   display: inline-block;
   padding: 12px 20px;
-  background-color: #0066cc;
+  background-color: #6A1B9A; /* Tiffany paars */
   color: white;
   border-radius: 6px;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
   margin: 1rem 0 1.5rem 0;
   transition: background-color 0.2s ease;
 }
 
 .dashboard-button:hover {
-  background-color: #004c99;
+  background-color: #5a1784; /* donkerder paars */
 }
 
-/* ===== Tabel ===== */
+/* ============================================================
+   Tabel — Tiffany stijl
+============================================================ */
 .student-stages-table {
   width: 100%;
   border-collapse: collapse;
   background: white;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
   margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 .student-stages-table th,
 .student-stages-table td {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid #ddd;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid #eee;
   text-align: left;
   font-size: 0.95rem;
   white-space: nowrap;
 }
 
 .student-stages-table th {
-  background-color: #f5f5f5;
+  background-color: #f7f2fa; /* zacht paars tintje */
   font-weight: 600;
+  color: #4a2b63;
 }
 
-.student-stages-table th.stage-col,
-.student-stages-table td.stage-col {
-  font-weight: 600;
+.student-stages-table tr:hover td {
+  background: #faf5ff; /* subtiele hover */
 }
 
 /* ===== Kolombreedtes ===== */
@@ -91,91 +98,41 @@
   text-align: right;
 }
 
-/* ===== Links in tabel ===== */
+/* ============================================================
+   Links in tabel — Tiffany paars
+============================================================ */
 .student-stages-table a {
   text-decoration: none;
-  color: #0066cc;
-  font-weight: 500;
+  color: #6A1B9A;
+  font-weight: 600;
 }
 
 .student-stages-table a:hover {
   text-decoration: underline;
 }
 
-/* ===== Lege sectie ===== */
+/* ============================================================
+   Lege sectie
+============================================================ */
 .empty-message {
   padding: 1rem;
-  background: #fafafa;
-  border: 1px solid #eee;
+  background: #faf7ff;
+  border: 1px solid #e8dff5;
   border-radius: 6px;
   margin-bottom: 1rem;
   font-size: 0.95rem;
-}
-
-/* ===== Error message ===== */
-.error {
-  color: red;
-  margin-bottom: 1rem;
+  color: #4a2b63;
 }
 
 /* ============================================================
-   STUDENT DETAIL PAGE (develop code)
+   Error message
 ============================================================ */
-
-.student-detail-container {
-  padding: 32px 48px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.student-detail-card {
-  background: var(--bg);
-  padding: 24px 28px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-}
-
-.student-detail-title {
-  font-size: 26px;
-  margin-bottom: 24px;
-}
-
-.student-detail-section {
-  margin-bottom: 24px;
-}
-
-.student-detail-row {
-  display: grid;
-  grid-template-columns: 200px 1fr;
-  gap: 16px;
-  margin-bottom: 10px;
-}
-
-.student-detail-label {
-  font-weight: 600;
-  color: var(--text-h);
-}
-
-.student-detail-value {
-  color: var(--text);
-}
-
-.student-detail-description {
-  padding: 16px;
-  background: var(--accent-bg);
-  border-radius: 8px;
-  white-space: pre-wrap;
-}
-
-.student-detail-back {
-  display: inline-block;
-  margin-bottom: 16px;
-  color: var(--accent);
-  text-decoration: none;
+.error {
+  background: #ffe5e5;
+  color: #b30000;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #cc0000;
   font-weight: 500;
-}
-
-.student-detail-back:hover {
-  text-decoration: underline;
 }

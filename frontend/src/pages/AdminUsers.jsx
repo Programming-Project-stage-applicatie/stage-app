@@ -1,5 +1,8 @@
 import { useEffect, useState, Fragment } from "react";
 import { t } from "../i18n/translations";
+import { useNavigate } from "react-router-dom";
+import "../styles/adminUsers.css";
+
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
@@ -20,7 +23,10 @@ export default function AdminUsers() {
     password: "",
     role: "student",
     status: "active",
+    studyprogram: ""
   });
+
+  const navigate = useNavigate();
 
   const fetchUsers = async () => {
     try {
@@ -45,7 +51,16 @@ export default function AdminUsers() {
     setNewUser((prev) => ({ ...prev, [field]: value }));
 
   const handleCreateUser = async () => {
-    if (Object.values(newUser).some((v) => v === "")) {
+   if (
+    !newUser.firstname ||
+    !newUser.lastname ||
+    !newUser.email ||
+    !newUser.username ||
+    !newUser.password ||
+    !newUser.role ||
+    !newUser.status ||
+    (newUser.role === "student" && !newUser.studyprogram)
+    )  {
       setError(t("adminUsers.allFieldsRequired"));
       return;
     }
@@ -70,6 +85,8 @@ export default function AdminUsers() {
         password: "",
         role: "student",
         status: "active",
+        studyprogram: ""
+
       });
       fetchUsers();
     } catch {
@@ -157,10 +174,19 @@ export default function AdminUsers() {
         
   const data = await response.json();
 
+      if (data.code === "STUDYPROGRAM_REQUIRED") {
+        setError(t("adminUsers.errors.requiredFields"));
+        return;
+    }
+
     if (data.code === "REQUIRED_FIELDS") {
         setError(t("adminUsers.errors.requiredFields"));
         return;
     }
+
+    
+
+
 
     if (data.code === "EMAIL_TAKEN") {
         setError(t("adminUsers.errors.emailTaken"));
@@ -184,6 +210,11 @@ export default function AdminUsers() {
 
   return (
     <div className="admin-users-page">
+        
+    <button className="secondary back-button" onClick={() => navigate("/dashboard/admin")}>
+    ← {t("adminUsers.backToDashboard")}
+    </button>
+
       <h1>{t("adminUsers.title")}</h1>
 
       {error && <p className="error">{error}</p>}
@@ -197,6 +228,7 @@ export default function AdminUsers() {
             <th>{t("adminUsers.fields.username")}</th>
             {isCreating && <th>{t("adminUsers.fields.password")}</th>}
             <th>{t("adminUsers.fields.role")}</th>
+            <th>{t("adminUsers.fields.studyprogram")}</th>
             <th>{t("adminUsers.fields.status")}</th>
             <th>{t("adminUsers.actions")}</th>
           </tr>
@@ -218,6 +250,17 @@ export default function AdminUsers() {
                   <option value="admin">{t("adminUsers.roles.admin")}</option>
                   <option value="internship_committee">{t("adminUsers.roles.internship_committee")}</option>
                 </select>
+              </td>
+              <td>
+                {newUser.role === "student" ? (
+                    <input
+                    value={newUser.studyprogram}
+                    onChange={(e) => updateNewUser("studyprogram", e.target.value)}
+                    placeholder={t("adminUsers.fields.studyprogram")}
+                    />
+                    ) : (
+                <span>-</span>
+                )}
               </td>
               <td>
                 <select onChange={(e) => updateNewUser("status", e.target.value)}>
@@ -289,6 +332,22 @@ export default function AdminUsers() {
             <option value="admin">{t("adminUsers.roles.admin")}</option>
           </select>
         </td>
+        <td>
+            {editUser.role === "student" ? (
+                <input
+                    value={editUser.studyprogram || ""}
+                    onChange={(e) =>
+                        setEditUser({
+                        ...editUser,
+                        studyprogram: e.target.value
+                        })
+                    }
+                    placeholder={t("adminUsers.fields.studyprogram")}
+                />
+            ) : (
+                <span>-</span>
+            )}
+        </td>
 
         <td>
           <select
@@ -330,6 +389,11 @@ export default function AdminUsers() {
         <td>{user.email}</td>
         <td>{user.username}</td>
         <td>{t(`adminUsers.roles.${user.role}`)}</td>
+        <td>
+            {user.role === "student" && user.studyprogram
+            ? user.studyprogram
+            : "-"}
+        </td>
         <td>{t(`adminUsers.status.${user.status}`)}</td>
         <td>
           <button
@@ -364,7 +428,7 @@ export default function AdminUsers() {
 
     {resetUserId === user.id && editUserId !== user.id && (
       <tr>
-        <td colSpan={isCreating ? 8 : 7}>
+        <td colSpan={isCreating ? 9 : 8}>
           <input
             type="password"
             value={resetPassword}

@@ -1,0 +1,138 @@
+/* ============================================================
+   STUDENT DASHBOARD — TIFFANY STYLE
+============================================================ */
+
+/* ===== Container ===== */
+.student-dashboard-container {
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* ===== Headers ===== */
+.student-dashboard-container h1 {
+  margin-bottom: 0.5rem;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.student-dashboard-container h2 {
+  margin-top: 1.5rem;
+  margin-bottom: 1.2rem;
+  font-weight: 600;
+  font-size: 1.35rem;
+  color: #444;
+}
+
+/* ============================================================
+   Nieuwe stageaanvraag knop — Tiffany paars
+============================================================ */
+.dashboard-button {
+  display: inline-block;
+  padding: 12px 20px;
+  background-color: #6A1B9A; /* Tiffany paars */
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  margin: 1rem 0 1.5rem 0;
+  transition: background-color 0.2s ease;
+}
+
+.dashboard-button:hover {
+  background-color: #5a1784; /* donkerder paars */
+}
+
+/* ============================================================
+   Tabel — Tiffany stijl
+============================================================ */
+.student-stages-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.student-stages-table th,
+.student-stages-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.student-stages-table th {
+  background-color: #f7f2fa; /* zacht paars tintje */
+  font-weight: 600;
+  color: #4a2b63;
+}
+
+.student-stages-table tr:hover td {
+  background: #faf5ff; /* subtiele hover */
+}
+
+/* ===== Kolombreedtes ===== */
+.student-stages-table td:nth-child(1),
+.student-stages-table th:nth-child(1) {
+  width: 22%;
+}
+
+.student-stages-table td:nth-child(2),
+.student-stages-table th:nth-child(2) {
+  width: 26%;
+}
+
+.student-stages-table td:nth-child(3),
+.student-stages-table th:nth-child(3) {
+  width: 32%;
+}
+
+.student-stages-table td:last-child,
+.student-stages-table th:last-child {
+  width: 20%;
+  text-align: right;
+}
+
+/* ============================================================
+   Links in tabel — Tiffany paars
+============================================================ */
+.student-stages-table a {
+  text-decoration: none;
+  color: #6A1B9A;
+  font-weight: 600;
+}
+
+.student-stages-table a:hover {
+  text-decoration: underline;
+}
+
+/* ============================================================
+   Lege sectie
+============================================================ */
+.empty-message {
+  padding: 1rem;
+  background: #faf7ff;
+  border: 1px solid #e8dff5;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  color: #4a2b63;
+}
+
+/* ============================================================
+   Error message
+============================================================ */
+.error {
+  background: #ffe5e5;
+  color: #b30000;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #cc0000;
+  font-weight: 500;
+}

@@ -29,16 +29,20 @@ function Login() {
       });
 
       const data = await response.json();
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
       if (!response.ok) {
         setError(data.message || t("invalidCredentials"));
         return;
       }
 
+      // BEIDE opslaan: token + rol
       localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.role);
 
-      const role = data.role;
-      const targetRoute = getDashboardRouteByRole(role);
+      // Dashboard bepalen op basis van rol
+      const targetRoute = getDashboardRouteByRole(data.role);
       navigate(targetRoute);
 
     } catch {
@@ -49,7 +53,7 @@ function Login() {
   return (
     <div className="login-page">
       <div className="login-card">
-        <h1>{t("loginTitle")}</h1>
+        <h1>Stage Monitoring Tool</h1>
         <h2>{t("loginTitle")}</h2>
 
         <form onSubmit={handleSubmit}>

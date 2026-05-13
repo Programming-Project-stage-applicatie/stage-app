@@ -1,0 +1,81 @@
+
+.admin-detail-container {
+  padding: 32px 48px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+
+.admin-detail-card {
+  background: var(--bg);
+  padding: 24px 28px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+
+.admin-detail-title {
+  font-size: 26px;
+  margin-bottom: 24px;
+}
+
+
+.admin-detail-section {
+  margin-bottom: 24px;
+}
+
+
+.admin-detail-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+
+.admin-detail-label {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.admin-detail-value {
+  color: var(--text);
+}
+
+
+.admin-detail-description {
+  padding: 16px;
+  background: var(--accent-bg);
+  border-radius: 8px;
+  white-space: pre-wrap;
+}
+
+
+.admin-detail-select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+
+
+.admin-detail-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+
+
+.admin-detail-back {
+  display: inline-block;
+  margin-bottom: 16px;
+  text-decoration: none;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.admin-detail-back:hover {
+  text-decoration: underline;
+}

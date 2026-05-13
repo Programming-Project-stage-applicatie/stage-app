@@ -5,7 +5,6 @@ const fs = require("fs");
 
 const router = express.Router();
 
-// ─── Multer config ──────────────────────────────────────────────────────────
 const uploadDir = "uploads/finale_evaluatie";
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
@@ -28,7 +27,6 @@ const upload = multer({
   },
 });
 
-// ─── Hulpfunctie: zoek internship id via student id ─────────────────────────
 async function getInternshipId(db, studentId) {
   const [rows] = await db.query(
     `SELECT internships.id 
@@ -40,7 +38,6 @@ async function getInternshipId(db, studentId) {
   return rows[0]?.id ?? null;
 }
 
-// ─── GET /api/finale-evaluatie/student/:studentId ───────────────────────────
 router.get("/student/:studentId", async (req, res) => {
   const db = req.db;
   try {
@@ -61,7 +58,6 @@ router.get("/student/:studentId", async (req, res) => {
   }
 });
 
-// ─── POST /api/finale-evaluatie/student/:studentId/opslaan ──────────────────
 router.post(
   "/student/:studentId/opslaan",
   (req, res, next) => {
@@ -114,7 +110,6 @@ router.post(
         return res.json({ message: "Opgeslagen", status: "open" });
       }
 
-      // Haal teacher_id en mentor_id op uit de internship
       const [internshipRows] = await db.query(
         "SELECT teacher_id, mentor_id FROM internships WHERE id = ?",
         [internshipId]
@@ -135,7 +130,6 @@ router.post(
   }
 );
 
-// ─── POST /api/finale-evaluatie/student/:studentId/indienen ─────────────────
 router.post("/student/:studentId/indienen", async (req, res) => {
   const db = req.db;
   const { studentId } = req.params;
@@ -178,7 +172,6 @@ router.post("/student/:studentId/indienen", async (req, res) => {
   }
 });
 
-// ─── POST /api/finale-evaluatie/student/:studentId/annuleren ────────────────
 router.post("/student/:studentId/annuleren", async (req, res) => {
   const db = req.db;
   const { studentId } = req.params;
@@ -213,7 +206,6 @@ router.post("/student/:studentId/annuleren", async (req, res) => {
   }
 });
 
-// ─── POST /api/finale-evaluatie/student/:studentId/mentor-motivatie ─────────
 router.post("/student/:studentId/mentor-motivatie", async (req, res) => {
   const db = req.db;
   const { studentId } = req.params;
@@ -242,9 +234,7 @@ router.post("/student/:studentId/mentor-motivatie", async (req, res) => {
     }
 
     await db.query(
-      `UPDATE final_evaluations
-       SET mentor_motivatie = ?, mentor_id = ?
-       WHERE id = ?`,
+      `UPDATE final_evaluations SET mentor_motivatie = ?, mentor_id = ? WHERE id = ?`,
       [mentor_motivatie.trim(), mentor_id ?? null, record.id]
     );
 
@@ -255,4 +245,3 @@ router.post("/student/:studentId/mentor-motivatie", async (req, res) => {
 });
 
 module.exports = router;
-

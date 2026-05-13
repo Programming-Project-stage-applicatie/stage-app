@@ -50,6 +50,8 @@ app.use("/users", authenticateJWT, userRoutes);
 const internshipRoutes = require("./routes/internships");
 app.use("/internships", authenticateJWT, internshipRoutes);
 
+const finaleEvaluatieRoutes = require("./routes/finale_evaluatie");
+app.use("/finale-evaluatie", authenticateJWT, finaleEvaluatieRoutes);
 /* ---------------------------------------------------------
    TEST ROUTE (GEEN JWT)
 --------------------------------------------------------- */

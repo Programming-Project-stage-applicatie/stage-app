@@ -7,10 +7,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-/* ---------------------------------------------------------
-   DATABASE CONNECTIE (POOL - AANBEVOLEN)
-   ⭐ FIX: dateStrings voorkomt timezone shifts
---------------------------------------------------------- */
+
 const db = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,

@@ -71,13 +71,15 @@ export default function StudentDashboard() {
           : t("studentDashboard.welcome")}
       </h1>
 
-     <Link className="dashboard-button" to="/student/new-request">
-        Nieuwe stageaanvraag
-      </Link>
+<div style={{ display: "flex", gap: "12px" }}>
+        <Link className="dashboard-button" to="/student/new-request">
+          Nieuwe stageaanvraag
+        </Link>
 
-      <button className="dashboard-button" onClick={() => navigate("/finale-evaluatie")}>
-        Finale Evaluatie
-      </button>
+        <button className="dashboard-button" onClick={() => navigate("/finale-evaluatie")}>
+          Finale Evaluatie
+        </button>
+      </div>
 
       <h2>Mijn stageaanvragen</h2>
       {requests.length === 0 ? (

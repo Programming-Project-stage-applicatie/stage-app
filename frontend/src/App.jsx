@@ -1,11 +1,13 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
+
 import Login from "./components/Login";
 
 // Dashboards
 import StudentDashboard from "./pages/StudentDashboard";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import MentorDashboard from "./pages/MentorDashboard";
+import FinaleEvaluatieMentor from "./pages/FinaleEvaluatieMentor";
 import InternshipCommitteeDashboard from "./pages/InternshipCommitteeDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 
@@ -37,6 +39,7 @@ function App() {
         <Route path="/dashboard/student" element={<StudentDashboard />} />
         <Route path="/dashboard/teacher" element={<TeacherDashboard />} />
         <Route path="/dashboard/mentor" element={<MentorDashboard />} />
+        <Route path="/mentor/finale-evaluatie" element={<FinaleEvaluatieMentor />} />
         <Route
           path="/dashboard/internship-committee"
           element={<InternshipCommitteeDashboard />}

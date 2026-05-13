@@ -238,7 +238,6 @@ export default function FinaleEvaluatieMentor() {
   );
 }
 
-// ── Stijlen ────────────────────────────────────────────────────
 const s = {
   pagina:           { maxWidth: "620px", margin: "2rem auto", padding: "1.5rem", fontFamily: "Arial, sans-serif", color: "#222" },
   loading:          { display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" },

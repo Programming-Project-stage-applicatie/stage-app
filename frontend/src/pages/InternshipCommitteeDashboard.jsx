@@ -42,9 +42,6 @@ export default function InternshipCommitteeDashboard() {
     loadData();
   }, []);
 
-  /* ============================
-     LOADING STATE
-  ============================ */
   if (loading) {
     return (
       <div className="committee-page">
@@ -62,9 +59,6 @@ export default function InternshipCommitteeDashboard() {
     );
   }
 
-  /* ============================
-     ERROR STATE
-  ============================ */
   if (error) {
     return (
       <div className="committee-page">
@@ -82,23 +76,36 @@ export default function InternshipCommitteeDashboard() {
     );
   }
 
-  /* ============================
-     DATA
-  ============================ */
-  const firstName = user.firstname;
+  /* ============================================================
+     FILTERING VOLGENS NIEUW PROCES
+  ============================================================ */
 
-  const countSubmitted = requests.filter((r) => r.status === "submitted").length;
-  const countApproved = requests.filter((r) => r.status === "approved").length;
-  const countRejected = requests.filter((r) => r.status === "rejected").length;
-  const countAdjust = requests.filter((r) => r.status === "adjustment_required").length;
+  const committeeId = user.id;
 
-  /* ============================
-     MAIN RENDER
-  ============================ */
+  // ⭐ Nieuwe aanvragen (nog niet toegewezen)
+  const newRequests = requests.filter(
+    (r) => r.internship_committee_id === null && r.status === "submitted"
+  );
+
+  // ⭐ Mijn dossiers
+  const myRequests = requests.filter(
+    (r) => r.internship_committee_id === committeeId
+  );
+
+  // ⭐ Tellingen
+  const countSubmitted =
+    newRequests.length +
+    myRequests.filter((r) => r.status === "submitted").length;
+
+  const countApproved = myRequests.filter((r) => r.status === "approved").length;
+  const countRejected = myRequests.filter((r) => r.status === "rejected").length;
+  const countAdjust = myRequests.filter(
+    (r) => r.status === "adjustment_required"
+  ).length;
+
   return (
     <div className="committee-page">
 
-      {/* ⭐ Tiffany-style top menu */}
       <div className="committee-header">
         <div className="header-left">Logo school</div>
         <div className="header-center">Stagecommissie</div>
@@ -107,7 +114,7 @@ export default function InternshipCommitteeDashboard() {
 
       <div className="committee-container">
 
-        <h1 className="committee-title">Welkom, {firstName}</h1>
+        <h1 className="committee-title">Welkom, {user.firstname}</h1>
         <hr className="committee-divider" />
 
         <h2 className="committee-subtitle">Stageaanvragen</h2>

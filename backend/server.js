@@ -47,15 +47,17 @@ const authenticateJWT = require("./middleware/authenticateJWT");
 const internshipRequestsRoutes = require("./routes/internship_requests");
 app.use("/internship-requests", authenticateJWT, internshipRequestsRoutes);
 
+
+
 const userRoutes = require("./routes/users");
 app.use("/users", authenticateJWT, userRoutes);
 
 const internshipRoutes = require("./routes/internships");
 app.use("/internships", authenticateJWT, internshipRoutes);
 
-/* ---------------------------------------------------------
-   TEST ROUTE (GEEN JWT)
---------------------------------------------------------- */
+const finaleEvaluatieRoutes = require("./routes/finale_evaluatie");
+app.use("/api/finale-evaluatie", finaleEvaluatieRoutes);
+
 app.get("/", (req, res) => {
   res.send("Backend is running");
 });

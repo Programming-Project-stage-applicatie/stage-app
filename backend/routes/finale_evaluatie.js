@@ -112,7 +112,7 @@ router.post("/student/:studentId/mentor-motivatie", async (req, res) => {
     if (rows.length === 0) return res.status(404).json({ error: "Geen finale evaluatie gevonden." });
     const record = rows[0];
     if (record.status !== "submitted") return res.status(400).json({ error: `Eindmotivatie kan enkel ingegeven worden als de status 'submitted' is (huidige status: '${record.status}').` });
-    await pool.query(`UPDATE final_evaluations SET mentor_motivatie = ?, mentor_id = ? WHERE id = ?`, [mentor_motivatie.trim(), mentor_id ?? null, record.id]);
+    await pool.query(`UPDATE final_evaluations SET mentor_feedback = ?, mentor_id = ? WHERE id = ?`, [mentor_motivatie.trim(), mentor_id ?? null, record.id]);
     res.json({ message: "Eindmotivatie opgeslagen.", status: record.status });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -127,14 +127,11 @@ router.get("/student/:studentId/docent", async (req, res) => {
     const r = rows[0];
     res.json({
       status:           r.status,
-      student_naam:     r.student_naam     ?? null,
-      bedrijf:          r.bedrijf          ?? null,
       presentation:     r.presentation     ?? null,
       document:         r.document         ?? null,
-      mentor_naam:      r.mentor_naam      ?? null,
-      mentor_motivatie: r.mentor_motivatie ?? null,
+      mentor_motivatie: r.mentor_feedback  ?? null,
       final_score:      r.final_score      ?? null,
-      feedback_docent:  r.feedback_docent  ?? null,
+      feedback_docent:  r.teacher_feedback ?? null,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -153,7 +150,7 @@ router.post("/student/:studentId/docent", async (req, res) => {
     const record = rows[0];
     if (record.status === "open") return res.status(400).json({ error: "De student heeft de eindpresentatie nog niet ingediend." });
     const nieuweStatus = beëindigd === true ? "evaluated" : record.status;
-    await pool.query(`UPDATE final_evaluations SET final_score = ?, feedback_docent = ?, status = ? WHERE id = ?`, [score, feedback_docent ?? null, nieuweStatus, record.id]);
+    await pool.query(`UPDATE final_evaluations SET final_score = ?, teacher_feedback = ?, status = ? WHERE id = ?`, [score, feedback_docent ?? null, nieuweStatus, record.id]);
     res.json({ message: beëindigd ? "Evaluatie beëindigd en opgeslagen." : "Score en feedback opgeslagen.", status: nieuweStatus });
   } catch (err) {
     res.status(500).json({ error: err.message });

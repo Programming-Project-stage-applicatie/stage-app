@@ -175,7 +175,11 @@ export default function FinaleEvaluatieDocent() {
               <span style={s.scoreHint}>/ 20</span>
             </div>
             {fout && <p style={s.foutInline}>⚠️ {fout}</p>}
-            <p style={s.scoreToelichting}>ℹ️ De score wordt zichtbaar voor de mentor van zodra u op 'Bevestigen' klikt.</p>
+           <p style={s.scoreToelichting}>
+  Checkbox evaluatie beëindigd leeg: de mentor ziet de score, de student niet.  <br /> 
+  Checkbox evaluatie beëindigd aangevinkt: zowel mentor als student zien de score.
+</p>
+
             <label style={{ ...s.label, marginTop: "1rem" }}>Feedback:</label>
             <textarea style={s.textarea} value={feedbackTekst} onChange={e => setFeedbackTekst(e.target.value)} placeholder="Schrijf hier uw feedback voor de student..." />
           </>

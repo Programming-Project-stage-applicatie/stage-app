@@ -1,8 +1,7 @@
-import express from "express";
-import db from "../db.js";
-import multer from "multer";
-import path from "path";
-import fs from "fs";
+const express = require("express");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 
 const router = express.Router();
 
@@ -31,6 +30,8 @@ const upload = multer({
 
 // ─── GET /api/finale-evaluatie/student/:studentId ───────────────────────────
 router.get("/student/:studentId", async (req, res) => {
+  // ⭐ FIX: gebruik req.db (via middleware in server.js) i.p.v. aparte db import
+  const db = req.db;
   try {
     const [rows] = await db.query(
       "SELECT * FROM final_evaluations WHERE internship_id = ?",
@@ -56,6 +57,8 @@ router.post(
     });
   },
   async (req, res) => {
+    // ⭐ FIX: gebruik req.db (via middleware in server.js) i.p.v. aparte db import
+    const db = req.db;
     const { studentId } = req.params;
     const { omschrijving } = req.body;
     const document = req.file ? `/${req.file.path}` : null;
@@ -80,8 +83,8 @@ router.post(
           updates.push("document = ?");
           values.push(document);
         }
-        values.push(existing[0].id);
 
+        values.push(existing[0].id);
         await db.query(
           `UPDATE final_evaluations SET ${updates.join(", ")} WHERE id = ?`,
           values
@@ -96,6 +99,7 @@ router.post(
          VALUES (?, ?, ?, 'open', 1, 1)`,
         [studentId, omschrijving ?? null, document]
       );
+
       res.status(201).json({ id: result.insertId, message: "Opgeslagen", status: "open" });
     } catch (err) {
       res.status(500).json({ error: err.message });
@@ -105,6 +109,8 @@ router.post(
 
 // ─── POST /api/finale-evaluatie/student/:studentId/indienen ─────────────────
 router.post("/student/:studentId/indienen", async (req, res) => {
+  // ⭐ FIX: gebruik req.db (via middleware in server.js) i.p.v. aparte db import
+  const db = req.db;
   const { studentId } = req.params;
 
   try {
@@ -142,6 +148,8 @@ router.post("/student/:studentId/indienen", async (req, res) => {
 
 // ─── POST /api/finale-evaluatie/student/:studentId/annuleren ────────────────
 router.post("/student/:studentId/annuleren", async (req, res) => {
+  // ⭐ FIX: gebruik req.db (via middleware in server.js) i.p.v. aparte db import
+  const db = req.db;
   const { studentId } = req.params;
 
   try {
@@ -169,4 +177,5 @@ router.post("/student/:studentId/annuleren", async (req, res) => {
   }
 });
 
-export default router;
+// ⭐ FIX: CommonJS export i.p.v. ES module export
+module.exports = router;

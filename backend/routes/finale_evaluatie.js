@@ -28,16 +28,30 @@ const upload = multer({
   },
 });
 
+// ─── Hulpfunctie: zoek internship id via student id ─────────────────────────
+async function getInternshipId(db, studentId) {
+  const [rows] = await db.query(
+    `SELECT internships.id 
+     FROM internships 
+     JOIN internship_requests ON internships.internship_request_id = internship_requests.id
+     WHERE internship_requests.student_id = ?`,
+    [studentId]
+  );
+  return rows[0]?.id ?? null;
+}
+
 // ─── GET /api/finale-evaluatie/student/:studentId ───────────────────────────
 router.get("/student/:studentId", async (req, res) => {
-  // ⭐ FIX: gebruik req.db (via middleware in server.js) i.p.v. aparte db import
   const db = req.db;
   try {
+    const internshipId = await getInternshipId(db, req.params.studentId);
+    if (!internshipId) return res.json({ status: "open" });
+
     const [rows] = await db.query(
       "SELECT * FROM final_evaluations WHERE internship_id = ?",
-      [req.params.studentId]
+      [internshipId]
     );
-    res.json(rows[0] ?? { internship_id: req.params.studentId, status: "open" });
+    res.json(rows[0] ?? { status: "open" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -57,16 +71,20 @@ router.post(
     });
   },
   async (req, res) => {
-    // ⭐ FIX: gebruik req.db (via middleware in server.js) i.p.v. aparte db import
     const db = req.db;
     const { studentId } = req.params;
     const { omschrijving } = req.body;
     const document = req.file ? `/${req.file.path}` : null;
 
     try {
+      const internshipId = await getInternshipId(db, studentId);
+      if (!internshipId) {
+        return res.status(404).json({ error: "Geen stage gevonden voor deze student." });
+      }
+
       const [existing] = await db.query(
         "SELECT id, status FROM final_evaluations WHERE internship_id = ?",
-        [studentId]
+        [internshipId]
       );
 
       if (existing.length > 0) {
@@ -92,12 +110,18 @@ router.post(
         return res.json({ message: "Opgeslagen", status: "open" });
       }
 
-      /* Tijdelijke oplossing met vaste waarden 1 voor teacher en mentor.
-         Na de merge aanpassen op basis van het login systeem. */
+      // Haal teacher_id en mentor_id op uit de internship
+      const [internshipRows] = await db.query(
+        "SELECT teacher_id, mentor_id FROM internships WHERE id = ?",
+        [internshipId]
+      );
+      const teacherId = internshipRows[0]?.teacher_id ?? null;
+      const mentorId  = internshipRows[0]?.mentor_id  ?? null;
+
       const [result] = await db.query(
         `INSERT INTO final_evaluations (internship_id, presentation, document, status, teacher_id, mentor_id)
-         VALUES (?, ?, ?, 'open', 1, 1)`,
-        [studentId, omschrijving ?? null, document]
+         VALUES (?, ?, ?, 'open', ?, ?)`,
+        [internshipId, omschrijving ?? null, document, teacherId, mentorId]
       );
 
       res.status(201).json({ id: result.insertId, message: "Opgeslagen", status: "open" });
@@ -109,14 +133,18 @@ router.post(
 
 // ─── POST /api/finale-evaluatie/student/:studentId/indienen ─────────────────
 router.post("/student/:studentId/indienen", async (req, res) => {
-  // ⭐ FIX: gebruik req.db (via middleware in server.js) i.p.v. aparte db import
   const db = req.db;
   const { studentId } = req.params;
 
   try {
+    const internshipId = await getInternshipId(db, studentId);
+    if (!internshipId) {
+      return res.status(404).json({ error: "Geen stage gevonden voor deze student." });
+    }
+
     const [rows] = await db.query(
       "SELECT * FROM final_evaluations WHERE internship_id = ?",
-      [studentId]
+      [internshipId]
     );
 
     if (rows.length === 0) {
@@ -148,14 +176,18 @@ router.post("/student/:studentId/indienen", async (req, res) => {
 
 // ─── POST /api/finale-evaluatie/student/:studentId/annuleren ────────────────
 router.post("/student/:studentId/annuleren", async (req, res) => {
-  // ⭐ FIX: gebruik req.db (via middleware in server.js) i.p.v. aparte db import
   const db = req.db;
   const { studentId } = req.params;
 
   try {
+    const internshipId = await getInternshipId(db, studentId);
+    if (!internshipId) {
+      return res.status(404).json({ error: "Geen stage gevonden voor deze student." });
+    }
+
     const [rows] = await db.query(
       "SELECT * FROM final_evaluations WHERE internship_id = ?",
-      [studentId]
+      [internshipId]
     );
 
     if (rows.length === 0) {
@@ -177,5 +209,4 @@ router.post("/student/:studentId/annuleren", async (req, res) => {
   }
 });
 
-// ⭐ FIX: CommonJS export i.p.v. ES module export
 module.exports = router;

@@ -14,7 +14,6 @@ export default function FinaleEvaluatie() {
   const user      = JSON.parse(localStorage.getItem("user") || "{}");
   const studentId = user.id;
 
-  // ⭐ FIX: JWT token meesturen met elke request
   const token = localStorage.getItem("token");
   const authHeaders = {
     Authorization: `Bearer ${token}`,
@@ -58,14 +57,14 @@ export default function FinaleEvaluatie() {
     try {
       const r1 = await fetch(`/api/finale-evaluatie/student/${studentId}/opslaan`, {
         method: "POST",
-        headers: authHeaders, // ⭐ FIX: JWT token meesturen
+        headers: authHeaders,
         body: fd,
       });
       if (!r1.ok) { const d = await r1.json(); setFout(d.error); return; }
 
       const r2 = await fetch(`/api/finale-evaluatie/student/${studentId}/indienen`, {
         method: "POST",
-        headers: authHeaders, // ⭐ FIX: JWT token meesturen
+        headers: authHeaders,
       });
       if (!r2.ok) { const d = await r2.json(); setFout(d.error); return; }
       await haalOp();
@@ -76,15 +75,13 @@ export default function FinaleEvaluatie() {
     }
   }
 
-  // ⭐ FIX: omgezet naar async/await + consistent met de rest
-  // ⭐ FIX: annuleren mag alleen als status "submitted" is
   async function handleAnnuleren() {
     if (!window.confirm("Ben je zeker dat je wilt annuleren?")) return;
     setFout("");
     try {
       const res = await fetch(`/api/finale-evaluatie/student/${studentId}/annuleren`, {
         method: "POST",
-        headers: authHeaders, // ⭐ FIX: JWT token meesturen
+        headers: authHeaders,
       });
       if (res.ok) {
         await haalOp();
@@ -107,9 +104,9 @@ export default function FinaleEvaluatie() {
 
   if (!evaluatie) return <div style={s.loading}>Laden…</div>;
 
-  const isOpen       = evaluatie.status === "open";
-  const isSubmitted  = evaluatie.status === "submitted";
-  const alleenLezen  = !isOpen;
+  const isOpen      = evaluatie.status === "open";
+  const isSubmitted = evaluatie.status === "submitted";
+  const alleenLezen = !isOpen;
 
   return (
     <div style={s.pagina}>
@@ -239,7 +236,6 @@ export default function FinaleEvaluatie() {
             {bezig ? "BEZIG…" : "INDIENEN"}
           </button>
         )}
-        {/* ⭐ FIX: annuleren knop alleen zichtbaar als status "submitted" is */}
         {isSubmitted && (
           <button
             style={{ ...s.btn, ...s.btnWit }}

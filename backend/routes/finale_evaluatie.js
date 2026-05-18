@@ -31,10 +31,25 @@ const upload = multer({
 router.get("/student/:studentId", async (req, res) => {
   try {
     const [rows] = await db.promise().query(
-      "SELECT * FROM final_evaluations WHERE internship_id = ?",
+      `SELECT 
+        fe.*,
+        fe.mentor_feedback   AS mentor_motivatie,
+        fe.teacher_feedback  AS feedback_docent,
+        CONCAT(u.firstname, ' ', u.lastname) AS student_naam,
+        ir.company           AS bedrijf,
+        CONCAT(ir.mentor_firstName, ' ', ir.mentor_lastName) AS mentor_naam
+      FROM final_evaluations fe
+      JOIN internship_requests ir ON fe.internship_id = ir.id
+      JOIN users u ON ir.student_id = u.id
+      WHERE fe.internship_id = ?`,
       [req.params.studentId]
     );
-    res.json(rows[0] ?? { internship_id: req.params.studentId, status: "open" });
+
+    if (rows.length === 0) {
+      return res.json({ internship_id: req.params.studentId, status: "open" });
+    }
+
+    res.json(rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -189,7 +204,7 @@ router.post("/student/:studentId/mentor-motivatie", async (req, res) => {
     }
 
     await db.promise().query(
-      `UPDATE final_evaluations SET mentor_motivatie = ?, mentor_id = ? WHERE id = ?`,
+      `UPDATE final_evaluations SET mentor_feedback = ?, mentor_id = ? WHERE id = ?`,
       [mentor_motivatie.trim(), mentor_id ?? null, record.id]
     );
 

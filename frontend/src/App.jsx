@@ -8,7 +8,7 @@ import TeacherDashboard from "./pages/TeacherDashboard";
 import MentorDashboard from "./pages/MentorDashboard";
 import InternshipCommitteeDashboard from "./pages/InternshipCommitteeDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
-
+import MentorLogboekOverzicht from './pages/MentorLogbookOverview';
 // Admin pages
 import AdminUsers from "./pages/AdminUsers";
 import AdminInternshipDetail from "./pages/AdminInternshipDetail";
@@ -17,6 +17,12 @@ import AdminInternshipDetail from "./pages/AdminInternshipDetail";
 import NewInternshipRequest from "./pages/NewInternshipRequest";
 import StudentRequestDetail from "./pages/StudentRequestDetail";
 import StudentInternshipDetail from "./pages/StudentInternshipDetail";
+
+// mentor
+
+import MentorLogbookOverview from './pages/MentorLogbookOverview';
+import MentorLogbookDetail from "./pages/MentorLogbookDetail";
+import MentorLogbookFeedback from "./pages/MentorLogbookFeedback";
 
 // Commissie pages (M10 + M11)
 import InternshipCommitteeOverview from "./pages/InternshipCommitteeOverview";   // M10
@@ -48,6 +54,12 @@ function App() {
         <Route path="/student/request/:id" element={<StudentRequestDetail />} />
         <Route path="/student/internships/:id" element={<StudentInternshipDetail />} />
 
+        {/*mentor*/}
+
+<Route path="/mentor/logbooks" element={<MentorLogbookOverview />} />
+<Route path="/mentor/student/:id/logbooks" element={<MentorLogbookDetail />} />
+
+<Route path="/mentor/logbook/:id" element={<MentorLogbookFeedback />} />
         {/* Admin pages */}
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/internships/:id" element={<AdminInternshipDetail />} />

@@ -137,8 +137,24 @@ const translations = {
       stage: "Stage",
       logbooks: "Logboeken",
       evaluation: "Finale evaluatie",
-      open: "Open"
-    }
+      open: "Open",
+    }, logbooks: {
+  supervisorOverview: "Logboek opvolging",
+  supervisorInterns: "overzicht van alle stagiairs",
+  interns: "Stagiairs",
+  lastWeek: "Laatste week",
+  week: "Week",
+  loading: "Laden...",
+  noInterns: "Geen stagiairs gevonden",
+  viewOverview: "Open overzicht",
+  status: {
+    submitted: "Ingediend",
+    approved: "Goedgekeurd",
+    adjustment_required: "Aanpassing vereist",
+    open: "open",
+    none: "nog geen logboeken"
+  }
+},
 
 
     

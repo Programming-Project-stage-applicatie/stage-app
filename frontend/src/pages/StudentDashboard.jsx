@@ -147,7 +147,11 @@ export default function StudentDashboard() {
                     {t("studentInternships.open")}
                   </Link>
                 </td>
-                <td>-</td>
+                <td>
+  <Link to="/student/logbooks">
+    {t("studentInternships.logbooks")}
+  </Link>
+</td>
                 <td>-</td>
               </tr>
             ))}

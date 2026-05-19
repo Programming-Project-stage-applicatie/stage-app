@@ -47,10 +47,25 @@ export default function AdminUsers() {
     fetchUsers();
   }, []);
 
+ useEffect(() => { 
+    setError("");
+  }, [editUserId, isCreating, resetUserId]);
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(""), 4000);
+      return () => clearTimeout(timer);
+    }
+}, [error]);
+
+
+
+
   const updateNewUser = (field, value) =>
     setNewUser((prev) => ({ ...prev, [field]: value }));
 
   const handleCreateUser = async () => {
+   setError("");
    if (
     !newUser.firstname ||
     !newUser.lastname ||
@@ -67,7 +82,8 @@ export default function AdminUsers() {
 
     try {
       const token = localStorage.getItem("token");
-      await fetch("http://localhost:3000/users", {
+
+      const response = await fetch("http://localhost:3000/users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -75,6 +91,22 @@ export default function AdminUsers() {
         },
         body: JSON.stringify(newUser),
       });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.code === "EMAIL_TAKEN") {
+          setError(t("adminUsers.errors.emailTaken"));
+          return;
+        }
+
+        if (data.code === "USERNAME_TAKEN") {
+          setError(t("adminUsers.errors.usernameTaken"));
+          return;
+        }
+
+        throw new Error();
+      }
 
       setIsCreating(false);
       setNewUser({
@@ -95,6 +127,7 @@ export default function AdminUsers() {
   };
 
   const handleResetPassword = async (userId) => {
+    setError("");
     if (!resetPassword) {
       setError(t("adminUsers.passwordRequired"));
       return;
@@ -128,6 +161,7 @@ export default function AdminUsers() {
   };
 
   const handleDeleteUser = async (userId) => {
+    setError("");
 
     const confirmed = window.confirm(
         t("adminUsers.confirmDelete")
@@ -145,6 +179,13 @@ export default function AdminUsers() {
       });
 
       if (!response.ok) {
+        
+        const data = await response.json();
+
+        if (data.code === "USER_IN_USE") {
+          setError(t("adminUsers.errors.userInUse"));
+          return;
+        }
         throw new Error();
       }
       setResetUserId(null);
@@ -155,6 +196,7 @@ export default function AdminUsers() {
   };
 
   const handleUpdateUser = async (user) => {
+  setError("");
   try {
     const token = localStorage.getItem("token");
 
@@ -237,13 +279,13 @@ export default function AdminUsers() {
         <tbody>
           {isCreating && (
             <tr>
-              <td><input onChange={(e) => updateNewUser("firstname", e.target.value)} /></td>
-              <td><input onChange={(e) => updateNewUser("lastname", e.target.value)} /></td>
-              <td><input onChange={(e) => updateNewUser("email", e.target.value)} /></td>
-              <td><input onChange={(e) => updateNewUser("username", e.target.value)} /></td>
-              <td><input type="password" onChange={(e) => updateNewUser("password", e.target.value)} /></td>
+              <td><input onChange={(e) => { setError(""); updateNewUser("firstname", e.target.value)}}/></td>
+              <td><input onChange={(e) => { setError(""); updateNewUser("lastname", e.target.value)}} /></td>
+              <td><input onChange={(e) => { setError(""); updateNewUser("email", e.target.value)}} /></td>
+              <td><input onChange={(e) => { setError(""); updateNewUser("username", e.target.value)}} /></td>
+              <td><input type="password" onChange={(e) => { setError(""); updateNewUser("password", e.target.value)}} /></td>
               <td>
-                <select onChange={(e) => updateNewUser("role", e.target.value)}>
+                <select onChange={(e) => { setError(""); updateNewUser("role", e.target.value)}}>
                   <option value="student">{t("adminUsers.roles.student")}</option>
                   <option value="teacher">{t("adminUsers.roles.teacher")}</option>
                   <option value="mentor">{t("adminUsers.roles.mentor")}</option>
@@ -255,7 +297,7 @@ export default function AdminUsers() {
                 {newUser.role === "student" ? (
                     <input
                     value={newUser.studyprogram}
-                    onChange={(e) => updateNewUser("studyprogram", e.target.value)}
+                    onChange={(e) => { setError(""); updateNewUser("studyprogram", e.target.value)}}
                     placeholder={t("adminUsers.fields.studyprogram")}
                     />
                     ) : (
@@ -263,14 +305,14 @@ export default function AdminUsers() {
                 )}
               </td>
               <td>
-                <select onChange={(e) => updateNewUser("status", e.target.value)}>
+                <select onChange={(e) => { setError(""); updateNewUser("status", e.target.value)}}>
                   <option value="active">{t("adminUsers.status.active")}</option>
                   <option value="inactive">{t("adminUsers.status.inactive")}</option>
                 </select>
               </td>
               <td>
                 <button onClick={handleCreateUser}>{t("adminUsers.save")}</button>
-                <button onClick={() => setIsCreating(false)}>{t("adminUsers.cancel")}</button>
+                <button onClick={() => {setError(""); setIsCreating(false);}}>{t("adminUsers.cancel")}</button>
               </td>
             </tr>
           )}
@@ -283,45 +325,54 @@ export default function AdminUsers() {
         <td>
           <input
             value={editUser.firstname}
-            onChange={(e) =>
-              setEditUser({ ...editUser, firstname: e.target.value })
-            }
+            
+            
+          onChange={(e) => {
+          setError(""); 
+          setEditUser({ ...editUser, firstname: e.target.value });
+          }}
+
+
           />
         </td>
 
         <td>
           <input
             value={editUser.lastname}
-            onChange={(e) =>
+            onChange={(e) => {
+            setError(""); 
               setEditUser({ ...editUser, lastname: e.target.value })
-            }
+            }}
           />
         </td>
 
         <td>
           <input
             value={editUser.email}
-            onChange={(e) =>
+            onChange={(e) => {
+              setError(""); 
               setEditUser({ ...editUser, email: e.target.value })
-            }
+            }}
           />
         </td>
 
         <td>
           <input
             value={editUser.username}
-            onChange={(e) =>
+            onChange={(e) => {
+              setError(""); 
               setEditUser({ ...editUser, username: e.target.value })
-            }
+            }}
           />
         </td>
 
         <td>
           <select
             value={editUser.role}
-            onChange={(e) =>
+            onChange={(e) => {
+              setError(""); 
               setEditUser({ ...editUser, role: e.target.value })
-            }
+            }}
           >
             <option value="student">{t("adminUsers.roles.student")}</option>
             <option value="teacher">{t("adminUsers.roles.teacher")}</option>
@@ -336,12 +387,13 @@ export default function AdminUsers() {
             {editUser.role === "student" ? (
                 <input
                     value={editUser.studyprogram || ""}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                        setError(""); 
                         setEditUser({
                         ...editUser,
                         studyprogram: e.target.value
                         })
-                    }
+                    }}
                     placeholder={t("adminUsers.fields.studyprogram")}
                 />
             ) : (
@@ -352,9 +404,10 @@ export default function AdminUsers() {
         <td>
           <select
             value={editUser.status}
-            onChange={(e) =>
+            onChange={(e) => {
+              setError(""); 
               setEditUser({ ...editUser, status: e.target.value })
-            }
+            }}
           >
             <option value="active">{t("adminUsers.status.active")}</option>
             <option value="inactive">{t("adminUsers.status.inactive")}</option>
@@ -372,6 +425,7 @@ export default function AdminUsers() {
           <button
             className="secondary"
             onClick={() => {
+              setError("");
               setEditUserId(null);
               setEditUser(null);
             }}
@@ -437,7 +491,7 @@ export default function AdminUsers() {
           <button onClick={() => handleResetPassword(user.id)}>
             {t("adminUsers.save")}
           </button>
-          <button onClick={() => setResetUserId(null)}>
+          <button onClick={() => { setError(""); setResetUserId(null);}}>
             {t("adminUsers.cancel")}
           </button>
         </td>

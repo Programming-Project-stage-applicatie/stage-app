@@ -161,13 +161,30 @@ exports.createUser = async (req, res) => {
       userId
     });
 
-  } catch (error) {
-    if (connection) await connection.rollback();
-    console.error("Create user failed:", error);
+  } 
+catch (err) {
+  console.error("Create user failed:", err);
 
-    return res.status(500).json({
-      message: "Failed to create user"
-    });
+  // duplicate email of username
+  if (err.code === "ER_DUP_ENTRY") {
+    if (err.sqlMessage.includes("email")) {
+      return res.status(400).json({
+        code: "EMAIL_TAKEN"
+      });
+    }
+
+    if (err.sqlMessage.includes("username")) {
+      return res.status(400).json({
+        code: "USERNAME_TAKEN"
+      });
+    }
+  }
+
+  // fallback
+  res.status(500).json({
+    message: "Server error"
+  });
+
 
   } finally {
     if (connection) connection.release();
@@ -278,6 +295,22 @@ exports.updateUser = async (req, res) => {
     if (connection) await connection.rollback();
     console.error("Update user failed:", error);
 
+    
+  // duplicate email / username
+    if (error.code === "ER_DUP_ENTRY") {
+      if (error.sqlMessage.includes("email")) {
+        return res.status(400).json({
+          code: "EMAIL_TAKEN"
+        });
+      }
+
+    if (error.sqlMessage.includes("username")) {
+      return res.status(400).json({
+        code: "USERNAME_TAKEN"
+      });
+    }
+  }
+  // fallback
     return res.status(500).json({
       message: "Failed to update user"
     });
@@ -345,6 +378,15 @@ exports.deleteUser = async (req, res) => {
     if (connection) await connection.rollback();
     console.error("Delete user failed:", error);
 
+    
+    // FK constraint error
+    if (error.code === "ER_ROW_IS_REFERENCED_2") {
+      return res.status(400).json({
+        code: "USER_IN_USE"
+      });
+    }
+
+    // fallback
     return res.status(500).json({
       message: "Failed to delete user"
     });

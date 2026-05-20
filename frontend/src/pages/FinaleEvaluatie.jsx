@@ -117,18 +117,16 @@ export default function FinaleEvaluatie() {
         {vertaalStatus(evaluatie.status).toUpperCase()}
       </div>
 
-<div style={s.infoBlok}>
-  <p style={s.infoRegel}>
-  <span style={s.infoLabel}>Student:</span>
-  {`${user.firstname ?? ""} ${user.lastname ?? ""}`.trim() || user.username}
-</p>
-<p style={s.infoRegel}>
-  <span style={s.infoLabel}>Stage:</span>
-  {evaluatie.bedrijf || "—"}
-</p>
-
-</div>
-
+      <div style={s.infoBlok}>
+        <p style={s.infoRegel}>
+          <span style={s.infoLabel}>Student:</span>
+          {`${user.firstname ?? ""} ${user.lastname ?? ""}`.trim() || user.username}
+        </p>
+        <p style={s.infoRegel}>
+          <span style={s.infoLabel}>Stage:</span>
+          {evaluatie.bedrijf || "—"}
+        </p>
+      </div>
 
       <hr style={s.lijn} />
 
@@ -188,17 +186,17 @@ export default function FinaleEvaluatie() {
             <textarea
               style={{ ...s.textarea, ...s.textareaReadonly }}
               value={evaluatie.mentor_feedback || ""}
-              readOnly
+              disabled
               placeholder="Nog geen feedback van mentor."
             />
           </section>
 
           <section style={s.sectie}>
-            <h2 style={s.sectietitel}>Feedback Docent:</h2>
+            <h2 style={s.sectietitel}>Feedback Docent</h2>
             <textarea
               style={{ ...s.textarea, ...s.textareaReadonly }}
               value={evaluatie.teacher_feedback || ""}
-              readOnly
+              disabled
               placeholder="Nog geen feedback van docent."
             />
           </section>
@@ -219,7 +217,7 @@ export default function FinaleEvaluatie() {
             <textarea
               style={{ ...s.textarea, ...s.textareaReadonly }}
               value={evaluatie.motivatie || ""}
-              readOnly
+              disabled
               placeholder="Nog geen motivatie ingegeven."
             />
           </section>
@@ -230,22 +228,18 @@ export default function FinaleEvaluatie() {
 
       <div style={s.knoppen}>
         {isOpen && (
-          <button
-            style={{ ...s.btn, ...s.btnGroen }}
-            onClick={handleIndienen}
-            disabled={bezig}
-          >
+          <button style={{ ...s.btn, ...s.btnGroen }} onClick={handleIndienen} disabled={bezig}>
             {bezig ? "BEZIG…" : "INDIENEN"}
           </button>
         )}
         {isSubmitted && (
-          <button
-            style={{ ...s.btn, ...s.btnWit }}
-            onClick={handleAnnuleren}
-          >
+          <button style={{ ...s.btn, ...s.btnWit }} onClick={handleAnnuleren}>
             ANNULEREN
           </button>
         )}
+        <button style={{ ...s.btn, ...s.btnTerug }} onClick={() => navigate("/dashboard/student")}>
+          ← Terug naar dashboard
+        </button>
       </div>
 
     </div>
@@ -266,8 +260,7 @@ const s = {
   sectietitel:      { fontSize: "1rem", fontWeight: "bold", marginBottom: "0.5rem" },
   label:            { display: "block", fontSize: "0.9rem", marginBottom: "0.4rem" },
   textarea:         { width: "100%", minHeight: "90px", padding: "0.6rem 0.75rem", border: "1px solid #ccc", borderRadius: "4px", fontSize: "0.9rem", resize: "vertical", boxSizing: "border-box", background: "#fff" },
-
-textareaReadonly: { background: "#f9f9f9", color: "#444", cursor: "default", outline: "none", pointerEvents: "none" },
+  textareaReadonly: { background: "#f9f9f9", color: "#444", cursor: "default", outline: "none", pointerEvents: "none", opacity: 1 },
   uploadRij:        { marginTop: "0.75rem" },
   uploadControls:   { display: "flex", alignItems: "center", gap: "0.75rem", marginTop: "0.3rem" },
   kiesBestandBtn:   { padding: "0.4rem 0.9rem", background: "#f0f0f0", border: "1px solid #bbb", borderRadius: "4px", cursor: "pointer", fontSize: "0.85rem" },
@@ -278,6 +271,7 @@ textareaReadonly: { background: "#f9f9f9", color: "#444", cursor: "default", out
   btn:              { padding: "0.65rem 2.5rem", fontSize: "0.9rem", fontWeight: "bold", borderRadius: "4px", cursor: "pointer", letterSpacing: "0.05em" },
   btnGroen:         { background: "#16a34a", color: "#fff", border: "none" },
   btnWit:           { background: "#fff", color: "#333", border: "1px solid #ccc" },
+  btnTerug:         { background: "transparent", color: "#7c3aed", border: "none", fontWeight: "normal", textDecoration: "underline", cursor: "pointer", fontSize: "0.9rem" },
   scoreBlok:        { display: "inline-block", background: "#f0fdf4", border: "1px solid #86efac", borderRadius: "8px", padding: "0.75rem 1.5rem", marginBottom: "0.5rem" },
   scoreGetal:       { fontSize: "2rem", fontWeight: "bold", color: "#16a34a" },
   scoreMax:         { fontSize: "1rem", color: "#555" },

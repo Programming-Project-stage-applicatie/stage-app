@@ -232,7 +232,12 @@ export default function FinaleEvaluatie() {
             {bezig ? "BEZIG…" : "INDIENEN"}
           </button>
         )}
-
+        {/*knop annuleren:*/}
+{isSubmitted && (
+  <button style={{ ...s.btn, ...s.btnWit }} onClick={handleAnnuleren}>
+    ANNULEREN
+  </button>
+)}
         <button style={{ ...s.btn, ...s.btnTerug }} onClick={() => navigate("/dashboard/student")}>
           ← Terug naar dashboard
         </button>

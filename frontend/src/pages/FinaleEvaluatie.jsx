@@ -120,11 +120,11 @@ export default function FinaleEvaluatie() {
       <div style={s.infoBlok}>
         <p style={s.infoRegel}>
           <span style={s.infoLabel}>Student:</span>
-          {user.name || "Sarah Janssens"}
+          {user.name /* TODO: correcte user property invullen na login-integratie */}
         </p>
         <p style={s.infoRegel}>
           <span style={s.infoLabel}>Stage:</span>
-          {user.bedrijf || evaluatie.bedrijf || "XYZ BV"}
+          {user.bedrijf || evaluatie.bedrijf /* TODO: fallback bedrijfsnaam invullen na login-integratie */}
         </p>
       </div>
 

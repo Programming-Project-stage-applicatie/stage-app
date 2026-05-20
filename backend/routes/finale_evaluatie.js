@@ -122,11 +122,26 @@ router.post("/student/:studentId/mentor-motivatie", async (req, res) => {
 router.get("/student/:studentId/docent", async (req, res) => {
   const pool = req.db;
   try {
-    const [rows] = await pool.query("SELECT * FROM final_evaluations WHERE internship_id = ?", [req.params.studentId]);
+    const [rows] = await pool.query(`
+      SELECT
+        fe.*,
+        CONCAT(su.firstName, ' ', su.lastName) AS student_naam,
+        ir.company                             AS bedrijf,
+        CONCAT(mu.firstName, ' ', mu.lastName) AS mentor_naam
+      FROM final_evaluations fe
+      JOIN internships i               ON fe.internship_id        = i.id
+      JOIN internship_requests ir      ON i.internship_request_id = ir.id
+      JOIN users su                    ON ir.student_id           = su.id
+      LEFT JOIN users mu               ON i.mentor_id             = mu.id
+      WHERE fe.internship_id = ?
+    `, [req.params.studentId]);
     if (rows.length === 0) return res.json({ status: "open" });
     const r = rows[0];
     res.json({
       status:           r.status,
+      student_naam:     r.student_naam     ?? null,
+      bedrijf:          r.bedrijf          ?? null,
+      mentor_naam:      r.mentor_naam      ?? null,
       presentation:     r.presentation     ?? null,
       document:         r.document         ?? null,
       mentor_motivatie: r.mentor_feedback  ?? null,
@@ -151,7 +166,6 @@ router.post("/student/:studentId/docent", async (req, res) => {
     if (rows.length === 0) return res.status(404).json({ error: "Geen finale evaluatie gevonden." });
     const record = rows[0];
     if (record.status === "open") return res.status(400).json({ error: "De student heeft de eindpresentatie nog niet ingediend." });
-    // FIX: status terugzetten naar "submitted" als checkbox uitgevinkt wordt
     const nieuweStatus = beëindigd === true
       ? "evaluated"
       : beëindigd === false && record.status === "evaluated"

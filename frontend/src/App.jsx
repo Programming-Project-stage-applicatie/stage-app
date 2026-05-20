@@ -33,6 +33,8 @@ function App() {
         />
         <Route path="/dashboard/admin" element={<AdminDashboard />} />
 <Route path="/logbooks" element={<StudentLogbooksPage />} />
+<Route path="/logbooks/new" element={<StudentLogbooksPage />} />   
+<Route path="/logbooks/:id" element={<StudentLogbooksPage />} />  
 
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>

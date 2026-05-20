@@ -2,7 +2,9 @@ import { useState } from "react";
 import { t } from "../i18n/translations";
 
 export default function LogboekForm({ logbook, internshipId, onTerug, existingWeeks = [] }) {
-  const isNieuw = !logbook;
+  const [savedLogbook, setSavedLogbook] = useState(logbook || null); // ← state local
+  const isNieuw = !savedLogbook;                                      // ← basé sur state, pas prop
+
   const [week, setWeek] = useState(logbook?.week || "");
   const [tasks, setTasks] = useState(logbook?.tasks || "");
   const [reflection, setReflection] = useState(logbook?.reflection || "");
@@ -11,7 +13,7 @@ export default function LogboekForm({ logbook, internshipId, onTerug, existingWe
   const [error, setError] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
 
-  const readOnly = logbook && logbook.status !== "open" && logbook.status !== "adjustment_required";
+  const readOnly = savedLogbook && savedLogbook.status !== "open" && savedLogbook.status !== "adjustment_required";
   const weekExists = isNieuw && existingWeeks.includes(Number(week));
 
   const handleSave = async () => {
@@ -28,15 +30,18 @@ export default function LogboekForm({ logbook, internshipId, onTerug, existingWe
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({ week, tasks, reflection, problems, internship_id: internshipId }),
         });
+        if (!res.ok) throw new Error("Opslaan mislukt");
+        const nieuwLogbook = await res.json();
+        setSavedLogbook(nieuwLogbook); // ← reste sur le formulaire, bouton Indienen apparaît
       } else {
-        res = await fetch(`/api/logbooks/${logbook.id}/save`, {
+        res = await fetch(`/api/logbooks/${savedLogbook.id}/save`, {
           method: "PUT",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({ tasks, reflection, problems }),
         });
+        if (!res.ok) throw new Error("Opslaan mislukt");
+        onTerug();
       }
-      if (!res.ok) throw new Error("Opslaan mislukt");
-      onTerug();
     } catch (err) {
       setError(t("logbooks.saveError"));
     } finally {
@@ -51,7 +56,7 @@ export default function LogboekForm({ logbook, internshipId, onTerug, existingWe
     const token = localStorage.getItem("token");
 
     try {
-      const res = await fetch(`/api/logbooks/${logbook?.id}/submit`, {
+      const res = await fetch(`/api/logbooks/${savedLogbook?.id}/submit`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ tasks, reflection, problems }),
@@ -80,7 +85,7 @@ export default function LogboekForm({ logbook, internshipId, onTerug, existingWe
       <div style={{ border: "1px solid #ccc", borderRadius: "8px", padding: "32px" }}>
 
         <h2 style={{ marginTop: 0 }}>
-          {isNieuw ? t("logbooks.newLogbook") : `${t("logbooks.week")} ${logbook.week}`}
+          {isNieuw ? t("logbooks.newLogbook") : `${t("logbooks.week")} ${savedLogbook.week}`}
         </h2>
 
         {isNieuw && (
@@ -159,15 +164,13 @@ export default function LogboekForm({ logbook, internshipId, onTerug, existingWe
             >
               {loading ? t("logbooks.saving") : t("logbooks.save")}
             </button>
-            {!isNieuw && (
-              <button
-                onClick={() => setShowConfirm(true)}
-                disabled={loading}
-                style={{ backgroundColor: "#22c55e", color: "white", border: "none", padding: "10px 24px", borderRadius: "6px", cursor: "pointer", fontWeight: "bold", fontSize: "15px" }}
-              >
-                {loading ? t("logbooks.saving") : t("logbooks.submit")}
-              </button>
-            )}
+            <button
+              onClick={() => setShowConfirm(true)}
+              disabled={loading}
+              style={{ backgroundColor: "#22c55e", color: "white", border: "none", padding: "10px 24px", borderRadius: "6px", cursor: "pointer", fontWeight: "bold", fontSize: "15px" }}
+            >
+              {loading ? t("logbooks.saving") : t("logbooks.submit")}
+            </button>
             <button
               onClick={onTerug}
               style={{ backgroundColor: "white", color: "black", border: "1px solid #ccc", padding: "10px 20px", borderRadius: "6px", cursor: "pointer" }}
@@ -187,7 +190,6 @@ export default function LogboekForm({ logbook, internshipId, onTerug, existingWe
         )}
       </div>
 
-      {/* Bevestigingsdialoog */}
       {showConfirm && (
         <div style={{
           position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)",

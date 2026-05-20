@@ -117,16 +117,18 @@ export default function FinaleEvaluatie() {
         {vertaalStatus(evaluatie.status).toUpperCase()}
       </div>
 
-      <div style={s.infoBlok}>
-        <p style={s.infoRegel}>
-          <span style={s.infoLabel}>Student:</span>
-          {user.name /* TODO: correcte user property invullen na login-integratie */}
-        </p>
-        <p style={s.infoRegel}>
-          <span style={s.infoLabel}>Stage:</span>
-          {user.bedrijf || evaluatie.bedrijf /* TODO: fallback bedrijfsnaam invullen na login-integratie */}
-        </p>
-      </div>
+<div style={s.infoBlok}>
+  <p style={s.infoRegel}>
+  <span style={s.infoLabel}>Student:</span>
+  {`${user.firstname ?? ""} ${user.lastname ?? ""}`.trim() || user.username}
+</p>
+<p style={s.infoRegel}>
+  <span style={s.infoLabel}>Stage:</span>
+  {evaluatie.bedrijf || "—"}
+</p>
+
+</div>
+
 
       <hr style={s.lijn} />
 
@@ -264,7 +266,8 @@ const s = {
   sectietitel:      { fontSize: "1rem", fontWeight: "bold", marginBottom: "0.5rem" },
   label:            { display: "block", fontSize: "0.9rem", marginBottom: "0.4rem" },
   textarea:         { width: "100%", minHeight: "90px", padding: "0.6rem 0.75rem", border: "1px solid #ccc", borderRadius: "4px", fontSize: "0.9rem", resize: "vertical", boxSizing: "border-box", background: "#fff" },
-  textareaReadonly: { background: "#f9f9f9", color: "#444" },
+
+textareaReadonly: { background: "#f9f9f9", color: "#444", cursor: "default", outline: "none", pointerEvents: "none" },
   uploadRij:        { marginTop: "0.75rem" },
   uploadControls:   { display: "flex", alignItems: "center", gap: "0.75rem", marginTop: "0.3rem" },
   kiesBestandBtn:   { padding: "0.4rem 0.9rem", background: "#f0f0f0", border: "1px solid #bbb", borderRadius: "4px", cursor: "pointer", fontSize: "0.85rem" },

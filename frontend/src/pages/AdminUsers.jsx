@@ -48,7 +48,9 @@ export default function AdminUsers() {
   }, []);
 
  useEffect(() => { 
-    setError("");
+    if (!resetUserId && !editUserId && !isCreating) {
+      setError("");
+    }
   }, [editUserId, isCreating, resetUserId]);
 
   useEffect(() => {
@@ -151,9 +153,10 @@ export default function AdminUsers() {
 
       setTimeout(() => {
         setError("");
-      }, 3000);
+        setResetUserId(null);
+      }, 2500);
 
-      setResetUserId(null);
+      
       setResetPassword("");
     } catch {
       setError(t("adminUsers.errors.generic"));

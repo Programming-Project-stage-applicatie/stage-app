@@ -29,16 +29,38 @@ function Login() {
       });
 
       const data = await response.json();
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-
+      
       if (!response.ok) {
-        setError(data.message || t("invalidCredentials"));
-        return;
+      
+        if (data.code === "INVALID_CREDENTIALS") {
+            setError(t("login.errors.invalidCredentials"));
+            return;
+          }
+
+          if (data.code === "REQUIRED_FIELDS") {
+            setError(t("login.errors.requiredFields"));
+            return;
+          }
+
+          if (data.code === "ACCOUNT_INACTIVE") {
+            setError(t("login.errors.accountInactive"));
+            return;
+          }
+
+          if (data.code === "INTERNAL_SERVER_ERROR") {
+            setError(t("login.errors.generic"));
+            return;
+          }
+
+      throw new Error();
       }
 
-      // BEIDE opslaan: token + rol
+
+         
+
+      // enkel bij succes opslaan: 
       localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("role", data.role);
 
       // Dashboard bepalen op basis van rol

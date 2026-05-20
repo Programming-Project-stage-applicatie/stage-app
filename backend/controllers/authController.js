@@ -8,7 +8,7 @@ exports.login = (req, res) => {
 
   if (!username || !password) {
     return res.status(400).json({
-      message: "Username en password are required"
+      code: "REQUIRED_FIELDS"
     });
   }
 
@@ -17,7 +17,7 @@ exports.login = (req, res) => {
   userModel.getUserByUsername(username, async (err, results) => {
     if (err) {
       return res.status(500).json({
-        message: "Internal server error"
+        code: "INTERNAL_SERVER_ERROR"
       });
     }
 
@@ -25,7 +25,7 @@ exports.login = (req, res) => {
 
     if (results.length === 0) {
       return res.status(401).json({
-        message: "Invalid credentials"
+        code: "INVALID_CREDENTIALS"
       });
     }
 
@@ -34,7 +34,7 @@ exports.login = (req, res) => {
 
     if (user.status !== "active") {
       return res.status(403).json({
-        message: "Account is inactive"
+         code: "ACCOUNT_INACTIVE"
       });
     }
 
@@ -43,7 +43,7 @@ exports.login = (req, res) => {
 
     if (!match) {
       return res.status(401).json({
-        message: "Invalid credentials"
+        code: "INVALID_CREDENTIALS"
       });
     }
 

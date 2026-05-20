@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 
 export default function FinaleEvaluatieDocent() {
@@ -8,18 +8,23 @@ export default function FinaleEvaluatieDocent() {
   const [bezig, setBezig]         = useState(false);
 
   const [score, setScore]                   = useState("");
-  const [evalTekst, setEvalTekst]           = useState("");
   const [feedbackTekst, setFeedbackTekst]   = useState("");
   const [ingediend, setIngediend]           = useState(false);
   const [evaluatieBeëindigd, setEvaluatieBeëindigd] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-  useEffect(() => { haalOp(); }, [id]);
-
-  async function haalOp() {
+  // FIX 1: haalOp vult score/feedback altijd in, ongeacht status
+  const haalOp = useCallback(async () => {
     try {
-      const res = await fetch(`http://localhost:3000/api/finale-evaluatie/student/${id}/docent`);
+      const res = await fetch(
+        `http://localhost:3000/api/finale-evaluatie/student/${id}/docent`,
+        {
+          headers: user.token
+            ? { Authorization: `Bearer ${user.token}` }
+            : {},
+        }
+      );
       if (!res.ok) {
         const d = await res.json();
         setFout(d.error || "Ophalen mislukt.");
@@ -27,34 +32,47 @@ export default function FinaleEvaluatieDocent() {
       }
       const data = await res.json();
       setEvaluatie(data);
-      if (data.status === "evaluated") {
-        setScore(data.final_score ?? "");
-        setEvalTekst(data.evaluatie_docent || "");
-        setFeedbackTekst(data.feedback_docent || "");
-      }
+
+      // Altijd invullen als er opgeslagen waarden zijn (niet alleen bij "evaluated")
+      setScore(data.final_score != null ? String(data.final_score) : "");
+      setFeedbackTekst(data.feedback_docent || "");
     } catch {
       setFout("Er ging iets mis bij het ophalen.");
     }
-  }
+  }, [id, user.token]);
+
+  useEffect(() => { haalOp(); }, [haalOp]);
 
   async function handleIndienen() {
     setFout("");
-    const scoreNum = Number(score);
-    if (score === "" || isNaN(scoreNum) || scoreNum < 0 || scoreNum > 20) {
-      setFout("Vul een geldige score in (0–20).");
-      return;
+
+    // FIX 2: score is optioneel — alleen valideren als er iets is ingevuld
+    let scoreNum = null;
+    if (score !== "") {
+      scoreNum = Number(score);
+      if (isNaN(scoreNum) || scoreNum < 0 || scoreNum > 20) {
+        setFout("Vul een geldige score in (0–20).");
+        return;
+      }
     }
+
     setBezig(true);
     try {
-      const res = await fetch(`http://localhost:3000/api/finale-evaluatie/student/${id}/docent`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          final_score: scoreNum,
-          feedback_docent: feedbackTekst,
-          beëindigd: evaluatieBeëindigd,
-        }),
-      });
+      const res = await fetch(
+        `http://localhost:3000/api/finale-evaluatie/student/${id}/docent`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(user.token ? { Authorization: `Bearer ${user.token}` } : {}),
+          },
+          body: JSON.stringify({
+            final_score: scoreNum,
+            feedback_docent: feedbackTekst,
+            beëindigd: evaluatieBeëindigd,
+          }),
+        }
+      );
       if (!res.ok) {
         const d = await res.json();
         setFout(d.error || "Indienen mislukt.");
@@ -66,6 +84,32 @@ export default function FinaleEvaluatieDocent() {
       setFout("Er ging iets mis bij het indienen.");
     } finally {
       setBezig(false);
+    }
+  }
+
+  // FIX 3: bij bewerken de checkbox status bewaren op basis van huidige evaluatiestatus
+  function handleBewerken() {
+    setIngediend(false);
+    setEvaluatieBeëindigd(evaluatie?.status === "evaluated");
+  }
+
+  // FIX 4: document openen met auth-header (voorkomt redirect naar loginscherm)
+  async function openDocument(url) {
+    try {
+      const res = await fetch(url, {
+        headers: user.token
+          ? { Authorization: `Bearer ${user.token}` }
+          : {},
+      });
+      if (!res.ok) {
+        setFout("Document kon niet worden geopend.");
+        return;
+      }
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      window.open(blobUrl, "_blank");
+    } catch {
+      setFout("Er ging iets mis bij het openen van het document.");
     }
   }
 
@@ -92,7 +136,7 @@ export default function FinaleEvaluatieDocent() {
   const isIngediend  = evaluatie.status === "submitted";
   const isGeeval     = evaluatie.status === "evaluated";
   const kanInvullen  = isIngediend || isGeeval;
-  const toonReadonly = isGeeval && ingediend;
+  const toonReadonly = (isGeeval || isIngediend) && ingediend;
 
   return (
     <div style={s.pagina}>
@@ -130,11 +174,19 @@ export default function FinaleEvaluatieDocent() {
           <>
             <div style={s.ingediendBadge}>✅ Ingediend</div>
             <label style={s.label}>Omschrijving eindpresentatie</label>
-            <textarea style={{ ...s.textarea, ...s.textareaReadonly }} value={evaluatie.presentation || ""} readOnly placeholder="Geen omschrijving beschikbaar." />
+            <textarea
+              style={{ ...s.textarea, ...s.textareaReadonly }}
+              value={evaluatie.presentation || ""}
+              readOnly
+              placeholder="Geen omschrijving beschikbaar."
+            />
             {evaluatie.document ? (
-              <a href={evaluatie.document} target="_blank" rel="noreferrer" style={s.docLink}>
+              <button
+                onClick={() => openDocument(evaluatie.document)}
+                style={s.docBtn}
+              >
                 📎 {evaluatie.document.split("/").pop()} — klik om te openen
-              </a>
+              </button>
             ) : (
               <p style={s.geenBijlage}>📄 Geen bestand bijgevoegd.</p>
             )}
@@ -149,7 +201,11 @@ export default function FinaleEvaluatieDocent() {
         {!evaluatie.mentor_motivatie ? (
           <div style={s.infoBanner}>ℹ️ De mentor heeft nog geen feedback ingevoerd.</div>
         ) : (
-          <textarea style={{ ...s.textarea, ...s.textareaReadonly }} value={evaluatie.mentor_motivatie} readOnly />
+          <textarea
+            style={{ ...s.textarea, ...s.textareaReadonly }}
+            value={evaluatie.mentor_motivatie}
+            readOnly
+          />
         )}
       </section>
 
@@ -161,55 +217,94 @@ export default function FinaleEvaluatieDocent() {
           <>
             <label style={s.label}>Eindscore:</label>
             <div style={s.scoreBlok}>
-              <span style={s.scoreGetal}>{evaluatie.final_score != null ? evaluatie.final_score : "—"}</span>
+              <span style={s.scoreGetal}>
+                {evaluatie.final_score != null ? evaluatie.final_score : "—"}
+              </span>
               {evaluatie.final_score != null && <span style={s.scoreMax}> / 20</span>}
             </div>
             <label style={{ ...s.label, marginTop: "1rem" }}>Feedback:</label>
-            <textarea style={{ ...s.textarea, ...s.textareaReadonly }} value={evaluatie.feedback_docent || ""} readOnly placeholder="Geen feedback ingevoerd." />
+            <textarea
+              style={{ ...s.textarea, ...s.textareaReadonly }}
+              value={evaluatie.feedback_docent || ""}
+              readOnly
+              placeholder="Geen feedback ingevoerd."
+            />
           </>
         ) : kanInvullen ? (
           <>
-            <label style={s.label}>Eindscore (0–20):</label>
+            <label style={s.label}>Eindscore (0–20) — optioneel:</label>
             <div style={s.scoreInvoerRij}>
-              <input type="number" min="0" max="20" value={score} onChange={e => { setScore(e.target.value); setFout(""); }} style={{ ...s.inputScore, borderColor: fout ? "#dc2626" : "#ccc" }} placeholder="0 – 20" />
+              <input
+                type="number"
+                min="0"
+                max="20"
+                value={score}
+                onChange={e => { setScore(e.target.value); setFout(""); }}
+                style={{ ...s.inputScore, borderColor: fout ? "#dc2626" : "#ccc" }}
+                placeholder="0 – 20"
+              />
               <span style={s.scoreHint}>/ 20</span>
             </div>
             {fout && <p style={s.foutInline}>⚠️ {fout}</p>}
-           <p style={s.scoreToelichting}>
-  Checkbox evaluatie beëindigd leeg: de mentor ziet de score, de student niet.  <br /> 
-  Checkbox evaluatie beëindigd aangevinkt: zowel mentor als student zien de score.
-</p>
+            <p style={s.scoreToelichting}>
+              Checkbox leeg: mentor ziet score, student niet.<br />
+              Checkbox aangevinkt: zowel mentor als student zien de score.
+            </p>
 
             <label style={{ ...s.label, marginTop: "1rem" }}>Feedback:</label>
-            <textarea style={s.textarea} value={feedbackTekst} onChange={e => setFeedbackTekst(e.target.value)} placeholder="Schrijf hier uw feedback voor de student..." />
+            <textarea
+              style={s.textarea}
+              value={feedbackTekst}
+              onChange={e => setFeedbackTekst(e.target.value)}
+              placeholder="Schrijf hier uw feedback voor de student..."
+            />
           </>
         ) : (
-          <div style={s.infoBanner}>ℹ️ Beoordeling kan worden ingevoerd zodra de student de eindpresentatie heeft ingediend.</div>
+          <div style={s.infoBanner}>
+            ℹ️ Beoordeling kan worden ingevoerd zodra de student de eindpresentatie heeft ingediend.
+          </div>
         )}
       </section>
 
       {kanInvullen && !toonReadonly && (
         <div style={s.checkboxRij}>
-          <input type="checkbox" id="beëindigd" checked={evaluatieBeëindigd} onChange={e => setEvaluatieBeëindigd(e.target.checked)} style={s.checkbox} />
+          <input
+            type="checkbox"
+            id="beëindigd"
+            checked={evaluatieBeëindigd}
+            onChange={e => setEvaluatieBeëindigd(e.target.checked)}
+            style={s.checkbox}
+          />
           <label htmlFor="beëindigd" style={s.checkboxLabel}>
             Evaluatie beëindigd
-            <span style={s.checkboxToelichting}> — student kan de beoordeling zien en status wordt "Geëvalueerd"</span>
+            <span style={s.checkboxToelichting}>
+              {" "}— student kan de beoordeling zien en status wordt "Geëvalueerd"
+            </span>
           </label>
         </div>
       )}
 
       <div style={s.knoppen}>
         {kanInvullen && !toonReadonly && (
-          <button style={{ ...s.btn, ...s.btnGroen }} onClick={handleIndienen} disabled={bezig}>
+          <button
+            style={{ ...s.btn, ...s.btnGroen }}
+            onClick={handleIndienen}
+            disabled={bezig}
+          >
             {bezig ? "BEZIG…" : isGeeval ? "OPSLAAN" : "BEVESTIGEN"}
           </button>
         )}
         {toonReadonly && (
-          <button style={{ ...s.btn, ...s.btnGroen }} onClick={() => { setIngediend(false); setEvaluatieBeëindigd(false); }}>
+          <button
+            style={{ ...s.btn, ...s.btnGroen }}
+            onClick={handleBewerken}
+          >
             BEOORDELING BEWERKEN
           </button>
         )}
-        <button style={{ ...s.btn, ...s.btnWit }} onClick={() => window.history.back()}>TERUG</button>
+        <button style={{ ...s.btn, ...s.btnWit }} onClick={() => window.history.back()}>
+          TERUG
+        </button>
       </div>
     </div>
   );
@@ -230,12 +325,12 @@ const s = {
   label:               { display: "block", fontSize: "0.9rem", marginBottom: "0.4rem" },
   textarea:            { width: "100%", minHeight: "90px", padding: "0.6rem 0.75rem", border: "1px solid #ccc", borderRadius: "4px", fontSize: "0.9rem", resize: "vertical", boxSizing: "border-box", background: "#fff" },
   textareaReadonly:    { background: "#f9f9f9", color: "#444", cursor: "default", outline: "none", userSelect: "none", pointerEvents: "none" },
-  inputScore:          { width: "100px", padding: "0.5rem 0.75rem", border: "1px solid #ccc", borderRadius: "4px", fontSize: "1.1rem", marginBottom: "0" },
+  inputScore:          { width: "100px", padding: "0.5rem 0.75rem", border: "1px solid #ccc", borderRadius: "4px", fontSize: "1.1rem" },
   scoreInvoerRij:      { display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem" },
   scoreHint:           { fontSize: "1rem", color: "#555" },
   foutInline:          { color: "#dc2626", background: "#fef2f2", padding: "0.4rem 0.75rem", borderRadius: "4px", marginBottom: "0.5rem", fontSize: "0.88rem" },
   scoreToelichting:    { fontSize: "0.82rem", color: "#555", background: "#f8f8f8", border: "1px solid #e5e7eb", borderRadius: "4px", padding: "0.5rem 0.75rem", marginBottom: "0.25rem" },
-  docLink:             { display: "inline-block", marginTop: "0.5rem", color: "#2563eb", fontSize: "0.85rem", textDecoration: "underline" },
+  docBtn:              { display: "inline-block", marginTop: "0.5rem", color: "#2563eb", fontSize: "0.85rem", textDecoration: "underline", background: "none", border: "none", cursor: "pointer", padding: 0 },
   geenBijlage:         { marginTop: "0.5rem", fontSize: "0.85rem", color: "#888" },
   fout:                { color: "#dc2626", background: "#fef2f2", padding: "0.6rem 0.9rem", borderRadius: "4px", marginBottom: "0.75rem", fontSize: "0.9rem" },
   infoBanner:          { background: "#f0f9ff", border: "1px solid #93c5fd", color: "#1e40af", padding: "0.75rem 1rem", borderRadius: "6px", fontSize: "0.9rem" },

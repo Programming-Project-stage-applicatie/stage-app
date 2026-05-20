@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 
 export default function FinaleEvaluatieDocent() {
@@ -12,9 +12,11 @@ export default function FinaleEvaluatieDocent() {
   const [ingediend, setIngediend]           = useState(false);
   const [evaluatieBeëindigd, setEvaluatieBeëindigd] = useState(false);
 
+  // Zorgt dat checkbox-staat alleen bij eerste laden gezet wordt, niet na elke save
+  const isEersteLaad = useRef(true);
+
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-  // FIX 1: haalOp vult score/feedback altijd in, ongeacht status
   const haalOp = useCallback(async () => {
     try {
       const res = await fetch(
@@ -33,9 +35,14 @@ export default function FinaleEvaluatieDocent() {
       const data = await res.json();
       setEvaluatie(data);
 
-      // Altijd invullen als er opgeslagen waarden zijn (niet alleen bij "evaluated")
       setScore(data.final_score != null ? String(data.final_score) : "");
       setFeedbackTekst(data.feedback_docent || "");
+
+      // Checkbox-staat enkel bij eerste laden invullen vanuit de server
+      if (isEersteLaad.current) {
+        setEvaluatieBeëindigd(data.status === "evaluated");
+        isEersteLaad.current = false;
+      }
     } catch {
       setFout("Er ging iets mis bij het ophalen.");
     }
@@ -46,7 +53,6 @@ export default function FinaleEvaluatieDocent() {
   async function handleIndienen() {
     setFout("");
 
-    // FIX 2: score is optioneel — alleen valideren als er iets is ingevuld
     let scoreNum = null;
     if (score !== "") {
       scoreNum = Number(score);
@@ -77,7 +83,6 @@ export default function FinaleEvaluatieDocent() {
         const d = await res.json();
         setFout(d.error || "Indienen mislukt.");
       } else {
-        setIngediend(true);
         await haalOp();
       }
     } catch {
@@ -87,13 +92,11 @@ export default function FinaleEvaluatieDocent() {
     }
   }
 
-  // FIX 3: bij bewerken de checkbox status bewaren op basis van huidige evaluatiestatus
   function handleBewerken() {
     setIngediend(false);
     setEvaluatieBeëindigd(evaluatie?.status === "evaluated");
   }
 
-  // FIX 4: document openen met auth-header (voorkomt redirect naar loginscherm)
   async function openDocument(url) {
     try {
       const res = await fetch(url, {
@@ -158,11 +161,6 @@ export default function FinaleEvaluatieDocent() {
       {evaluatie.status === "open" && (
         <div style={s.waarschuwingMelding}>
           ⏳ De student heeft zijn eindpresentatie nog niet ingediend.
-        </div>
-      )}
-      {isGeeval && (
-        <div style={s.statusMelding}>
-          ✅ Deze evaluatie is volledig <strong>geëvalueerd</strong>.
         </div>
       )}
 
@@ -246,10 +244,6 @@ export default function FinaleEvaluatieDocent() {
               <span style={s.scoreHint}>/ 20</span>
             </div>
             {fout && <p style={s.foutInline}>⚠️ {fout}</p>}
-            <p style={s.scoreToelichting}>
-              Checkbox leeg: mentor ziet score, student niet.<br />
-              Checkbox aangevinkt: zowel mentor als student zien de score.
-            </p>
 
             <label style={{ ...s.label, marginTop: "1rem" }}>Feedback:</label>
             <textarea
@@ -329,7 +323,6 @@ const s = {
   scoreInvoerRij:      { display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem" },
   scoreHint:           { fontSize: "1rem", color: "#555" },
   foutInline:          { color: "#dc2626", background: "#fef2f2", padding: "0.4rem 0.75rem", borderRadius: "4px", marginBottom: "0.5rem", fontSize: "0.88rem" },
-  scoreToelichting:    { fontSize: "0.82rem", color: "#555", background: "#f8f8f8", border: "1px solid #e5e7eb", borderRadius: "4px", padding: "0.5rem 0.75rem", marginBottom: "0.25rem" },
   docBtn:              { display: "inline-block", marginTop: "0.5rem", color: "#2563eb", fontSize: "0.85rem", textDecoration: "underline", background: "none", border: "none", cursor: "pointer", padding: 0 },
   geenBijlage:         { marginTop: "0.5rem", fontSize: "0.85rem", color: "#888" },
   fout:                { color: "#dc2626", background: "#fef2f2", padding: "0.6rem 0.9rem", borderRadius: "4px", marginBottom: "0.75rem", fontSize: "0.9rem" },

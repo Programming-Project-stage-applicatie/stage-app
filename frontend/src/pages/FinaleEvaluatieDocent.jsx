@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 export default function FinaleEvaluatieDocent() {
   const { id } = useParams();
+  const navigate = useNavigate();
+
   const [evaluatie, setEvaluatie] = useState(null);
   const [fout, setFout]           = useState("");
   const [bezig, setBezig]         = useState(false);
@@ -12,7 +14,6 @@ export default function FinaleEvaluatieDocent() {
   const [ingediend, setIngediend]           = useState(false);
   const [evaluatieBeëindigd, setEvaluatieBeëindigd] = useState(false);
 
-  // Zorgt dat checkbox-staat alleen bij eerste laden gezet wordt, niet na elke save
   const isEersteLaad = useRef(true);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -21,11 +22,7 @@ export default function FinaleEvaluatieDocent() {
     try {
       const res = await fetch(
         `http://localhost:3000/api/finale-evaluatie/student/${id}/docent`,
-        {
-          headers: user.token
-            ? { Authorization: `Bearer ${user.token}` }
-            : {},
-        }
+        { headers: user.token ? { Authorization: `Bearer ${user.token}` } : {} }
       );
       if (!res.ok) {
         const d = await res.json();
@@ -34,11 +31,8 @@ export default function FinaleEvaluatieDocent() {
       }
       const data = await res.json();
       setEvaluatie(data);
-
       setScore(data.final_score != null ? String(data.final_score) : "");
       setFeedbackTekst(data.feedback_docent || "");
-
-      // Checkbox-staat enkel bij eerste laden invullen vanuit de server
       if (isEersteLaad.current) {
         setEvaluatieBeëindigd(data.status === "evaluated");
         isEersteLaad.current = false;
@@ -52,7 +46,6 @@ export default function FinaleEvaluatieDocent() {
 
   async function handleIndienen() {
     setFout("");
-
     let scoreNum = null;
     if (score !== "") {
       scoreNum = Number(score);
@@ -61,7 +54,6 @@ export default function FinaleEvaluatieDocent() {
         return;
       }
     }
-
     setBezig(true);
     try {
       const res = await fetch(
@@ -100,37 +92,25 @@ export default function FinaleEvaluatieDocent() {
   async function openDocument(url) {
     try {
       const res = await fetch(url, {
-        headers: user.token
-          ? { Authorization: `Bearer ${user.token}` }
-          : {},
+        headers: user.token ? { Authorization: `Bearer ${user.token}` } : {},
       });
-      if (!res.ok) {
-        setFout("Document kon niet worden geopend.");
-        return;
-      }
+      if (!res.ok) { setFout("Document kon niet worden geopend."); return; }
       const blob = await res.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      window.open(blobUrl, "_blank");
+      window.open(URL.createObjectURL(blob), "_blank");
     } catch {
       setFout("Er ging iets mis bij het openen van het document.");
     }
   }
 
   function vertaalStatus(status) {
-    const vertalingen = {
-      open:      "Open",
-      submitted: "Ingediend",
-      evaluated: "Geëvalueerd",
-    };
+    const vertalingen = { open: "Open", submitted: "Ingediend", evaluated: "Geëvalueerd" };
     return vertalingen[status] || status || "Onbekend";
   }
 
   if (fout && !evaluatie) return (
     <div style={s.pagina}>
       <p style={s.fout}>⚠️ {fout}</p>
-      <button style={{ ...s.btn, ...s.btnWit }} onClick={haalOp}>
-        Opnieuw proberen
-      </button>
+      <button style={{ ...s.btn, ...s.btnWit }} onClick={haalOp}>Opnieuw proberen</button>
     </div>
   );
 
@@ -179,10 +159,7 @@ export default function FinaleEvaluatieDocent() {
               placeholder="Geen omschrijving beschikbaar."
             />
             {evaluatie.document ? (
-              <button
-                onClick={() => openDocument(evaluatie.document)}
-                style={s.docBtn}
-              >
+              <button onClick={() => openDocument(evaluatie.document)} style={s.docBtn}>
                 📎 {evaluatie.document.split("/").pop()} — klik om te openen
               </button>
             ) : (
@@ -199,11 +176,7 @@ export default function FinaleEvaluatieDocent() {
         {!evaluatie.mentor_motivatie ? (
           <div style={s.infoBanner}>ℹ️ De mentor heeft nog geen feedback ingevoerd.</div>
         ) : (
-          <textarea
-            style={{ ...s.textarea, ...s.textareaReadonly }}
-            value={evaluatie.mentor_motivatie}
-            readOnly
-          />
+          <textarea style={{ ...s.textarea, ...s.textareaReadonly }} value={evaluatie.mentor_motivatie} readOnly />
         )}
       </section>
 
@@ -215,9 +188,7 @@ export default function FinaleEvaluatieDocent() {
           <>
             <label style={s.label}>Eindscore:</label>
             <div style={s.scoreBlok}>
-              <span style={s.scoreGetal}>
-                {evaluatie.final_score != null ? evaluatie.final_score : "—"}
-              </span>
+              <span style={s.scoreGetal}>{evaluatie.final_score != null ? evaluatie.final_score : "—"}</span>
               {evaluatie.final_score != null && <span style={s.scoreMax}> / 20</span>}
             </div>
             <label style={{ ...s.label, marginTop: "1rem" }}>Feedback:</label>
@@ -233,10 +204,7 @@ export default function FinaleEvaluatieDocent() {
             <label style={s.label}>Eindscore (0–20) — optioneel:</label>
             <div style={s.scoreInvoerRij}>
               <input
-                type="number"
-                min="0"
-                max="20"
-                value={score}
+                type="number" min="0" max="20" value={score}
                 onChange={e => { setScore(e.target.value); setFout(""); }}
                 style={{ ...s.inputScore, borderColor: fout ? "#dc2626" : "#ccc" }}
                 placeholder="0 – 20"
@@ -244,7 +212,6 @@ export default function FinaleEvaluatieDocent() {
               <span style={s.scoreHint}>/ 20</span>
             </div>
             {fout && <p style={s.foutInline}>⚠️ {fout}</p>}
-
             <label style={{ ...s.label, marginTop: "1rem" }}>Feedback:</label>
             <textarea
               style={s.textarea}
@@ -280,31 +247,25 @@ export default function FinaleEvaluatieDocent() {
 
       <div style={s.knoppen}>
         {kanInvullen && !toonReadonly && (
-          <button
-            style={{ ...s.btn, ...s.btnGroen }}
-            onClick={handleIndienen}
-            disabled={bezig}
-          >
+          <button style={{ ...s.btn, ...s.btnGroen }} onClick={handleIndienen} disabled={bezig}>
             {bezig ? "BEZIG…" : isGeeval ? "OPSLAAN" : "BEVESTIGEN"}
           </button>
         )}
         {toonReadonly && (
-          <button
-            style={{ ...s.btn, ...s.btnGroen }}
-            onClick={handleBewerken}
-          >
+          <button style={{ ...s.btn, ...s.btnGroen }} onClick={handleBewerken}>
             BEOORDELING BEWERKEN
           </button>
         )}
-        <button style={{ ...s.btn, ...s.btnWit }} onClick={() => window.history.back()}>
-          TERUG
-        </button>
+<button style={s.terugLink} onClick={() => navigate("/dashboard/teacher")}>
+  ← Terug naar dashboard
+</button>
       </div>
     </div>
   );
 }
 
 const s = {
+  terugLink: { background: "none", border: "none", color: "#2563eb", fontSize: "0.9rem", cursor: "pointer", padding: 0, textDecoration: "underline" },
   pagina:              { maxWidth: "620px", margin: "2rem auto", padding: "1.5rem", fontFamily: "Arial, sans-serif", color: "#222" },
   loading:             { display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" },
   titel:               { fontSize: "1.6rem", fontWeight: "bold", marginBottom: "1rem" },
@@ -312,7 +273,6 @@ const s = {
   infoRegel:           { margin: "0.2rem 0", fontSize: "0.95rem" },
   infoLabel:           { fontWeight: "bold", marginRight: "0.4rem" },
   lijn:                { border: "none", borderTop: "1px solid #ccc", margin: "1.25rem 0" },
-  statusMelding:       { background: "#f0fdf4", border: "1px solid #86efac", color: "#166534", padding: "0.75rem 1rem", borderRadius: "6px", marginBottom: "1rem", fontSize: "0.9rem" },
   waarschuwingMelding: { background: "#fefce8", border: "1px solid #fde047", color: "#854d0e", padding: "0.75rem 1rem", borderRadius: "6px", marginBottom: "1rem", fontSize: "0.9rem" },
   sectie:              { marginBottom: "1.25rem" },
   sectietitel:         { fontSize: "1rem", fontWeight: "bold", marginBottom: "0.5rem" },

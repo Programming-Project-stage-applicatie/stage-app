@@ -1,75 +1,50 @@
 const express = require("express");
 const cors = require("cors");
-const mysql = require("mysql2/promise");
+const mysql = require("mysql2");
 require("dotenv").config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-/* ---------------------------------------------------------
-   DATABASE CONNECTIE (POOL - AANBEVOLEN)
-   ⭐ FIX: dateStrings voorkomt timezone shifts
---------------------------------------------------------- */
-const db = mysql.createPool({
+// MySQL connectie
+const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  dateStrings: true, // ⭐ voorkomt timezone problemen
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
+  database: process.env.DB_NAME
 });
 
-/* ---------------------------------------------------------
-   DATABASE BESCHIKBAAR MAKEN IN REQUEST
---------------------------------------------------------- */
-app.use((req, res, next) => {
-  req.db = db;
-  next();
+// Test connectie
+db.connect((err) => {
+  if (err) {
+    console.log("MySQL error:", err);
+    return;
+  }
+  console.log("Connected to MySQL database");
 });
 
-/* ---------------------------------------------------------
-   AUTH ROUTES (GEEN JWT NODIG)
---------------------------------------------------------- */
+// Users
+
+const userRoutes = require("./routes/users");
+app.use("/users", userRoutes);
+
 const authRoutes = require("./routes/auth");
 app.use("/auth", authRoutes);
 
-/* ---------------------------------------------------------
-   JWT AUTHENTICATIE (VANAF HIER VERPLICHT)
---------------------------------------------------------- */
-const authenticateJWT = require("./middleware/authenticateJWT");
 
-/* ---------------------------------------------------------
-   BEVEILIGDE ROUTES
---------------------------------------------------------- */
-const internshipRequestsRoutes = require("./routes/internship_requests");
-app.use("/internship-requests", authenticateJWT, internshipRequestsRoutes);
-
-const userRoutes = require("./routes/users");
-app.use("/users", authenticateJWT, userRoutes);
-
-const internshipRoutes = require("./routes/internships");
-app.use("/internships", authenticateJWT, internshipRoutes);
-
-const logbooksRoutes = require("./routes/logbooks");
-app.use("/api/logbooks", logbooksRoutes);
-
-
-const supervisorLogbooksRoutes = require("./routes/supervisorLogbooks");
-app.use("/api/supervisor", supervisorLogbooksRoutes);
-
-/* ---------------------------------------------------------
-   TEST ROUTE (GEEN JWT)
---------------------------------------------------------- */
+// Test route
 app.get("/", (req, res) => {
   res.send("Backend is running");
 });
 
-/* ---------------------------------------------------------
-   SERVER STARTEN
---------------------------------------------------------- */
+const logbookRoutes = require("./routes/logbooks");
+app.use("/api/logbooks", logbookRoutes);
+const supervisorLogbookRoutes = require("./routes/supervisorLogbooks");
+app.use("/api/supervisor", supervisorLogbookRoutes);
+
 app.listen(3000, () => {
   console.log("Server running on http://localhost:3000");
 });
+
+

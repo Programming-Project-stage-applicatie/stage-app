@@ -12,50 +12,6 @@ const translations = {
     requiredFields: "Alle velden zijn verplicht.",
     serverError: "Kan geen verbinding maken met de server.",
 
-    logbook: {
-      title: "Logboek",
-      week: "Week",
-      tasks: "Taken",
-      reflection: "Reflectie",
-      problems: "Problemen",
-      feedback: "Feedback",
-      status: "Status",
-      none: "Leeg",
-      back: "Terug",
-      create: "Logboek aanmaken",
-      save: "Opslaan",
-      submit: "Indienen",
-      giveFeedback: "Feedback geven",
-      feedbackSaved: "Feedback opgeslagen",
-      saved: "Logboek succesvol opgeslagen",
-      submitted: "Logboek succesvol ingediend",
-      supervisorOverview: "Logboeken overzicht",
-      supervisorSubtitle: "Overzicht van studenten en hun laatste logboek",
-      lastWeek: "Laatste week",
-      noStudents: "Geen studenten gevonden",
-      viewOverview: "Bekijken",
-      loading: "Laden...",
-      fetchError: "Fout bij ophalen",
-      filter: {
-        all: "Alle statussen"
-      },
-
-
-      statuses: {
-        open: "Open",
-        submitted: "Ingediend",
-        approved: "Goedgekeurd",
-        adjustment_required: "Aanpassing vereist"
-      },
-
-      errors: {
-        load: "Fout bij ophalen logboeken",
-        save: "Fout bij opslaan logboek",
-        submit: "Fout bij indienen logboek",
-        exists: "Er bestaat al een logboek voor deze week"
-      }
-    },
-
     adminUsers: {
       title: "Gebruikers",
       newRow: "Nieuwe lijn",
@@ -78,7 +34,6 @@ const translations = {
         username: "Gebruikersnaam",
         password: "Wachtwoord",
         role: "Rol",
-        studyprogram: "Opleiding",
         status: "Status"
       },
 
@@ -107,7 +62,6 @@ const translations = {
         usernameTaken: "Deze gebruikersnaam is al in gebruik.",
         generic: "Er is een fout opgetreden."
       }
-
     },
 
     
@@ -118,55 +72,68 @@ const translations = {
       internship_committee: "Stagecommissie dashboard",
       admin: "Administratie dashboard"
     },
-
-    adminInternships: {
-      fetchError: "Kon stages niet ophalen",
-      detailFetchError: "Kon stage niet ophalen",
-      loading: "Laden...",
-      detailTitle: "Stage detail",
-      backToDashboard: "Terug naar dashboard",
-      company: "Bedrijf",
-      student: "Student",
-      period: "Periode",
-      status: "Status",
-      description: "Stageopdracht",
-      mentor: "Mentor",
-      teacher: "Docent",
-      notAssigned: "Nog niet toegewezen",
-      selectMentor: "Selecteer mentor",
-      selectTeacher: "Selecteer docent",
-      withoutMentor: "Stages zonder mentor",
-      withoutTeacher: "Stages zonder docent",
-      withoutBoth: "Stages zonder mentor en docent",
-      noneWithoutMentor: "Geen stages zonder mentor",
-      noneWithoutTeacher: "Geen stages zonder docent",
-      noneWithoutBoth: "Geen stages zonder mentor en docent",
-      save: "Opslaan",
-      saved: "Stage succesvol bijgewerkt",
-      saveError: "Opslaan mislukt" 
-    },
-
-    
-    studentDashboard: {
-      welcome: "Welkom",
-      title: "Mijn stages"
-    },
-
-    studentInternships: {
-      fetchError: "Kon stages niet ophalen",
-      none: "Je hebt momenteel geen stage",
-      period: "Stageperiode",
-      stage: "Stage",
-      logbooks: "Logboeken",
-      evaluation: "Finale evaluatie",
-      open: "Open"
-    }
-
-
-    
+    logbooks: {
+  title: "Logboek",
+  overview: "Overzicht",
+  addButton: "+ logboek toevoegen",
+  noLogbooks: "Nog geen logboeken. Klik op '+ logboek toevoegen' om te starten.",
+  week: "Week",
+  action: "Actie",
+  fill: "invullen",
+  view: "bekijken",
+  newLogbook: "Nieuw logboek",
+  weekNumber: "Weeknummer",
+  weekPlaceholder: "bv. 5",
+  weekExists: "Er bestaat al een logboek voor week",
+  tasks: "Uitgevoerde taken",
+  tasksDescription: "Wat heb je deze week gedaan?",
+  tasksPlaceholder: "Beschrijf je taken concreet...",
+  reflection: "Reflectie",
+  reflectionDescription: "Wat heb je geleerd? Wat liep goed of moeilijker?",
+  reflectionPlaceholder: "Jouw reflectie op de week...",
+  problems: "Problemen / leerpunten",
+  problemsDescription: "Welke problemen liep je tegen? Wat wil je nog leren?",
+  problemsPlaceholder: "Beschrijf problemen of leerpunten...",
+  save: "opslaan als concept",
+  submit: "indienen",
+  back: "terug naar overzicht",
+  saving: "Bezig...",
+  saveError: "Er ging iets mis. Probeer opnieuw.",
+  confirmTitle: "Logboek indienen?",
+  confirmText: "Weet je zeker dat je wil indienen? Je kan daarna niet meer bewerken.",
+  confirmYes: "Ja, indienen",
+  confirmCancel: "Annuleren",
+  supervisorOverview: "Logboek opvolging",
+  supervisorSubtitle: "Overzicht van alle studenten",
+  supervisorInterns: "Overzicht van alle stagiairs",
+  lastWeek: "Laatste week",
+  viewOverview: "Bekijk overzicht",
+  noStudents: "Geen studenten gevonden",
+  noInterns: "Geen stagiairs gevonden",
+  loading: "Laden...",
+  logbookOverview: "LOGBOEK OVERZICHT",
+  edit: "aanpassen",
+  mentorFeedback: "Feedback Mentor",
+  interns: "Stagiairs",
+  notFilled: "Niet ingevuld",
+  yourFeedback: "Jouw feedback (optioneel)",
+  feedbackPlaceholder: "geef feedback op dit logboek.",
+  saved: "Opgeslagen!",
+  submitFeedback: "Indienen",
+  backBtn: "Terug",
+  filter: {
+    all: "Alle"
+  },
+  status: {
+    submitted: "Ingediend",
+    approved: "Goedgekeurd",
+    adjustment_required: "Aanpassingen vereist",
+    open: "Open",
+    none: "Nog geen logboeken"
   }
+},
 
-  
+  }
 };
 
 // nl fixed for now

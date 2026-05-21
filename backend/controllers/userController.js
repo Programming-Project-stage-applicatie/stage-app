@@ -1,6 +1,9 @@
 const userModel = require("../models/userModel");
 const bcrypt = require("bcrypt");
 
+// =========================
+// GET ALL USERS (ADMIN)
+// =========================
 exports.getAllUsers = (req, res) => {
   const role = req.query.role;
 
@@ -12,6 +15,47 @@ exports.getAllUsers = (req, res) => {
   });
 };
 
+// =========================
+// GET LOGGED-IN USER (STUDENT / ANY ROLE)
+// =========================
+exports.getMe = async (req, res) => {
+  const pool = req.db;
+  const userId = req.user.id;
+
+  try {
+    const [rows] = await pool.query(
+      `
+      SELECT 
+        u.id,
+        u.firstname,
+        u.lastname,
+        u.email,
+        u.username,
+        u.role,
+        u.status,
+        s.studyprogram
+      FROM users u
+      LEFT JOIN students s ON s.user_id = u.id
+      WHERE u.id = ?
+      `,
+      [userId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.json(rows[0]);
+
+  } catch (error) {
+    console.error("GET ME ERROR:", error);
+    return res.status(500).json({ message: "Failed to fetch user" });
+  }
+};
+
+// =========================
+// CREATE USER (ADMIN)
+// =========================
 exports.createUser = async (req, res) => {
   const pool = req.db;
   let connection;
@@ -117,19 +161,39 @@ exports.createUser = async (req, res) => {
       userId
     });
 
-  } catch (error) {
-    if (connection) await connection.rollback();
-    console.error("Create user failed:", error);
+  } 
+catch (err) {
+  console.error("Create user failed:", err);
 
-    return res.status(500).json({
-      message: "Failed to create user"
-    });
+  // duplicate email of username
+  if (err.code === "ER_DUP_ENTRY") {
+    if (err.sqlMessage.includes("email")) {
+      return res.status(400).json({
+        code: "EMAIL_TAKEN"
+      });
+    }
+
+    if (err.sqlMessage.includes("username")) {
+      return res.status(400).json({
+        code: "USERNAME_TAKEN"
+      });
+    }
+  }
+
+  // fallback
+  res.status(500).json({
+    message: "Server error"
+  });
+
 
   } finally {
     if (connection) connection.release();
   }
 };
 
+// =========================
+// UPDATE USER (ADMIN)
+// =========================
 exports.updateUser = async (req, res) => {
   const pool = req.db;
   const userId = req.params.id;
@@ -231,6 +295,22 @@ exports.updateUser = async (req, res) => {
     if (connection) await connection.rollback();
     console.error("Update user failed:", error);
 
+    
+  // duplicate email / username
+    if (error.code === "ER_DUP_ENTRY") {
+      if (error.sqlMessage.includes("email")) {
+        return res.status(400).json({
+          code: "EMAIL_TAKEN"
+        });
+      }
+
+    if (error.sqlMessage.includes("username")) {
+      return res.status(400).json({
+        code: "USERNAME_TAKEN"
+      });
+    }
+  }
+  // fallback
     return res.status(500).json({
       message: "Failed to update user"
     });
@@ -240,6 +320,9 @@ exports.updateUser = async (req, res) => {
   }
 };
 
+// =========================
+// DELETE USER (ADMIN)
+// =========================
 exports.deleteUser = async (req, res) => {
   const pool = req.db;
   const userId = req.params.id;
@@ -295,6 +378,15 @@ exports.deleteUser = async (req, res) => {
     if (connection) await connection.rollback();
     console.error("Delete user failed:", error);
 
+    
+    // FK constraint error
+    if (error.code === "ER_ROW_IS_REFERENCED_2") {
+      return res.status(400).json({
+        code: "USER_IN_USE"
+      });
+    }
+
+    // fallback
     return res.status(500).json({
       message: "Failed to delete user"
     });
@@ -304,6 +396,9 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
+// =========================
+// RESET PASSWORD (ADMIN)
+// =========================
 exports.resetPassword = async (req, res) => {
   const pool = req.db;
   const { id } = req.params;

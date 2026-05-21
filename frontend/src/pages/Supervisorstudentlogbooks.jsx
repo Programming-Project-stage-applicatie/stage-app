@@ -86,7 +86,7 @@ export default function SupervisorStudentLogbooks() {
                   <td style={s.td}>
                     <button
                       style={s.btn}
-                      onClick={() => navigate(`/supervisor/logbook/${log.id}`)}
+                   onClick={() => navigate(`/supervisor/logbook/${log.id}`)}
                     >
                       Bekijken
                     </button>

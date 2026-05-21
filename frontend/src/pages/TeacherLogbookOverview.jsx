@@ -1,149 +1,165 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from "react";
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+const API_BASE = "http://localhost:3000";
 
-const STATUS_CONFIG = {
-  submitted:           { label: 'Ingediend',            bg: '#fbbf24', color: '#fff' },
-  approved:            { label: 'Goedgekeurd',          bg: '#22c55e', color: '#fff' },
-  adjustment_required: { label: 'Aanpassingen vereist', bg: '#f97316', color: '#fff' },
-  none:                { label: 'Nog geen logboeken',   bg: '#d1d5db', color: '#374151' },
+const STATUS_STYLES = {
+  submitted: { background: "#EF9F27", color: "#412402", label: "ingediend" },
+  approved:  { background: "#639922", color: "#EAF3DE", label: "goedgekeurd" },
+  rejected:  { background: "#D85A30", color: "#FAECE7", label: "aanpassingen vereist" },
+  open:      { background: "#D3D1C7", color: "#444441", label: "nog geen logboeken" },
 };
 
-const FILTER_OPTIONS = [
-  { value: 'all',                 label: 'Filter'                },
-  { value: 'submitted',           label: 'Ingediend'             },
-  { value: 'approved',            label: 'Goedgekeurd'           },
-  { value: 'adjustment_required', label: 'Aanpassingen vereist'  },
-  { value: 'none',                label: 'Nog geen logboeken'    },
+const STAT_CARDS = [
+  { key: "submitted", label: "INGEDIEND",            bg: "#EF9F27", numColor: "#412402", labelColor: "#633806" },
+  { key: "approved",  label: "GOEDGEKEURD",          bg: "#639922", numColor: "#EAF3DE", labelColor: "#C0DD97" },
+  { key: "rejected",  label: "AANPASSINGEN VEREIST", bg: "#D85A30", numColor: "#FAECE7", labelColor: "#F5C4B3" },
 ];
 
-function StatusBadge({ status }) {
-  const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.none;
-  return (
-    <span style={{
-      display: 'inline-block', padding: '4px 12px', borderRadius: 6,
-      fontSize: 13, fontWeight: 600, background: cfg.bg, color: cfg.color, whiteSpace: 'nowrap',
-    }}>
-      {cfg.label}
-    </span>
-  );
-}
+const FILTER_OPTIONS = [
+  { value: "all",       label: "filter" },
+  { value: "rejected",  label: "aanpassingen vereist" },
+  { value: "approved",  label: "goedgekeurd" },
+  { value: "submitted", label: "ingediend" },
+  { value: "open",      label: "nog geen logboeken" },
+];
 
-function StatCard({ count, label, bg, color }) {
-  return (
-    <div style={{ background: bg, color, borderRadius: 8, padding: '14px 20px', minWidth: 90, textAlign: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.10)' }}>
-      <div style={{ fontSize: 28, fontWeight: 800, lineHeight: 1 }}>{count}</div>
-      <div style={{ fontSize: 11, fontWeight: 700, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</div>
-    </div>
-  );
-}
-
-export default function TeacherLogbookOverview() {
-  const navigate = useNavigate();
+export default function LogboekOpvolging({ onBekijkOverzicht }) {
   const [students, setStudents] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState(null);
-  const [filter, setFilter]     = useState('all');
+  const [filter, setFilter]     = useState("all");
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    fetch(`${API_BASE}/api/supervisor/teacher/logbooks`, {
+    const token = localStorage.getItem("token");
+    fetch(`${API_BASE}/api/logbooks/supervisor/teacher/logbooks`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then(r => r.json())
-      .then(json => setStudents(json.data || []))
-      .catch(e => setError(e.message))
-      .finally(() => setLoading(false));
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((json) => {
+        setStudents(json.data || []);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError(err.message);
+        setLoading(false);
+      });
   }, []);
 
-  const filtered = filter === 'all'
-    ? students
-    : students.filter(s => (s.status || 'none') === filter);
+  const counts = STAT_CARDS.reduce((acc, card) => {
+    acc[card.key] = students.filter((s) => s.status === card.key).length;
+    return acc;
+  }, {});
 
-  const stats = {
-    submitted:           students.filter(s => s.status === 'submitted').length,
-    approved:            students.filter(s => s.status === 'approved').length,
-    adjustment_required: students.filter(s => s.status === 'adjustment_required').length,
-  };
+  const filtered =
+    filter === "all" ? students : students.filter((s) => s.status === filter);
+
+  if (loading) return <div style={{ padding: "2rem", color: "#888" }}>Logboeken laden...</div>;
+  if (error)   return <div style={{ padding: "2rem", color: "#D85A30" }}>Fout: {error}</div>;
 
   return (
-    <div style={s.page}>
-      <h1 style={s.title}>Logboek opvolging</h1>
-      <p style={s.subtitle}>Overzicht van alle studenten</p>
+    <div style={{ fontFamily: "sans-serif", maxWidth: 760, margin: "0 auto", padding: "2rem 1.5rem" }}>
+      <h1 style={{ fontSize: 22, fontWeight: 500, margin: "0 0 4px" }}>Logboek opvolging</h1>
+      <p style={{ fontSize: 13, color: "#888", margin: "0 0 1.5rem" }}>Overzicht van alle studenten</p>
 
-      {!loading && !error && (
-        <div style={s.statsRow}>
-          <StatCard count={stats.submitted}           label="Ingediend"            bg="#fbbf24" color="#fff" />
-          <StatCard count={stats.approved}            label="Goedgekeurd"          bg="#22c55e" color="#fff" />
-          <StatCard count={stats.adjustment_required} label="Aanpassingen vereist" bg="#f97316" color="#fff" />
-          <div style={{ marginLeft: 'auto', alignSelf: 'center' }}>
-            <select value={filter} onChange={e => setFilter(e.target.value)} style={s.select}>
-              {FILTER_OPTIONS.map(o => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
+      {/* Stat cards + filter */}
+      <div style={{ display: "flex", gap: 12, marginBottom: "2rem", flexWrap: "wrap", alignItems: "center" }}>
+        {STAT_CARDS.map((card) => (
+          <div
+            key={card.key}
+            onClick={() => setFilter(filter === card.key ? "all" : card.key)}
+            style={{
+              background: card.bg,
+              borderRadius: 8,
+              padding: "14px 20px",
+              minWidth: 90,
+              textAlign: "center",
+              cursor: "pointer",
+              outline: filter === card.key ? "3px solid rgba(0,0,0,0.2)" : "none",
+            }}
+          >
+            <div style={{ fontSize: 26, fontWeight: 500, color: card.numColor }}>{counts[card.key] ?? 0}</div>
+            <div style={{ fontSize: 11, fontWeight: 500, color: card.labelColor, letterSpacing: "0.04em", marginTop: 2 }}>
+              {card.label}
+            </div>
           </div>
-        </div>
-      )}
+        ))}
 
-      {loading && <p style={s.info}>Laden...</p>}
-      {error   && <p style={{ ...s.info, color: '#dc2626' }}>{error}</p>}
-
-      {!loading && !error && (
-        <div style={s.tableWrap}>
-          <table style={s.table}>
-            <thead>
-              <tr>
-                <th style={s.th}>Student</th>
-                <th style={s.th}>Bedrijf</th>
-                <th style={s.th}>Laatste week</th>
-                <th style={s.th}>Status</th>
-                <th style={s.th}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 && (
-                <tr>
-                  <td colSpan={5} style={{ ...s.td, color: '#9ca3af', textAlign: 'center' }}>
-                    Geen studenten gevonden
-                  </td>
-                </tr>
-              )}
-              {filtered.map((student, i) => (
-                <tr key={student.id} style={{ background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
-                  <td style={s.td}>{student.name}</td>
-                  <td style={s.td}>{student.company || '—'}</td>
-                  <td style={s.td}>{student.last_week ? `Week ${student.last_week}` : '—'}</td>
-                  <td style={s.td}><StatusBadge status={student.status || 'none'} /></td>
-                  <td style={s.td}>
-                    <button
-                      style={s.btn}
-                      onClick={() => navigate(`/logbooks/internship/${student.internship_id || student.id}`)}
-                    >
-                      Bekijk overzicht
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div style={{ marginLeft: "auto" }}>
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            style={{ fontSize: 13, padding: "6px 10px", borderRadius: 8, border: "0.5px solid #ccc", cursor: "pointer" }}
+          >
+            {FILTER_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
         </div>
-      )}
+      </div>
+
+      {/* Table */}
+      <div style={{ borderTop: "0.5px solid #e0e0e0" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "2fr 2fr 1.2fr 2fr 1.5fr", padding: "10px 0 8px", borderBottom: "0.5px solid #e0e0e0" }}>
+          {["Student", "Bedrijf", "Laatste week", "", ""].map((h, i) => (
+            <span key={i} style={{ fontSize: 13, fontWeight: 500 }}>{h}</span>
+          ))}
+        </div>
+
+        {filtered.length === 0 && (
+          <div style={{ padding: "1.5rem 0", fontSize: 14, color: "#888" }}>Geen studenten gevonden.</div>
+        )}
+
+        {filtered.map((student) => {
+          const st = STATUS_STYLES[student.status] || STATUS_STYLES["open"];
+          return (
+            <div
+              key={student.id}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "2fr 2fr 1.2fr 2fr 1.5fr",
+                padding: "12px 0",
+                borderBottom: "0.5px solid #e0e0e0",
+                alignItems: "center",
+              }}
+            >
+              <span style={{ fontSize: 14 }}>{student.name}</span>
+              <span style={{ fontSize: 14, color: "#666" }}>{student.company}</span>
+              <span style={{ fontSize: 14, color: "#666" }}>{student.last_week ? `Week ${student.last_week}` : "-"}</span>
+              <span>
+                <span style={{
+                  display: "inline-block",
+                  background: st.background,
+                  color: st.color,
+                  fontSize: 12,
+                  fontWeight: 500,
+                  padding: "4px 10px",
+                  borderRadius: 6,
+                }}>
+                  {st.label}
+                </span>
+              </span>
+              <span>
+                <button
+                  onClick={() => onBekijkOverzicht?.(student.id)}
+                  style={{
+                    fontSize: 12,
+                    padding: "5px 12px",
+                    borderRadius: 6,
+                    border: "0.5px solid #ccc",
+                    background: "#fff",
+                    cursor: "pointer",
+                  }}
+                >
+                  Bekijk overzicht
+                </button>
+              </span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
-
-const s = {
-  page:      { padding: '28px 32px', maxWidth: 900, margin: '0 auto', fontFamily: "'Segoe UI', sans-serif" },
-  title:     { fontSize: 26, fontWeight: 800, margin: '0 0 4px', color: '#111827' },
-  subtitle:  { fontSize: 14, color: '#6b7280', margin: '0 0 20px' },
-  statsRow:  { display: 'flex', gap: 12, alignItems: 'center', marginBottom: 20, flexWrap: 'wrap' },
-  select:    { padding: '7px 12px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, background: '#fff', cursor: 'pointer', minWidth: 180 },
-  info:      { textAlign: 'center', color: '#9ca3af', padding: 32 },
-  tableWrap: { borderRadius: 10, border: '1px solid #e5e7eb', overflow: 'hidden' },
-  table:     { width: '100%', borderCollapse: 'collapse', fontSize: 14 },
-  th:        { padding: '10px 16px', textAlign: 'left', fontSize: 12, fontWeight: 700, color: '#6b7280', background: '#f9fafb', borderBottom: '1px solid #e5e7eb', textTransform: 'uppercase', letterSpacing: '0.5px' },
-  td:        { padding: '13px 16px', borderBottom: '1px solid #f3f4f6', verticalAlign: 'middle' },
-  btn:       { padding: '6px 14px', fontSize: 13, fontWeight: 500, borderRadius: 7, border: '1px solid #d1d5db', background: '#fff', cursor: 'pointer', color: '#374151', whiteSpace: 'nowrap' },
-};

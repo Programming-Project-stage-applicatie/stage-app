@@ -2,6 +2,31 @@ const express = require("express");
 const router = express.Router();
 const authenticateJWT = require("../middleware/authenticateJWT");
 const db = require("../db");
+
+// Alle logboeken per stage-id (voor docent/mentor)
+router.get("/internship/:internshipId", authenticateJWT, (req, res) => {
+  db.query(
+    "SELECT * FROM logbooks WHERE internship_id = ? ORDER BY week DESC",
+    [req.params.internshipId],
+    (err, results) => {
+      if (err) return res.status(500).json({ message: "Fout bij ophalen logbooks" });
+      res.json(results);
+    }
+  );
+});
+
+// Één logboek ophalen op id (voor docent/mentor)
+router.get("/detail/:id", authenticateJWT, (req, res) => {
+  db.query(
+    "SELECT * FROM logbooks WHERE id = ?",
+    [req.params.id],
+    (err, results) => {
+      if (err) return res.status(500).json({ message: "Fout bij ophalen logbook" });
+      if (results.length === 0) return res.status(404).json({ message: "Niet gevonden" });
+      res.json(results[0]);
+    }
+  );
+});
  
 // Alle logboeken van ingelogde student
 router.get("/", authenticateJWT, (req, res) => {

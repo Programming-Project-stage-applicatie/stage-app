@@ -1,15 +1,15 @@
-
 const express = require("express");
 const router = express.Router();
 const authenticateJWT = require("../middleware/authenticateJWT");
 const db = require("../db");
 
-// ── TEACHER: all students + their most recent non-open logbook ────────────────
+// ── TEACHER: all students + their most recent non-open logbook + company ──────
 router.get("/teacher/logbooks", authenticateJWT, (req, res) => {
   const query = `
     SELECT 
       u.id,
       CONCAT(u.firstname, ' ', u.lastname) AS name,
+      (SELECT company FROM internship_requests WHERE student_id = u.id ORDER BY id DESC LIMIT 1) AS company,
       lb.week AS last_week,
       lb.status
     FROM users u
@@ -88,6 +88,31 @@ router.get("/students/:id/logbooks", authenticateJWT, (req, res) => {
           res.json({ data: { student_name: studentName, logbooks } });
         }
       );
+    }
+  );
+});
+
+// ── LOGBOOK DETAIL: één logboek met student naam en bedrijf ──────────────────
+router.get("/logbooks/:id/detail", authenticateJWT, (req, res) => {
+  const logbookId = req.params.id;
+  db.query(
+    `SELECT 
+      l.*,
+      CONCAT(u.firstname, ' ', u.lastname) AS student_name,
+      ir.company
+     FROM logbooks l
+     LEFT JOIN users u ON u.id = l.created_by_student_id
+     LEFT JOIN internship_requests ir ON ir.student_id = l.created_by_student_id
+     WHERE l.id = ?
+     LIMIT 1`,
+    [logbookId],
+    (err, results) => {
+      if (err) {
+        console.error("Error fetching logbook detail:", err);
+        return res.status(500).json({ message: "Error fetching logbook" });
+      }
+      if (results.length === 0) return res.status(404).json({ message: "Niet gevonden" });
+      res.json(results[0]);
     }
   );
 });

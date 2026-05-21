@@ -29,16 +29,42 @@ function Login() {
       });
 
       const data = await response.json();
-
+      
       if (!response.ok) {
-        setError(data.message || t("invalidCredentials"));
-        return;
+      
+        if (data.code === "INVALID_CREDENTIALS") {
+            setError(t("login.errors.invalidCredentials"));
+            return;
+          }
+
+          if (data.code === "REQUIRED_FIELDS") {
+            setError(t("login.errors.requiredFields"));
+            return;
+          }
+
+          if (data.code === "ACCOUNT_INACTIVE") {
+            setError(t("login.errors.accountInactive"));
+            return;
+          }
+
+          if (data.code === "INTERNAL_SERVER_ERROR") {
+            setError(t("login.errors.generic"));
+            return;
+          }
+
+      throw new Error();
       }
 
-      localStorage.setItem("token", data.token);
 
-      const role = data.role;
-      const targetRoute = getDashboardRouteByRole(role);
+         
+
+      // enkel bij succes opslaan: 
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("role", data.role);
+
+      // Dashboard bepalen op basis van rol
+      const targetRoute = getDashboardRouteByRole(data.role);
       navigate(targetRoute);
 
     } catch {
@@ -49,7 +75,7 @@ function Login() {
   return (
     <div className="login-page">
       <div className="login-card">
-        <h1>{t("loginTitle")}</h1>
+        <h1>Stage Monitoring Tool</h1>
         <h2>{t("loginTitle")}</h2>
 
         <form onSubmit={handleSubmit}>

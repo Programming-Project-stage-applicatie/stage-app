@@ -39,7 +39,9 @@ app.get("/", (req, res) => {
 });
 
 const logbookRoutes = require("./routes/logbooks");
-app.use("/logbooks", logbookRoutes);
+app.use("/api/logbooks", logbookRoutes);
+const supervisorLogbookRoutes = require("./routes/supervisorLogbooks");
+app.use("/api/supervisor", supervisorLogbookRoutes);
 
 app.listen(3000, () => {
   console.log("Server running on http://localhost:3000");

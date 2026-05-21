@@ -1,117 +1,437 @@
 const userModel = require("../models/userModel");
 const bcrypt = require("bcrypt");
 
+// =========================
+// GET ALL USERS (ADMIN)
+// =========================
 exports.getAllUsers = (req, res) => {
-  userModel.getAllUsers((err, results) => {
+  const role = req.query.role;
+
+  userModel.getAllUsers(role, (err, results) => {
     if (err) {
-      return res.status(500).json({
-        message: "Failed to fetch users"
-      });
+      return res.status(500).json(err);
     }
-    res.status(200).json(results);
+    res.json(results);
   });
 };
 
-const VALID_ROLES = [
-  "admin",
-  "student",
-  "teacher",
-  "mentor",
-  "internship_committee"
-];
+// =========================
+// GET LOGGED-IN USER (STUDENT / ANY ROLE)
+// =========================
+exports.getMe = async (req, res) => {
+  const pool = req.db;
+  const userId = req.user.id;
 
-const VALID_STATUS = ["active", "inactive"];
-
-exports.createUser = async (req, res) => {
   try {
-    const {
-      firstname,
-      lastname,
-      email,
-      username,
-      password,
-      role,
-      status
-    } = req.body;
+    const [rows] = await pool.query(
+      `
+      SELECT 
+        u.id,
+        u.firstname,
+        u.lastname,
+        u.email,
+        u.username,
+        u.role,
+        u.status,
+        s.studyprogram
+      FROM users u
+      LEFT JOIN students s ON s.user_id = u.id
+      WHERE u.id = ?
+      `,
+      [userId]
+    );
 
-    if (!firstname || !lastname || !email || !username || !password || !role) {
-      return res.status(400).json({
-        message: "All required fields must be provided"
-      });
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
     }
 
-    if (!VALID_ROLES.includes(role)) {
-      return res.status(400).json({
-        message: "Invalid role"
-      });
-    }
+    return res.json(rows[0]);
 
-    const userStatus = status || "active";
-    if (!VALID_STATUS.includes(userStatus)) {
-      return res.status(400).json({
-        message: "Invalid status"
-      });
-    }
+  } catch (error) {
+    console.error("GET ME ERROR:", error);
+    return res.status(500).json({ message: "Failed to fetch user" });
+  }
+};
 
-    userModel.getUserByEmail(email, async (err, results) => {
-      if (err) {
-        return res.status(500).json({
-          message: "Failed to check existing user"
-        });
-      }
+// =========================
+// CREATE USER (ADMIN)
+// =========================
+exports.createUser = async (req, res) => {
+  const pool = req.db;
+  let connection;
 
-      if (results.length > 0) {
-        return res.status(409).json({
-          message: "User with this email already exists"
-        });
-      }
+  const {
+    firstname,
+    lastname,
+    email,
+    username,
+    password,
+    role,
+    status,
+    studyprogram
+  } = req.body;
 
-      const hashedPassword = await bcrypt.hash(password, 10);
+  if (
+    !firstname ||
+    !lastname ||
+    !email ||
+    !username ||
+    !password ||
+    !role ||
+    !status ||
+    (role === "student" && !studyprogram)
+  ) {
+    return res.status(400).json({
+      code: "REQUIRED_FIELDS"
+    });
+  }
 
-      const user = {
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    const [userResult] = await connection.execute(
+      `
+      INSERT INTO users
+      (firstname, lastname, email, username, password, role, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+      `,
+      [
         firstname,
         lastname,
         email,
         username,
-        password: hashedPassword,
+        hashedPassword,
         role,
-        status: userStatus
-      };
+        status
+      ]
+    );
 
-      userModel.createUser(user, (err, results) => {
-        if (err) {
+    const userId = userResult.insertId;
 
-          // Duplicate key (extra veiligheid)
-          if (err.code === "ER_DUP_ENTRY") {
-            return res.status(409).json({
-              message: "User with this email already exists"
-            });
-          }
+    switch (role) {
+      case "admin":
+        await connection.execute(
+          "INSERT INTO admins (user_id) VALUES (?)",
+          [userId]
+        );
+        break;
 
-          if (
-            err.code === "ER_DATA_TRUNCATED" ||
-            err.code === "ER_BAD_NULL_ERROR"
-          ) {
-            return res.status(400).json({
-              message: "Invalid user data"
-            });
-          }
+      case "student":
+        await connection.execute(
+          "INSERT INTO students (user_id, studyprogram) VALUES (?, ?)",
+          [userId, studyprogram]
+        );
+        break;
 
-          // Echte serverfout
-          return res.status(500).json({
-            message: "Failed to create user"
-          });
-        }
+      case "teacher":
+        await connection.execute(
+          "INSERT INTO teachers (user_id) VALUES (?)",
+          [userId]
+        );
+        break;
 
-        res.status(201).json({
-          message: "User created successfully",
-          userId: results.insertId
+      case "mentor":
+        await connection.execute(
+          "INSERT INTO mentors (user_id) VALUES (?)",
+          [userId]
+        );
+        break;
+
+      case "internship_committee":
+        await connection.execute(
+          "INSERT INTO internship_committees (user_id) VALUES (?)",
+          [userId]
+        );
+        break;
+
+      default:
+        await connection.rollback();
+        return res.status(400).json({
+          message: "Invalid role"
         });
+    }
+
+    await connection.commit();
+
+    return res.status(201).json({
+      message: "User created successfully",
+      userId
+    });
+
+  } 
+catch (err) {
+  console.error("Create user failed:", err);
+
+  // duplicate email of username
+  if (err.code === "ER_DUP_ENTRY") {
+    if (err.sqlMessage.includes("email")) {
+      return res.status(400).json({
+        code: "EMAIL_TAKEN"
       });
+    }
+
+    if (err.sqlMessage.includes("username")) {
+      return res.status(400).json({
+        code: "USERNAME_TAKEN"
+      });
+    }
+  }
+
+  // fallback
+  res.status(500).json({
+    message: "Server error"
+  });
+
+
+  } finally {
+    if (connection) connection.release();
+  }
+};
+
+// =========================
+// UPDATE USER (ADMIN)
+// =========================
+exports.updateUser = async (req, res) => {
+  const pool = req.db;
+  const userId = req.params.id;
+
+  const {
+    firstname,
+    lastname,
+    email,
+    username,
+    role,
+    status,
+    studyprogram
+  } = req.body;
+
+  if (
+    !firstname ||
+    !lastname ||
+    !email ||
+    !username ||
+    !role ||
+    !status
+  ) {
+    return res.status(400).json({
+      code: "REQUIRED_FIELDS"
     });
+  }
+
+  let connection;
+
+  try {
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    const [rows] = await connection.execute(
+      "SELECT role FROM users WHERE id = ?",
+      [userId]
+    );
+
+    if (rows.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (role === "student" && !studyprogram) {
+      await connection.rollback();
+      return res.status(400).json({
+        code: "STUDYPROGRAM_REQUIRED"
+      });
+    }
+
+    await connection.execute(
+      `
+      UPDATE users
+      SET firstname = ?, lastname = ?, email = ?, username = ?, role = ?, status = ?
+      WHERE id = ?
+      `,
+      [
+        firstname,
+        lastname,
+        email,
+        username,
+        role,
+        status,
+        userId
+      ]
+    );
+
+    if (role === "student") {
+      const [studentRows] = await connection.execute(
+        "SELECT user_id FROM students WHERE user_id = ?",
+        [userId]
+      );
+
+      if (studentRows.length === 0) {
+        await connection.execute(
+          "INSERT INTO students (user_id, studyprogram) VALUES (?, ?)",
+          [userId, studyprogram]
+        );
+      } else {
+        await connection.execute(
+          "UPDATE students SET studyprogram = ? WHERE user_id = ?",
+          [studyprogram, userId]
+        );
+      }
+    } else {
+      await connection.execute(
+        "DELETE FROM students WHERE user_id = ?",
+        [userId]
+      );
+    }
+
+    await connection.commit();
+
+    return res.status(200).json({
+      message: "User updated successfully"
+    });
+
   } catch (error) {
-    res.status(500).json({
-      message: "Unexpected server error"
+    if (connection) await connection.rollback();
+    console.error("Update user failed:", error);
+
+    
+  // duplicate email / username
+    if (error.code === "ER_DUP_ENTRY") {
+      if (error.sqlMessage.includes("email")) {
+        return res.status(400).json({
+          code: "EMAIL_TAKEN"
+        });
+      }
+
+    if (error.sqlMessage.includes("username")) {
+      return res.status(400).json({
+        code: "USERNAME_TAKEN"
+      });
+    }
+  }
+  // fallback
+    return res.status(500).json({
+      message: "Failed to update user"
     });
+
+  } finally {
+    if (connection) connection.release();
+  }
+};
+
+// =========================
+// DELETE USER (ADMIN)
+// =========================
+exports.deleteUser = async (req, res) => {
+  const pool = req.db;
+  const userId = req.params.id;
+  let connection;
+
+  try {
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    const [rows] = await connection.execute(
+      "SELECT role FROM users WHERE id = ?",
+      [userId]
+    );
+
+    if (rows.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const role = rows[0].role;
+
+    switch (role) {
+      case "admin":
+        await connection.execute("DELETE FROM admins WHERE user_id = ?", [userId]);
+        break;
+      case "student":
+        await connection.execute("DELETE FROM students WHERE user_id = ?", [userId]);
+        break;
+      case "teacher":
+        await connection.execute("DELETE FROM teachers WHERE user_id = ?", [userId]);
+        break;
+      case "mentor":
+        await connection.execute("DELETE FROM mentors WHERE user_id = ?", [userId]);
+        break;
+      case "internship_committee":
+        await connection.execute(
+          "DELETE FROM internship_committees WHERE user_id = ?",
+          [userId]
+        );
+        break;
+    }
+
+    await connection.execute(
+      "DELETE FROM users WHERE id = ?",
+      [userId]
+    );
+
+    await connection.commit();
+
+    return res.json({ message: "User deleted successfully" });
+
+  } catch (error) {
+    if (connection) await connection.rollback();
+    console.error("Delete user failed:", error);
+
+    
+    // FK constraint error
+    if (error.code === "ER_ROW_IS_REFERENCED_2") {
+      return res.status(400).json({
+        code: "USER_IN_USE"
+      });
+    }
+
+    // fallback
+    return res.status(500).json({
+      message: "Failed to delete user"
+    });
+
+  } finally {
+    if (connection) connection.release();
+  }
+};
+
+// =========================
+// RESET PASSWORD (ADMIN)
+// =========================
+exports.resetPassword = async (req, res) => {
+  const pool = req.db;
+  const { id } = req.params;
+  const { password } = req.body;
+
+  if (!password) {
+    return res.status(400).json({
+      code: "PASSWORD_REQUIRED"
+    });
+  }
+
+  let connection;
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    connection = await pool.getConnection();
+
+    await connection.execute(
+      "UPDATE users SET password = ? WHERE id = ?",
+      [hashedPassword, id]
+    );
+
+    return res.status(200).json({
+      message: "Password updated"
+    });
+
+  } catch (error) {
+    console.error("RESET PASSWORD ERROR:", error);
+    return res.status(500).json({
+      message: "Failed to reset password"
+    });
+
+  } finally {
+    if (connection) connection.release();
   }
 };

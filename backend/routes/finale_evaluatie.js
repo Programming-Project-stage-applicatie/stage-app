@@ -27,6 +27,7 @@ const upload = multer({
   },
 });
 
+// ─── GET student view ────────────────────────────────────────────────────────
 router.get("/student/:studentId", async (req, res) => {
   const pool = req.db;
   try {
@@ -40,6 +41,7 @@ router.get("/student/:studentId", async (req, res) => {
   }
 });
 
+// ─── POST opslaan (student) ───────────────────────────────────────────────────
 router.post("/student/:studentId/opslaan", (req, res, next) => {
   upload.single("document")(req, res, (err) => {
     if (err instanceof multer.MulterError) return res.status(400).json({ error: `Upload fout: ${err.message}` });
@@ -72,6 +74,7 @@ router.post("/student/:studentId/opslaan", (req, res, next) => {
   }
 });
 
+// ─── POST indienen (student) ──────────────────────────────────────────────────
 router.post("/student/:studentId/indienen", async (req, res) => {
   const pool = req.db;
   const { studentId } = req.params;
@@ -88,6 +91,7 @@ router.post("/student/:studentId/indienen", async (req, res) => {
   }
 });
 
+// ─── POST annuleren (student) ─────────────────────────────────────────────────
 router.post("/student/:studentId/annuleren", async (req, res) => {
   const pool = req.db;
   const { studentId } = req.params;
@@ -102,6 +106,7 @@ router.post("/student/:studentId/annuleren", async (req, res) => {
   }
 });
 
+// ─── POST mentor motivatie ────────────────────────────────────────────────────
 router.post("/student/:studentId/mentor-motivatie", async (req, res) => {
   const pool = req.db;
   const { studentId } = req.params;
@@ -119,9 +124,14 @@ router.post("/student/:studentId/mentor-motivatie", async (req, res) => {
   }
 });
 
+// ─── GET docent view ──────────────────────────────────────────────────────────
+// FIX: Bij status "open" is er nog geen rij in final_evaluations.
+//      We halen de studentinfo dan op via de internship rechtstreeks.
 router.get("/student/:studentId/docent", async (req, res) => {
   const pool = req.db;
+  const { studentId } = req.params;
   try {
+    // Probeer eerst een bestaand evaluatierecord op te halen met alle info
     const [rows] = await pool.query(`
       SELECT
         fe.*,
@@ -134,25 +144,56 @@ router.get("/student/:studentId/docent", async (req, res) => {
       JOIN users su                    ON ir.student_id           = su.id
       LEFT JOIN users mu               ON i.mentor_id             = mu.id
       WHERE fe.internship_id = ?
-    `, [req.params.studentId]);
-    if (rows.length === 0) return res.json({ status: "open" });
-    const r = rows[0];
-    res.json({
-      status:           r.status,
-      student_naam:     r.student_naam     ?? null,
-      bedrijf:          r.bedrijf          ?? null,
-      mentor_naam:      r.mentor_naam      ?? null,
-      presentation:     r.presentation     ?? null,
-      document:         r.document         ?? null,
-      mentor_motivatie: r.mentor_feedback  ?? null,
-      final_score:      r.final_score      ?? null,
-      feedback_docent:  r.teacher_feedback ?? null,
+    `, [studentId]);
+
+    if (rows.length > 0) {
+      // Record bestaat — stuur volledige data terug
+      const r = rows[0];
+      return res.json({
+        status:           r.status,
+        student_naam:     r.student_naam     ?? null,
+        bedrijf:          r.bedrijf          ?? null,
+        mentor_naam:      r.mentor_naam      ?? null,
+        presentation:     r.presentation     ?? null,
+        document:         r.document         ?? null,
+        mentor_motivatie: r.mentor_feedback  ?? null,
+        final_score:      r.final_score      ?? null,
+        feedback_docent:  r.teacher_feedback ?? null,
+      });
+    }
+
+    // Geen evaluatierecord → status is "open", maar haal studentinfo toch op
+    // via de internship zelf (studentId = internship id)
+    const [infoRows] = await pool.query(`
+      SELECT
+        CONCAT(su.firstName, ' ', su.lastName) AS student_naam,
+        ir.company                             AS bedrijf,
+        CONCAT(mu.firstName, ' ', mu.lastName) AS mentor_naam
+      FROM internships i
+      JOIN internship_requests ir ON i.internship_request_id = ir.id
+      JOIN users su               ON ir.student_id           = su.id
+      LEFT JOIN users mu          ON i.mentor_id             = mu.id
+      WHERE i.id = ?
+    `, [studentId]);
+
+    const info = infoRows[0] ?? {};
+    return res.json({
+      status:           "open",
+      student_naam:     info.student_naam ?? null,
+      bedrijf:          info.bedrijf      ?? null,
+      mentor_naam:      info.mentor_naam  ?? null,
+      presentation:     null,
+      document:         null,
+      mentor_motivatie: null,
+      final_score:      null,
+      feedback_docent:  null,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
+// ─── POST docent beoordeling ──────────────────────────────────────────────────
 router.post("/student/:studentId/docent", async (req, res) => {
   const pool = req.db;
   const { studentId } = req.params;
@@ -175,7 +216,46 @@ router.post("/student/:studentId/docent", async (req, res) => {
       `UPDATE final_evaluations SET final_score = ?, teacher_feedback = ?, status = ? WHERE id = ?`,
       [score, feedback_docent ?? null, nieuweStatus, record.id]
     );
-    res.json({ message: beëindigd ? "Evaluatie beëindigd en opgeslagen." : "Score en feedback opgeslagen.", status: nieuweStatus });
+    res.json({
+      message: beëindigd ? "Evaluatie beëindigd en opgeslagen." : "Score en feedback opgeslagen.",
+      status: nieuweStatus,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── GET bijlage downloaden ───────────────────────────────────────────────────
+// FIX: Aparte route om bestanden veilig te serveren met auth-check.
+//      Pad formaat in DB: /uploads/finale_evaluatie/student_X_timestamp.pdf
+router.get("/document/:studentId", async (req, res) => {
+  const pool = req.db;
+  const { studentId } = req.params;
+  try {
+    const [rows] = await pool.query(
+      "SELECT document FROM final_evaluations WHERE internship_id = ?",
+      [studentId]
+    );
+    if (rows.length === 0 || !rows[0].document) {
+      return res.status(404).json({ error: "Geen document gevonden." });
+    }
+
+    // Pad in DB is bv. "/uploads/finale_evaluatie/student_5_1234.pdf"
+    // Verwijder leading slash en bouw absoluut pad
+    const relativePath = rows[0].document.replace(/^\//, "");
+    const absPath = path.resolve(relativePath);
+
+    // Veiligheidscheck: bestand moet binnen de uploadDir liggen
+    const absUploadDir = path.resolve(uploadDir);
+    if (!absPath.startsWith(absUploadDir)) {
+      return res.status(403).json({ error: "Toegang geweigerd." });
+    }
+
+    if (!fs.existsSync(absPath)) {
+      return res.status(404).json({ error: "Bestand niet gevonden op server." });
+    }
+
+    res.sendFile(absPath);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

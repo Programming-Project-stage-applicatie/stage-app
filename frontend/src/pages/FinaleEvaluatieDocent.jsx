@@ -5,19 +5,29 @@ export default function FinaleEvaluatieDocent() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [evaluatie, setEvaluatie] = useState(null);
-  const [fout, setFout]           = useState("");
-  const [bezig, setBezig]         = useState(false);
+  const [evaluatie, setEvaluatie]               = useState(null);
+  const [fout, setFout]                         = useState("");
+  const [bezig, setBezig]                       = useState(false);
+  const [succesMelding, setSuccesMelding]       = useState("");   // FIX 1: succes-toast
 
-  const [score, setScore]                   = useState("");
-  const [feedbackTekst, setFeedbackTekst]   = useState("");
-  const [ingediend, setIngediend]           = useState(false);
+  const [score, setScore]                       = useState("");
+  const [feedbackTekst, setFeedbackTekst]       = useState("");
   const [evaluatieBeëindigd, setEvaluatieBeëindigd] = useState(false);
+
+  // FIX 2: na succesvol opslaan met vinkje → toonReadonly via lokale state
+  const [opgeslagenAlsBeëindigd, setOpgeslagenAlsBeëindigd] = useState(false);
 
   const isEersteLaad = useRef(true);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
+  // ── Succes-toast: verdwijnt na 3 seconden ──────────────────────────────────
+  function toonSucces(tekst) {
+    setSuccesMelding(tekst);
+    setTimeout(() => setSuccesMelding(""), 3000);
+  }
+
+  // ── Data ophalen ───────────────────────────────────────────────────────────
   const haalOp = useCallback(async () => {
     try {
       const res = await fetch(
@@ -34,7 +44,9 @@ export default function FinaleEvaluatieDocent() {
       setScore(data.final_score != null ? String(data.final_score) : "");
       setFeedbackTekst(data.feedback_docent || "");
       if (isEersteLaad.current) {
-        setEvaluatieBeëindigd(data.status === "evaluated");
+        const isGeeval = data.status === "evaluated";
+        setEvaluatieBeëindigd(isGeeval);
+        setOpgeslagenAlsBeëindigd(isGeeval); // al definitief → direct readonly
         isEersteLaad.current = false;
       }
     } catch {
@@ -44,6 +56,7 @@ export default function FinaleEvaluatieDocent() {
 
   useEffect(() => { haalOp(); }, [haalOp]);
 
+  // ── Indienen / opslaan ─────────────────────────────────────────────────────
   async function handleIndienen() {
     setFout("");
     let scoreNum = null;
@@ -65,9 +78,9 @@ export default function FinaleEvaluatieDocent() {
             ...(user.token ? { Authorization: `Bearer ${user.token}` } : {}),
           },
           body: JSON.stringify({
-            final_score: scoreNum,
+            final_score:     scoreNum,
             feedback_docent: feedbackTekst,
-            beëindigd: evaluatieBeëindigd,
+            beëindigd:       evaluatieBeëindigd,
           }),
         }
       );
@@ -75,6 +88,16 @@ export default function FinaleEvaluatieDocent() {
         const d = await res.json();
         setFout(d.error || "Indienen mislukt.");
       } else {
+        // FIX 1: succes-melding tonen
+        toonSucces(
+          evaluatieBeëindigd
+            ? "✅ Evaluatie beëindigd en opgeslagen."
+            : "✅ Score en feedback succesvol opgeslagen."
+        );
+        // FIX 2: als vinkje aan → direct readonly, knop verdwijnt
+        if (evaluatieBeëindigd) {
+          setOpgeslagenAlsBeëindigd(true);
+        }
         await haalOp();
       }
     } catch {
@@ -84,19 +107,27 @@ export default function FinaleEvaluatieDocent() {
     }
   }
 
+  // ── Bewerken (alleen mogelijk als status NIET evaluated) ───────────────────
   function handleBewerken() {
-    setIngediend(false);
-    setEvaluatieBeëindigd(evaluatie?.status === "evaluated");
+    setOpgeslagenAlsBeëindigd(false);
+    setEvaluatieBeëindigd(false);
   }
 
-  async function openDocument(url) {
+  // ── Bijlage openen via dedicated document-route ────────────────────────────
+  // FIX 4: eigen /document/:id route gebruiken in plaats van het DB-pad direct
+  async function openDocument() {
     try {
-      const res = await fetch(url, {
-        headers: user.token ? { Authorization: `Bearer ${user.token}` } : {},
-      });
-      if (!res.ok) { setFout("Document kon niet worden geopend."); return; }
+      const res = await fetch(
+        `http://localhost:3000/api/finale-evaluatie/document/${id}`,
+        { headers: user.token ? { Authorization: `Bearer ${user.token}` } : {} }
+      );
+      if (!res.ok) {
+        setFout("Document kon niet worden geopend.");
+        return;
+      }
       const blob = await res.blob();
-      window.open(URL.createObjectURL(blob), "_blank");
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
     } catch {
       setFout("Er ging iets mis bij het openen van het document.");
     }
@@ -107,6 +138,7 @@ export default function FinaleEvaluatieDocent() {
     return vertalingen[status] || status || "Onbekend";
   }
 
+  // ── Laad- en foutschermen ──────────────────────────────────────────────────
   if (fout && !evaluatie) return (
     <div style={s.pagina}>
       <p style={s.fout}>⚠️ {fout}</p>
@@ -116,19 +148,32 @@ export default function FinaleEvaluatieDocent() {
 
   if (!evaluatie) return <div style={s.loading}>Laden…</div>;
 
-  const isIngediend  = evaluatie.status === "submitted";
-  const isGeeval     = evaluatie.status === "evaluated";
-  const kanInvullen  = isIngediend || isGeeval;
-  const toonReadonly = (isGeeval || isIngediend) && ingediend;
+  const isIngediend = evaluatie.status === "submitted";
+  const isGeeval    = evaluatie.status === "evaluated";
+  const kanInvullen = isIngediend || isGeeval;
+
+  // FIX 2: readonly zodra opgeslagen met vinkje AAN, of als evaluatie al
+  //        definitief was bij laden (evaluated). Nooit bewerkbaar na evaluated.
+  const toonReadonly = opgeslagenAlsBeëindigd || isGeeval;
+
+  // FIX 3: bewerken-knop alleen tonen als status nog NIET evaluated is
+  const kanBewerken = toonReadonly && !isGeeval;
 
   return (
     <div style={s.pagina}>
+
+      {/* FIX 1: Succes-toast */}
+      {succesMelding && (
+        <div style={s.successToast}>{succesMelding}</div>
+      )}
+
       <h1 style={s.titel}>Finale Evaluatie — Docent</h1>
 
       <div style={s.statusBadge(evaluatie.status)}>
         {vertaalStatus(evaluatie.status).toUpperCase()}
       </div>
 
+      {/* Studentinfo — FIX 3 backend: nu ook aanwezig bij status "open" */}
       <div style={s.infoBlok}>
         <p style={s.infoRegel}><span style={s.infoLabel}>Student:</span>{evaluatie.student_naam || "—"}</p>
         <p style={s.infoRegel}><span style={s.infoLabel}>Stagebedrijf:</span>{evaluatie.bedrijf || "—"}</p>
@@ -144,6 +189,7 @@ export default function FinaleEvaluatieDocent() {
         </div>
       )}
 
+      {/* Eindpresentatie student */}
       <section style={s.sectie}>
         <h2 style={s.sectietitel}>Eindpresentatie Student</h2>
         {!isIngediend && !isGeeval ? (
@@ -159,7 +205,7 @@ export default function FinaleEvaluatieDocent() {
               placeholder="Geen omschrijving beschikbaar."
             />
             {evaluatie.document ? (
-              <button onClick={() => openDocument(evaluatie.document)} style={s.docBtn}>
+              <button onClick={openDocument} style={s.docBtn}>
                 📎 {evaluatie.document.split("/").pop()} — klik om te openen
               </button>
             ) : (
@@ -171,6 +217,7 @@ export default function FinaleEvaluatieDocent() {
 
       <hr style={s.lijn} />
 
+      {/* Feedback mentor */}
       <section style={s.sectie}>
         <h2 style={s.sectietitel}>Feedback Mentor</h2>
         {!evaluatie.mentor_motivatie ? (
@@ -182,9 +229,12 @@ export default function FinaleEvaluatieDocent() {
 
       <hr style={s.lijn} />
 
+      {/* Feedback docent */}
       <section style={s.sectie}>
         <h2 style={s.sectietitel}>Feedback Docent</h2>
+
         {toonReadonly ? (
+          // ── Readonly weergave ──────────────────────────────────────────────
           <>
             <label style={s.label}>Eindscore:</label>
             <div style={s.scoreBlok}>
@@ -194,12 +244,13 @@ export default function FinaleEvaluatieDocent() {
             <label style={{ ...s.label, marginTop: "1rem" }}>Feedback:</label>
             <textarea
               style={{ ...s.textarea, ...s.textareaReadonly }}
-              value={evaluatie.feedback_docent || ""}
+              value={feedbackTekst}
               readOnly
               placeholder="Geen feedback ingevoerd."
             />
           </>
         ) : kanInvullen ? (
+          // ── Bewerkbaar formulier ───────────────────────────────────────────
           <>
             <label style={s.label}>Eindscore (0–20) — optioneel:</label>
             <div style={s.scoreInvoerRij}>
@@ -227,6 +278,7 @@ export default function FinaleEvaluatieDocent() {
         )}
       </section>
 
+      {/* Vinkje "Evaluatie beëindigd" — alleen tonen als bewerkbaar */}
       {kanInvullen && !toonReadonly && (
         <div style={s.checkboxRij}>
           <input
@@ -245,30 +297,52 @@ export default function FinaleEvaluatieDocent() {
         </div>
       )}
 
+      {/* Knoppen */}
       <div style={s.knoppen}>
+        {/* Opslaan-knop: verdwijnt zodra toonReadonly = true (FIX 2) */}
         {kanInvullen && !toonReadonly && (
           <button style={{ ...s.btn, ...s.btnGroen }} onClick={handleIndienen} disabled={bezig}>
             {bezig ? "BEZIG…" : isGeeval ? "OPSLAAN" : "BEVESTIGEN"}
           </button>
         )}
-        {toonReadonly && (
-          <button style={{ ...s.btn, ...s.btnGroen }} onClick={handleBewerken}>
+
+        {/* FIX 3: bewerken alleen als status nog niet definitief evaluated */}
+        {kanBewerken && (
+          <button style={{ ...s.btn, ...s.btnOranje }} onClick={handleBewerken}>
             BEOORDELING BEWERKEN
           </button>
         )}
-<button style={s.terugLink} onClick={() => navigate("/dashboard/teacher")}>
-  ← Terug naar dashboard
-</button>
+
+        <button style={s.terugLink} onClick={() => navigate("/dashboard/teacher")}>
+          ← Terug naar dashboard
+        </button>
       </div>
     </div>
   );
 }
 
+// ── Stijlen ────────────────────────────────────────────────────────────────────
 const s = {
-  terugLink: { background: "none", border: "none", color: "#2563eb", fontSize: "0.9rem", cursor: "pointer", padding: 0, textDecoration: "underline" },
-  pagina:              { maxWidth: "620px", margin: "2rem auto", padding: "1.5rem", fontFamily: "Arial, sans-serif", color: "#222" },
+  pagina:              { maxWidth: "620px", margin: "2rem auto", padding: "1.5rem", fontFamily: "Arial, sans-serif", color: "#222", position: "relative" },
   loading:             { display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" },
   titel:               { fontSize: "1.6rem", fontWeight: "bold", marginBottom: "1rem" },
+
+  // FIX 1: succes-toast stijl
+  successToast: {
+    position: "fixed",
+    top: "1.5rem",
+    right: "1.5rem",
+    background: "#16a34a",
+    color: "#fff",
+    padding: "0.75rem 1.25rem",
+    borderRadius: "8px",
+    fontWeight: "bold",
+    fontSize: "0.9rem",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+    zIndex: 9999,
+    animation: "fadeIn 0.2s ease",
+  },
+
   infoBlok:            { marginBottom: "1rem" },
   infoRegel:           { margin: "0.2rem 0", fontSize: "0.95rem" },
   infoLabel:           { fontWeight: "bold", marginRight: "0.4rem" },
@@ -291,10 +365,12 @@ const s = {
   scoreBlok:           { display: "inline-block", background: "#f0fdf4", border: "1px solid #86efac", borderRadius: "8px", padding: "0.75rem 1.5rem", marginBottom: "0.5rem" },
   scoreGetal:          { fontSize: "2rem", fontWeight: "bold", color: "#16a34a" },
   scoreMax:            { fontSize: "1rem", color: "#555" },
-  knoppen:             { display: "flex", justifyContent: "center", gap: "1rem", marginTop: "2rem" },
-  btn:                 { padding: "0.65rem 2.5rem", fontSize: "0.9rem", fontWeight: "bold", borderRadius: "4px", cursor: "pointer", letterSpacing: "0.05em" },
-  btnGroen:            { background: "#16a34a", color: "#fff", border: "none" },
+  knoppen:             { display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem", marginTop: "2rem", flexWrap: "wrap" },
+  btn:                 { padding: "0.65rem 2.5rem", fontSize: "0.9rem", fontWeight: "bold", borderRadius: "4px", cursor: "pointer", letterSpacing: "0.05em", border: "none" },
+  btnGroen:            { background: "#16a34a", color: "#fff" },
+  btnOranje:           { background: "#ea580c", color: "#fff" },
   btnWit:              { background: "#fff", color: "#333", border: "1px solid #ccc" },
+  terugLink:           { background: "none", border: "none", color: "#2563eb", fontSize: "0.9rem", cursor: "pointer", padding: 0, textDecoration: "underline" },
   checkboxRij:         { display: "flex", alignItems: "flex-start", gap: "0.6rem", margin: "1.5rem 0 0.5rem", padding: "0.75rem 1rem", background: "#f0fdf4", border: "1px solid #86efac", borderRadius: "6px" },
   checkbox:            { marginTop: "2px", accentColor: "#16a34a", width: "16px", height: "16px", flexShrink: 0, cursor: "pointer" },
   checkboxLabel:       { fontSize: "0.9rem", fontWeight: "bold", color: "#166534", cursor: "pointer" },

@@ -8,13 +8,12 @@ export default function FinaleEvaluatieDocent() {
   const [evaluatie, setEvaluatie]               = useState(null);
   const [fout, setFout]                         = useState("");
   const [bezig, setBezig]                       = useState(false);
-  const [succesMelding, setSuccesMelding]       = useState("");   // FIX 1: succes-toast
+  const [succesMelding, setSuccesMelding]       = useState("");
 
   const [score, setScore]                       = useState("");
   const [feedbackTekst, setFeedbackTekst]       = useState("");
   const [evaluatieBeëindigd, setEvaluatieBeëindigd] = useState(false);
 
-  // FIX 2: na succesvol opslaan met vinkje → toonReadonly via lokale state
   const [opgeslagenAlsBeëindigd, setOpgeslagenAlsBeëindigd] = useState(false);
 
   const isEersteLaad = useRef(true);
@@ -46,7 +45,7 @@ export default function FinaleEvaluatieDocent() {
       if (isEersteLaad.current) {
         const isGeeval = data.status === "evaluated";
         setEvaluatieBeëindigd(isGeeval);
-        setOpgeslagenAlsBeëindigd(isGeeval); // al definitief → direct readonly
+        setOpgeslagenAlsBeëindigd(isGeeval);
         isEersteLaad.current = false;
       }
     } catch {
@@ -88,13 +87,11 @@ export default function FinaleEvaluatieDocent() {
         const d = await res.json();
         setFout(d.error || "Indienen mislukt.");
       } else {
-        // FIX 1: succes-melding tonen
         toonSucces(
           evaluatieBeëindigd
             ? "✅ Evaluatie beëindigd en opgeslagen."
             : "✅ Score en feedback succesvol opgeslagen."
         );
-        // FIX 2: als vinkje aan → direct readonly, knop verdwijnt
         if (evaluatieBeëindigd) {
           setOpgeslagenAlsBeëindigd(true);
         }
@@ -113,27 +110,26 @@ export default function FinaleEvaluatieDocent() {
     setEvaluatieBeëindigd(false);
   }
 
-async function openDocument() {
-  try {
-    const res = await fetch(
-      `http://localhost:3000/api/finale-evaluatie/document/${id}`,
-      { headers: user.token ? { Authorization: `Bearer ${user.token}` } : {} }
-    );
-    if (!res.ok) {
-      setFout("Document kon niet worden geopend.");
-      return;
+  // ── Bijlage openen ─────────────────────────────────────────────────────────
+  async function openDocument() {
+    try {
+      const res = await fetch(
+        `http://localhost:3000/api/finale-evaluatie/document/${id}`,
+        { headers: user.token ? { Authorization: `Bearer ${user.token}` } : {} }
+      );
+      if (!res.ok) {
+        setFout("Document kon niet worden geopend.");
+        return;
+      }
+      const contentType = res.headers.get("content-type") || "application/octet-stream";
+      const blob = await res.blob();
+      const typedBlob = new Blob([blob], { type: contentType });
+      const url = URL.createObjectURL(typedBlob);
+      window.open(url, "_blank");
+    } catch {
+      setFout("Er ging iets mis bij het openen van het document.");
     }
-    // Haal content-type op uit de response headers
-    const contentType = res.headers.get("content-type") || "application/octet-stream";
-    const blob = await res.blob();
-    // Maak een nieuwe blob met het correcte type
-    const typedBlob = new Blob([blob], { type: contentType });
-    const url = URL.createObjectURL(typedBlob);
-    window.open(url, "_blank");
-  } catch {
-    setFout("Er ging iets mis bij het openen van het document.");
   }
-}
 
   function vertaalStatus(status) {
     const vertalingen = { open: "Open", submitted: "Ingediend", evaluated: "Geëvalueerd" };
@@ -154,17 +150,13 @@ async function openDocument() {
   const isGeeval    = evaluatie.status === "evaluated";
   const kanInvullen = isIngediend || isGeeval;
 
-  // FIX 2: readonly zodra opgeslagen met vinkje AAN, of als evaluatie al
-  //        definitief was bij laden (evaluated). Nooit bewerkbaar na evaluated.
   const toonReadonly = opgeslagenAlsBeëindigd || isGeeval;
-
-  // FIX 3: bewerken-knop alleen tonen als status nog NIET evaluated is
-  const kanBewerken = toonReadonly && !isGeeval;
+  const kanBewerken  = toonReadonly && !isGeeval;
 
   return (
     <div style={s.pagina}>
 
-      {/* FIX 1: Succes-toast */}
+      {/* Succes-toast */}
       {succesMelding && (
         <div style={s.successToast}>{succesMelding}</div>
       )}
@@ -175,7 +167,7 @@ async function openDocument() {
         {vertaalStatus(evaluatie.status).toUpperCase()}
       </div>
 
-      {/* Studentinfo — FIX 3 backend: nu ook aanwezig bij status "open" */}
+      {/* Studentinfo */}
       <div style={s.infoBlok}>
         <p style={s.infoRegel}><span style={s.infoLabel}>Student:</span>{evaluatie.student_naam || "—"}</p>
         <p style={s.infoRegel}><span style={s.infoLabel}>Stagebedrijf:</span>{evaluatie.bedrijf || "—"}</p>
@@ -206,13 +198,16 @@ async function openDocument() {
               readOnly
               placeholder="Geen omschrijving beschikbaar."
             />
-            {evaluatie.document ? (
-              <button onClick={openDocument} style={s.docBtn}>
-                📎 {evaluatie.document.split("/").pop()} — klik om te openen
-              </button>
-            ) : (
-              <p style={s.geenBijlage}>📄 Geen bestand bijgevoegd.</p>
-            )}
+{evaluatie.document ? (
+  <button
+    onClick={(e) => { e.stopPropagation(); console.log("KLIK!"); openDocument(); }}
+    style={{ ...s.docBtn, border: "2px solid red", padding: "8px" }}
+  >
+    📎 {evaluatie.document.split("/").pop()} — klik om te openen
+  </button>
+) : (
+  <p style={s.geenBijlage}>📄 Geen bestand bijgevoegd.</p>
+)}
           </>
         )}
       </section>
@@ -236,7 +231,6 @@ async function openDocument() {
         <h2 style={s.sectietitel}>Feedback Docent</h2>
 
         {toonReadonly ? (
-          // ── Readonly weergave ──────────────────────────────────────────────
           <>
             <label style={s.label}>Eindscore:</label>
             <div style={s.scoreBlok}>
@@ -252,7 +246,6 @@ async function openDocument() {
             />
           </>
         ) : kanInvullen ? (
-          // ── Bewerkbaar formulier ───────────────────────────────────────────
           <>
             <label style={s.label}>Eindscore (0–20) — optioneel:</label>
             <div style={s.scoreInvoerRij}>
@@ -280,7 +273,7 @@ async function openDocument() {
         )}
       </section>
 
-      {/* Vinkje "Evaluatie beëindigd" — alleen tonen als bewerkbaar */}
+      {/* Vinkje "Evaluatie beëindigd" */}
       {kanInvullen && !toonReadonly && (
         <div style={s.checkboxRij}>
           <input
@@ -301,14 +294,12 @@ async function openDocument() {
 
       {/* Knoppen */}
       <div style={s.knoppen}>
-        {/* Opslaan-knop: verdwijnt zodra toonReadonly = true (FIX 2) */}
         {kanInvullen && !toonReadonly && (
           <button style={{ ...s.btn, ...s.btnGroen }} onClick={handleIndienen} disabled={bezig}>
             {bezig ? "BEZIG…" : isGeeval ? "OPSLAAN" : "BEVESTIGEN"}
           </button>
         )}
 
-        {/* FIX 3: bewerken alleen als status nog niet definitief evaluated */}
         {kanBewerken && (
           <button style={{ ...s.btn, ...s.btnOranje }} onClick={handleBewerken}>
             BEOORDELING BEWERKEN
@@ -329,7 +320,6 @@ const s = {
   loading:             { display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" },
   titel:               { fontSize: "1.6rem", fontWeight: "bold", marginBottom: "1rem" },
 
-  // FIX 1: succes-toast stijl
   successToast: {
     position: "fixed",
     top: "1.5rem",
@@ -342,7 +332,6 @@ const s = {
     fontSize: "0.9rem",
     boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
     zIndex: 9999,
-    animation: "fadeIn 0.2s ease",
   },
 
   infoBlok:            { marginBottom: "1rem" },
@@ -354,12 +343,18 @@ const s = {
   sectietitel:         { fontSize: "1rem", fontWeight: "bold", marginBottom: "0.5rem" },
   label:               { display: "block", fontSize: "0.9rem", marginBottom: "0.4rem" },
   textarea:            { width: "100%", minHeight: "90px", padding: "0.6rem 0.75rem", border: "1px solid #ccc", borderRadius: "4px", fontSize: "0.9rem", resize: "vertical", boxSizing: "border-box", background: "#fff" },
-  textareaReadonly:    { background: "#f9f9f9", color: "#444", cursor: "default", outline: "none", userSelect: "none", pointerEvents: "none" },
+
+  // FIX: pointerEvents: "none" verwijderd — blokkeerde de docBtn erboven/eronder
+  textareaReadonly:    { background: "#f9f9f9", color: "#444", cursor: "default", outline: "none", userSelect: "none" },
+
   inputScore:          { width: "100px", padding: "0.5rem 0.75rem", border: "1px solid #ccc", borderRadius: "4px", fontSize: "1.1rem" },
   scoreInvoerRij:      { display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem" },
   scoreHint:           { fontSize: "1rem", color: "#555" },
   foutInline:          { color: "#dc2626", background: "#fef2f2", padding: "0.4rem 0.75rem", borderRadius: "4px", marginBottom: "0.5rem", fontSize: "0.88rem" },
-  docBtn:              { display: "inline-block", marginTop: "0.5rem", color: "#2563eb", fontSize: "0.85rem", textDecoration: "underline", background: "none", border: "none", cursor: "pointer", padding: 0 },
+
+  // FIX: pointerEvents: "auto", position: "relative", zIndex: 1 toegevoegd
+  docBtn:              { display: "inline-block", marginTop: "0.5rem", color: "#2563eb", fontSize: "0.85rem", textDecoration: "underline", background: "none", border: "none", cursor: "pointer", padding: "0.25rem 0", pointerEvents: "auto", position: "relative", zIndex: 1 },
+
   geenBijlage:         { marginTop: "0.5rem", fontSize: "0.85rem", color: "#888" },
   fout:                { color: "#dc2626", background: "#fef2f2", padding: "0.6rem 0.9rem", borderRadius: "4px", marginBottom: "0.75rem", fontSize: "0.9rem" },
   infoBanner:          { background: "#f0f9ff", border: "1px solid #93c5fd", color: "#1e40af", padding: "0.75rem 1rem", borderRadius: "6px", fontSize: "0.9rem" },

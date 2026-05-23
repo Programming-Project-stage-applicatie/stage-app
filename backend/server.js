@@ -4,50 +4,40 @@ const mysql = require("mysql2/promise");
 require("dotenv").config();
 
 const app = express();
-app.use(cors());
+
+// ── CORS ───────────────────────────────────────────────────────────────────────
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true,
+}));
+
 app.use(express.json());
 
-/* ---------------------------------------------------------
-   DATABASE CONNECTIE (POOL - AANBEVOLEN)
-   ⭐ FIX: dateStrings voorkomt timezone shifts
---------------------------------------------------------- */
+// ── Database ───────────────────────────────────────────────────────────────────
 const db = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  dateStrings: true, // voorkomt timezone problemen
+  dateStrings: true,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
 });
 
-/* ---------------------------------------------------------
-   DATABASE BESCHIKBAAR MAKEN IN REQUEST
---------------------------------------------------------- */
 app.use((req, res, next) => {
   req.db = db;
   next();
 });
 
-/* ---------------------------------------------------------
-   AUTH ROUTES (GEEN JWT NODIG)
---------------------------------------------------------- */
+// ── Routes ─────────────────────────────────────────────────────────────────────
 const authRoutes = require("./routes/auth");
 app.use("/auth", authRoutes);
 
-/* ---------------------------------------------------------
-   JWT AUTHENTICATIE (VANAF HIER VERPLICHT)
---------------------------------------------------------- */
 const authenticateJWT = require("./middleware/authenticateJWT");
 
-/* ---------------------------------------------------------
-   BEVEILIGDE ROUTES
---------------------------------------------------------- */
 const internshipRequestsRoutes = require("./routes/internship_requests");
 app.use("/internship-requests", authenticateJWT, internshipRequestsRoutes);
-
-
 
 const userRoutes = require("./routes/users");
 app.use("/users", authenticateJWT, userRoutes);
@@ -62,9 +52,6 @@ app.get("/", (req, res) => {
   res.send("Backend is running");
 });
 
-/* ---------------------------------------------------------
-   SERVER STARTEN
---------------------------------------------------------- */
 app.listen(3000, () => {
   console.log("Server running on http://localhost:3000");
 });

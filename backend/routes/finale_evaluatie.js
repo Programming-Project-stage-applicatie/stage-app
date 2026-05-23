@@ -52,7 +52,7 @@ router.post("/student/:studentId/opslaan", (req, res, next) => {
   const pool = req.db;
   const { studentId } = req.params;
   const { omschrijving } = req.body;
-  const document = req.file ? `/${req.file.path}` : null;
+  const document = req.file ? `/${req.file.path.replace(/\\/g, "/")}` : null;
   try {
     const [existing] = await pool.query("SELECT id, status FROM final_evaluations WHERE internship_id = ?", [studentId]);
     if (existing.length > 0) {
@@ -125,13 +125,10 @@ router.post("/student/:studentId/mentor-motivatie", async (req, res) => {
 });
 
 // ─── GET docent view ──────────────────────────────────────────────────────────
-// FIX: Bij status "open" is er nog geen rij in final_evaluations.
-//      We halen de studentinfo dan op via de internship rechtstreeks.
 router.get("/student/:studentId/docent", async (req, res) => {
   const pool = req.db;
   const { studentId } = req.params;
   try {
-    // Probeer eerst een bestaand evaluatierecord op te halen met alle info
     const [rows] = await pool.query(`
       SELECT
         fe.*,
@@ -147,7 +144,6 @@ router.get("/student/:studentId/docent", async (req, res) => {
     `, [studentId]);
 
     if (rows.length > 0) {
-      // Record bestaat — stuur volledige data terug
       const r = rows[0];
       return res.json({
         status:           r.status,
@@ -162,8 +158,6 @@ router.get("/student/:studentId/docent", async (req, res) => {
       });
     }
 
-    // Geen evaluatierecord → status is "open", maar haal studentinfo toch op
-    // via de internship zelf (studentId = internship id)
     const [infoRows] = await pool.query(`
       SELECT
         CONCAT(su.firstName, ' ', su.lastName) AS student_naam,
@@ -226,27 +220,27 @@ router.post("/student/:studentId/docent", async (req, res) => {
 });
 
 // ─── GET bijlage downloaden ───────────────────────────────────────────────────
-// FIX: Aparte route om bestanden veilig te serveren met auth-check.
-//      Pad formaat in DB: /uploads/finale_evaluatie/student_X_timestamp.pdf
 router.get("/document/:studentId", async (req, res) => {
   const pool = req.db;
   const { studentId } = req.params;
+  console.log("Document opgevraagd voor studentId:", studentId);
   try {
     const [rows] = await pool.query(
       "SELECT document FROM final_evaluations WHERE internship_id = ?",
       [studentId]
     );
+    console.log("Gevonden rijen:", rows);
     if (rows.length === 0 || !rows[0].document) {
       return res.status(404).json({ error: "Geen document gevonden." });
     }
 
-    // Pad in DB is bv. "/uploads/finale_evaluatie/student_5_1234.pdf"
-    // Verwijder leading slash en bouw absoluut pad
+    // Pad in DB: bv. "/uploads/finale_evaluatie/student_5_1234.pdf"
     const relativePath = rows[0].document.replace(/^\//, "");
     const absPath = path.join(__dirname, "..", relativePath);
+    console.log("Absoluut pad:", absPath);
 
-    // Veiligheidscheck: bestand moet binnen de uploadDir liggen
-    const absUploadDir = path.resolve(uploadDir);
+    // Veiligheidscheck
+    const absUploadDir = path.resolve(path.join(__dirname, "..", uploadDir));
     if (!absPath.startsWith(absUploadDir)) {
       return res.status(403).json({ error: "Toegang geweigerd." });
     }
@@ -254,14 +248,15 @@ router.get("/document/:studentId", async (req, res) => {
     if (!fs.existsSync(absPath)) {
       return res.status(404).json({ error: "Bestand niet gevonden op server." });
     }
-const ext = path.extname(absPath).toLowerCase();
-if (ext === ".pdf") {
-  res.setHeader("Content-Disposition", "inline");
-} else {
-  res.setHeader("Content-Disposition", `attachment; filename="${path.basename(absPath)}"`);
-}
 
-res.sendFile(absPath);
+    // Correcte Content-Disposition header
+    const ext = path.extname(absPath).toLowerCase();
+    if (ext === ".pdf") {
+      res.setHeader("Content-Disposition", "inline");
+    } else {
+      res.setHeader("Content-Disposition", `attachment; filename="${path.basename(absPath)}"`);
+    }
+
     res.sendFile(absPath);
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -113,25 +113,27 @@ export default function FinaleEvaluatieDocent() {
     setEvaluatieBeëindigd(false);
   }
 
-  // ── Bijlage openen via dedicated document-route ────────────────────────────
-  // FIX 4: eigen /document/:id route gebruiken in plaats van het DB-pad direct
-  async function openDocument() {
-    try {
-      const res = await fetch(
-        `http://localhost:3000/api/finale-evaluatie/document/${id}`,
-        { headers: user.token ? { Authorization: `Bearer ${user.token}` } : {} }
-      );
-      if (!res.ok) {
-        setFout("Document kon niet worden geopend.");
-        return;
-      }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      window.open(url, "_blank");
-    } catch {
-      setFout("Er ging iets mis bij het openen van het document.");
+async function openDocument() {
+  try {
+    const res = await fetch(
+      `http://localhost:3000/api/finale-evaluatie/document/${id}`,
+      { headers: user.token ? { Authorization: `Bearer ${user.token}` } : {} }
+    );
+    if (!res.ok) {
+      setFout("Document kon niet worden geopend.");
+      return;
     }
+    // Haal content-type op uit de response headers
+    const contentType = res.headers.get("content-type") || "application/octet-stream";
+    const blob = await res.blob();
+    // Maak een nieuwe blob met het correcte type
+    const typedBlob = new Blob([blob], { type: contentType });
+    const url = URL.createObjectURL(typedBlob);
+    window.open(url, "_blank");
+  } catch {
+    setFout("Er ging iets mis bij het openen van het document.");
   }
+}
 
   function vertaalStatus(status) {
     const vertalingen = { open: "Open", submitted: "Ingediend", evaluated: "Geëvalueerd" };

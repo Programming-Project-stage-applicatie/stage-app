@@ -243,7 +243,7 @@ router.get("/document/:studentId", async (req, res) => {
     // Pad in DB is bv. "/uploads/finale_evaluatie/student_5_1234.pdf"
     // Verwijder leading slash en bouw absoluut pad
     const relativePath = rows[0].document.replace(/^\//, "");
-    const absPath = path.resolve(relativePath);
+    const absPath = path.join(__dirname, "..", relativePath);
 
     // Veiligheidscheck: bestand moet binnen de uploadDir liggen
     const absUploadDir = path.resolve(uploadDir);
@@ -254,7 +254,14 @@ router.get("/document/:studentId", async (req, res) => {
     if (!fs.existsSync(absPath)) {
       return res.status(404).json({ error: "Bestand niet gevonden op server." });
     }
+const ext = path.extname(absPath).toLowerCase();
+if (ext === ".pdf") {
+  res.setHeader("Content-Disposition", "inline");
+} else {
+  res.setHeader("Content-Disposition", `attachment; filename="${path.basename(absPath)}"`);
+}
 
+res.sendFile(absPath);
     res.sendFile(absPath);
   } catch (err) {
     res.status(500).json({ error: err.message });

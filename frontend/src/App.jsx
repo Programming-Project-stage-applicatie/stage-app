@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-
 import Login from "./components/Login";
 
 // Dashboards
@@ -8,6 +7,7 @@ import TeacherDashboard from "./pages/TeacherDashboard";
 import MentorDashboard from "./pages/MentorDashboard";
 import InternshipCommitteeDashboard from "./pages/InternshipCommitteeDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import FinaleEvaluatie from "./pages/FinaleEvaluatie";
 
 // Admin pages
 import AdminUsers from "./pages/AdminUsers";
@@ -37,11 +37,9 @@ function App() {
         <Route path="/dashboard/student" element={<StudentDashboard />} />
         <Route path="/dashboard/teacher" element={<TeacherDashboard />} />
         <Route path="/dashboard/mentor" element={<MentorDashboard />} />
-        <Route
-          path="/dashboard/internship-committee"
-          element={<InternshipCommitteeDashboard />}
-        />
+        <Route path="/dashboard/internship-committee" element={<InternshipCommitteeDashboard />} />
         <Route path="/dashboard/admin" element={<AdminDashboard />} />
+        <Route path="/finale-evaluatie" element={<FinaleEvaluatie />} />
 
         {/* Student pages */}
         <Route path="/student/new-request" element={<NewInternshipRequest />} />

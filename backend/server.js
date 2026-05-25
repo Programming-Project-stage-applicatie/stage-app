@@ -53,16 +53,14 @@ app.use("/users", authenticateJWT, userRoutes);
 const internshipRoutes = require("./routes/internships");
 app.use("/internships", authenticateJWT, internshipRoutes);
 
-/* ---------------------------------------------------------
-   TEST ROUTE (GEEN JWT)
---------------------------------------------------------- */
+
 app.get("/", (req, res) => {
   res.send("Backend is running");
 });
 
-/* ---------------------------------------------------------
-   SERVER STARTEN
---------------------------------------------------------- */
+const finaleEvaluatieRoutes = require("./routes/finale_evaluatie");
+app.use("/api/finale-evaluatie", authenticateJWT, finaleEvaluatieRoutes);
+
 app.listen(3000, () => {
   console.log("Server running on http://localhost:3000");
 });

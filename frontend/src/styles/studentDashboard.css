@@ -43,7 +43,19 @@
 .dashboard-button:hover {
   background-color: #5a1784; /* donkerder paars */
 }
+button.dashboard-button {
+  display: inline-block;
+  border: none;
+  cursor: pointer;
+}
 
+button.dashboard-button {
+  display: inline-block;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  font-family: inherit;
+}
 /* ============================================================
    Tabel — Tiffany stijl
 ============================================================ */

@@ -266,5 +266,26 @@ router.post("/internship/:internshipId/docent", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
+// ─── GET /api/finale-evaluatie/document/:internshipId ───────────────────────
+router.get("/document/:internshipId", async (req, res) => {
+  const pool = req.db;
+  const { internshipId } = req.params;
+  try {
+    const [rows] = await pool.query(
+      "SELECT document FROM final_evaluations WHERE internship_id = ?",
+      [internshipId]
+    );
+    if (!rows[0]?.document) {
+      return res.status(404).json({ error: "Geen document gevonden." });
+    }
+    // document is opgeslagen als "/uploads/finale_evaluatie/bestand.pdf"
+    const bestandspad = path.join(__dirname, "..", rows[0].document);
+    if (!fs.existsSync(bestandspad)) {
+      return res.status(404).json({ error: "Bestand niet gevonden op schijf." });
+    }
+    res.sendFile(bestandspad);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 module.exports = router;

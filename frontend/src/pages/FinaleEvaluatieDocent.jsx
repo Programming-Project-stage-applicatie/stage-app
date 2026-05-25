@@ -105,25 +105,33 @@ export default function FinaleEvaluatieDocent() {
   }
 
   // ── Bijlage openen ─────────────────────────────────────────────────────────
-  async function openDocument() {
-    try {
-      const res = await fetch(
-        `http://localhost:3000/api/finale-evaluatie/document/${id}`,
-        { headers: authHeaders }
-      );
-      if (!res.ok) {
-        setFout("Document kon niet worden geopend.");
-        return;
-      }
-      const contentType = res.headers.get("content-type") || "application/octet-stream";
-      const blob = await res.blob();
-      const typedBlob = new Blob([blob], { type: contentType });
-      const url = URL.createObjectURL(typedBlob);
-      window.open(url, "_blank");
-    } catch {
-      setFout("Er ging iets mis bij het openen van het document.");
+async function openDocument() {
+  try {
+    console.log("openDocument aangeroepen, id:", id);
+    const res = await fetch(
+      `http://localhost:3000/api/finale-evaluatie/document/${id}`,
+      { headers: authHeaders }
+    );
+    console.log("Response status:", res.status, res.ok);
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("Fout response:", text);
+      setFout("Document kon niet worden geopend.");
+      return;
     }
+    const contentType = res.headers.get("content-type") || "application/octet-stream";
+    const blob = await res.blob();
+    console.log("Blob ontvangen, grootte:", blob.size);
+    const typedBlob = new Blob([blob], { type: contentType });
+    const url = URL.createObjectURL(typedBlob);
+    console.log("Object URL aangemaakt:", url);
+    window.open(url, "_blank");
+  } catch (err) {
+    console.error("Fout in openDocument:", err);
+    setFout("Er ging iets mis bij het openen van het document.");
   }
+}
+
 
   function vertaalStatus(status) {
     const vertalingen = { open: "Open", submitted: "Ingediend", evaluated: "Geëvalueerd" };
@@ -188,7 +196,7 @@ export default function FinaleEvaluatieDocent() {
             {evaluatie.document ? (
               <button
                 onClick={(e) => { e.stopPropagation(); openDocument(); }}
-                style={{ ...s.docBtn, border: "2px solid red", padding: "8px" }}
+                style={s.docBtn}
               >
                 📎 {evaluatie.document.split("/").pop()} — klik om te openen
               </button>
@@ -310,12 +318,14 @@ const s = {
   textarea:            { width: "100%", minHeight: "90px", padding: "0.6rem 0.75rem", border: "1px solid #ccc", borderRadius: "4px", fontSize: "0.9rem", resize: "vertical", boxSizing: "border-box", background: "#fff" },
   
   textareaReadonly: { background: "#efefef", color: "#666", cursor: "not-allowed", outline: "none", userSelect: "none", pointerEvents: "none", border: "1px solid #ddd", resize: "none" },
-  
+
   inputScore:          { width: "100px", padding: "0.5rem 0.75rem", border: "1px solid #ccc", borderRadius: "4px", fontSize: "1.1rem" },
   scoreInvoerRij:      { display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem" },
   scoreHint:           { fontSize: "1rem", color: "#555" },
   foutInline:          { color: "#dc2626", background: "#fef2f2", padding: "0.4rem 0.75rem", borderRadius: "4px", marginBottom: "0.5rem", fontSize: "0.88rem" },
-  docBtn:              { display: "inline-block", marginTop: "0.5rem", color: "#2563eb", fontSize: "0.85rem", textDecoration: "underline", background: "none", border: "none", cursor: "pointer", padding: "0.25rem 0", pointerEvents: "auto", position: "relative", zIndex: 1 },
+  
+  docBtn: { display: "inline-block", marginTop: "0.5rem", color: "#2563eb", fontSize: "0.85rem", textDecoration: "underline", background: "none", cursor: "pointer", padding: "0.25rem 0", pointerEvents: "auto !important" },
+
   geenBijlage:         { marginTop: "0.5rem", fontSize: "0.85rem", color: "#888" },
   fout:                { color: "#dc2626", background: "#fef2f2", padding: "0.6rem 0.9rem", borderRadius: "4px", marginBottom: "0.75rem", fontSize: "0.9rem" },
   infoBanner:          { background: "#f0f9ff", border: "1px solid #93c5fd", color: "#1e40af", padding: "0.75rem 1rem", borderRadius: "6px", fontSize: "0.9rem" },

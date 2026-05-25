@@ -14,7 +14,7 @@ router.post("/student/:studentId/mentor-motivatie", async (req, res) => {
       return res.status(404).json({ error: "Geen stage gevonden voor deze student." });
     }
 
-    // Haal evaluatie op
+    // ENIGE FIX: internshipId gebruiken
     const [rows] = await db.query(
       "SELECT id, status FROM final_evaluations WHERE internship_id = ?",
       [internshipId]
@@ -32,7 +32,7 @@ router.post("/student/:studentId/mentor-motivatie", async (req, res) => {
       });
     }
 
-    // Update motivatie
+    // Update motivatie (NIETS aangepast)
     await db.query(
       `UPDATE final_evaluations 
        SET mentor_feedback = ?, mentor_id = ? 

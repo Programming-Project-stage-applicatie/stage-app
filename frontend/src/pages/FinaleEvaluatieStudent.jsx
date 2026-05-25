@@ -172,7 +172,7 @@ export default function FinaleEvaluatie() {
         )}
 
         {evaluatie.document && (
-          <a href={evaluatie.document} target="_blank" rel="noreferrer" style={s.docLink}>
+        <a href={`http://localhost:3000${evaluatie.document}`} target="_blank" rel="noreferrer" style={s.docLink}>
             📎 {evaluatie.document.split("/").pop()}
           </a>
         )}

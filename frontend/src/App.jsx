@@ -8,6 +8,8 @@ import InternshipCommitteeDashboard from "./pages/InternshipCommitteeDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 // Teacher pages
 import FinaleEvaluatieDocent from "./pages/FinaleEvaluatieDocent";
+import FinaleEvaluatie from "./pages/FinaleEvaluatie";
+
 // Admin pages
 import AdminUsers from "./pages/AdminUsers";
 import AdminInternshipDetail from "./pages/AdminInternshipDetail";
@@ -35,6 +37,8 @@ function App() {
         <Route path="/dashboard/admin" element={<AdminDashboard />} />
         {/* Teacher pages */}
         <Route path="/teacher/internships/:id/evaluation" element={<FinaleEvaluatieDocent />} />
+        <Route path="/finale-evaluatie" element={<FinaleEvaluatie />} />
+
         {/* Student pages */}
         <Route path="/student/new-request" element={<NewInternshipRequest />} />
         <Route path="/student/request/:id" element={<StudentRequestDetail />} />

@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { t } from "../i18n/translations";
+import { useNavigate } from "react-router-dom";
 import "../styles/studentDashboard.css";
 
 function getUserFromStorage() {
   const storedUser = localStorage.getItem("user");
   if (!storedUser) return null;
-
   try {
     return JSON.parse(storedUser);
   } catch {
@@ -26,6 +26,7 @@ const statusMapping = {
 };
 
 export default function StudentDashboard() {
+  const navigate = useNavigate();
   const [internships, setInternships] = useState([]);
   const [requests, setRequests] = useState([]);
   const [error, setError] = useState("");
@@ -35,11 +36,8 @@ export default function StudentDashboard() {
   const fetchStudentInternships = async () => {
     try {
       const res = await fetch("http://localhost:3000/internships/student", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-
       if (!res.ok) throw new Error();
       setInternships(await res.json());
     } catch {
@@ -50,11 +48,8 @@ export default function StudentDashboard() {
   const fetchRequests = async () => {
     try {
       const res = await fetch("http://localhost:3000/internship-requests/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-
       if (!res.ok) throw new Error();
       setRequests(await res.json());
     } catch {
@@ -70,21 +65,23 @@ export default function StudentDashboard() {
   return (
     <div className="student-dashboard-container">
 
-      {/* ⭐ Welkomsttitel (develop-versie) */}
       <h1>
         {user
           ? `${t("studentDashboard.welcome")}, ${user.firstname || user.username}`
           : t("studentDashboard.welcome")}
       </h1>
 
-      {/* ⭐ Nieuwe stageaanvraag knop */}
-      <Link className="dashboard-button" to="/student/new-request">
-        Nieuwe stageaanvraag
-      </Link>
+<div style={{ display: "flex", gap: "12px" }}>
+        <Link className="dashboard-button" to="/student/new-request">
+          Nieuwe stageaanvraag
+        </Link>
 
-      {/* ⭐ Mijn stageaanvragen */}
+        <button className="dashboard-button" onClick={() => navigate("/finale-evaluatie")}>
+          Finale Evaluatie
+        </button>
+      </div>
+
       <h2>Mijn stageaanvragen</h2>
-
       {requests.length === 0 ? (
         <p>Je hebt nog geen stageaanvragen ingediend.</p>
       ) : (
@@ -97,31 +94,21 @@ export default function StudentDashboard() {
               <th>Actie</th>
             </tr>
           </thead>
-
           <tbody>
             {requests.map((req) => (
               <tr key={req.id}>
                 <td>{req.company}</td>
-                <td>
-                  {formatDate(req.start_date)} – {formatDate(req.end_date)}
-                </td>
+                <td>{formatDate(req.start_date)} – {formatDate(req.end_date)}</td>
                 <td>{statusMapping[req.status] || "Onbekende status"}</td>
-                <td>
-                  <Link to={`/student/request/${req.id}`}>
-                    Bekijk aanvraag
-                  </Link>
-                </td>
+                <td><Link to={`/student/request/${req.id}`}>Bekijk aanvraag</Link></td>
               </tr>
             ))}
           </tbody>
         </table>
       )}
 
-      {/* ⭐ Mijn stages (develop-sectie) */}
       <h2>{t("studentDashboard.title")}</h2>
-
       {error && <p className="error">{error}</p>}
-
       {internships.length === 0 ? (
         <p>{t("studentInternships.none")}</p>
       ) : (
@@ -134,14 +121,10 @@ export default function StudentDashboard() {
               <th>{t("studentInternships.evaluation")}</th>
             </tr>
           </thead>
-
           <tbody>
             {internships.map((internship) => (
               <tr key={internship.id}>
-                <td>
-                  {formatDate(internship.start_date)} –{" "}
-                  {formatDate(internship.end_date)}
-                </td>
+                <td>{formatDate(internship.start_date)} – {formatDate(internship.end_date)}</td>
                 <td className="stage-col">
                   <Link to={`/student/internships/${internship.id}`}>
                     {t("studentInternships.open")}

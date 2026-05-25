@@ -18,6 +18,15 @@ const translations = {
     status_rejected: "Afgewezen",
 
     
+    login: {
+      errors: {
+          invalidCredentials: "Ongeldige gebruikersnaam of wachtwoord",
+          requiredFields: "Gebruikersnaam en wachtwoord zijn verplicht",
+          accountInactive: "Dit account is gedeactiveerd. Neem contact op met een beheerder.",
+          generic: "Er is een fout opgetreden"
+      }
+    },
+
     adminUsers: {
       title: "Gebruikers",
       backToDashboard: "Terug naar dashboard",
@@ -68,7 +77,8 @@ const translations = {
         requiredFields: "Alle verplichte velden moeten ingevuld zijn.",
         emailTaken: "Dit e-mailadres is al in gebruik.",
         usernameTaken: "Deze gebruikersnaam is al in gebruik.",
-        generic: "Er is een fout opgetreden."
+        generic: "Er is een fout opgetreden.",
+        userInUse: "Deze gebruiker is nog gekoppeld aan bestaande gegevens en kan niet verwijderd worden."
       },
 
 

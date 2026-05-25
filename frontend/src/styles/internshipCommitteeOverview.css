@@ -19,7 +19,7 @@
    TERUG-LINK
 ============================ */
 .back-link {
-  color: #4a4aff; /* Tiffany blauw/paars */
+  color: #7b61ff; /* Tiffany paars */
   text-decoration: none;
   font-weight: 500;
   font-size: 16px;
@@ -27,6 +27,50 @@
 
 .back-link:hover {
   text-decoration: underline;
+}
+
+/* ============================
+   SECTIE TITELS
+============================ */
+.section-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-top: 32px;
+  margin-bottom: 12px;
+}
+
+.empty-text {
+  color: #777;
+  margin-bottom: 16px;
+}
+
+/* ============================
+   FILTER BUTTONS — TIFFANY STYLE
+============================ */
+.filter-bar {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0 20px 0;
+}
+
+.filter-bar button {
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: 2px solid #7b61ff;
+  background: white;
+  color: #7b61ff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-bar button:hover {
+  background: #f2edff;
+}
+
+.filter-bar .filter-active {
+  background: #7b61ff;
+  color: white;
 }
 
 /* ============================
@@ -39,6 +83,7 @@
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  margin-bottom: 24px;
 }
 
 .overview-table th {
@@ -56,23 +101,29 @@
 }
 
 /* ============================
-   STATUS
+   STATUS COLORS
 ============================ */
-.status-default {
-  font-weight: 500;
-  color: #444;
+
+/* ⭐ Default: alles grijs behalve submitted */
+.status-default,
+.status-approved,
+.status-rejected,
+.status-adjustment {
+  font-weight: 600;
+  color: #555; /* zacht grijs */
 }
 
+/* ⭐ Subtiel Tiffany‑oranje voor submitted */
 .status-submitted {
   font-weight: 700;
-  color: #b8860b; /* goudkleurig */
+  color: #c47f2c; /* zachter, warmer Tiffany‑oranje */
 }
 
 /* ============================
    OPEN BUTTON — TIFFANY STYLE
 ============================ */
 
-/* Actieve paarse button (bij submitted) */
+/* Paarse actiebutton (bij submitted) */
 .open-button-active {
   background: #7b61ff;
   color: white;
@@ -87,8 +138,7 @@
   background: #6a52e0;
 }
 
-/* Neutrale grijze button (bij approved/rejected/adjustment_required)
-   ⭐ blijft volledig klikbaar */
+/* ⭐ Neutrale grijze button (bij approved/rejected/adjustment_required) */
 .open-button-neutral {
   background: #e0e0e0;
   color: #444;
@@ -97,6 +147,7 @@
   text-decoration: none;
   font-weight: 600;
   transition: background 0.2s ease;
+  border: 1px solid #ccc;
 }
 
 .open-button-neutral:hover {

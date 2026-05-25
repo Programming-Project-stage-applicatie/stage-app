@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./components/Login";
 // Dashboards
 import StudentDashboard from "./pages/StudentDashboard";
-import TeacherDashboard from "./pages/TeacherDashboard";
+import TeacherDashboard from "./pages/FinalEvaluationOverview";
 import MentorDashboard from "./pages/MentorDashboard";
 import InternshipCommitteeDashboard from "./pages/InternshipCommitteeDashboard";
 import AdminDashboard from "./pages/AdminDashboard";

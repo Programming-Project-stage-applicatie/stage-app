@@ -124,7 +124,7 @@ const translations = {
     
     studentDashboard: {
       welcome: "Welkom",
-      title: "Mijn stages"
+      title: "Stages"
     },
 
     studentInternships: {

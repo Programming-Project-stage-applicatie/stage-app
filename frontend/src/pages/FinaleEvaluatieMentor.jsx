@@ -10,14 +10,14 @@ export default function FinaleEvaluatieMentor() {
   const user      = JSON.parse(localStorage.getItem("user") || "{}");
   const token     = localStorage.getItem("token");
   const mentorId  = user.id || 1;
-  const studentId = user.studentId || 1;
+  const studentId = user.id;
 
   useEffect(() => { haalOp(); }, []);
 
   async function haalOp() {
     try {
       const res = await fetch(
-        `http://localhost:3000/finale-evaluatie/student/${studentId}`,
+        `http://localhost:3000/api/finale-evaluatie/student/${studentId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (!res.ok) {
@@ -43,7 +43,7 @@ export default function FinaleEvaluatieMentor() {
     setBezig(true);
     try {
       const res = await fetch(
-        `http://localhost:3000/finale-evaluatie/student/${studentId}/mentor-motivatie`,
+        `http://localhost:3000/api/finale-evaluatie/student/${studentId}/mentor-motivatie`,
         {
           method: "POST",
           headers: {

@@ -1,16 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-function getUserFromStorage() {
-  const storedUser = localStorage.getItem("user");
-  if (!storedUser) return null;
-  try { return JSON.parse(storedUser); } catch { return null; }
-}
-
 const formatDate = (dateString) =>
   new Date(dateString).toLocaleDateString("nl-BE");
 
-export default function MentorStudentenOverzicht() {
+export default function FinalEvaluationOverviewMentor() {
   const navigate = useNavigate();
   const [internships, setInternships] = useState([]);
   const [error, setError] = useState("");
@@ -21,9 +15,36 @@ export default function MentorStudentenOverzicht() {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => { if (!res.ok) throw new Error(); return res.json(); })
-      .then(setInternships)
+      .then(async (data) => {
+        // Haal voor elke stage ook de evaluatie status op
+        const metEvaluatie = await Promise.all(
+          data.map(async (internship) => {
+            try {
+              const res = await fetch(
+                `http://localhost:3000/api/finale-evaluatie/student/${internship.student_id}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+              );
+              if (!res.ok) return { ...internship, status: "—", final_score: null };
+              const ev = await res.json();
+              return { ...internship, status: ev.status, final_score: ev.final_score };
+            } catch {
+              return { ...internship, status: "—", final_score: null };
+            }
+          })
+        );
+        setInternships(metEvaluatie);
+      })
       .catch(() => setError("Kon stages niet ophalen."));
   }, []);
+
+  function vertaalStatus(status) {
+    const vertalingen = {
+      open: "Open",
+      submitted: "Ingediend",
+      evaluated: "Geëvalueerd",
+    };
+    return vertalingen[status] || status || "—";
+  }
 
   return (
     <div className="dashboard-page">
@@ -35,7 +56,12 @@ export default function MentorStudentenOverzicht() {
         <table className="student-stages-table">
           <thead>
             <tr>
-              <th>Student</th><th>Bedrijf</th><th>Periode</th><th>Actie</th>
+              <th>Student</th>
+              <th>Bedrijf</th>
+              <th>Periode</th>
+              <th>Status</th>
+              <th>Score</th>
+              <th>Actie</th>
             </tr>
           </thead>
           <tbody>
@@ -44,6 +70,8 @@ export default function MentorStudentenOverzicht() {
                 <td>{internship.student_firstname} {internship.student_lastname}</td>
                 <td>{internship.company}</td>
                 <td>{formatDate(internship.start_date)} – {formatDate(internship.end_date)}</td>
+                <td>{vertaalStatus(internship.status)}</td>
+                <td>{internship.final_score != null ? `${internship.final_score}/20` : "—"}</td>
                 <td>
                   <button onClick={() => navigate(`/mentor/finale-evaluatie/${internship.student_id}`)}>
                     Finale Evaluatie

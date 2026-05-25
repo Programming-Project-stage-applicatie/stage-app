@@ -48,7 +48,11 @@ router.get("/student/:studentId", async (req, res) => {
     if (!internshipId) return res.json({ status: "open" });
 
     const [rows] = await db.query(
-      "SELECT * FROM final_evaluations WHERE internship_id = ?",
+      `SELECT fe.*, ir.company
+       FROM final_evaluations fe
+       JOIN internships i ON fe.internship_id = i.id
+       JOIN internship_requests ir ON i.internship_request_id = ir.id
+       WHERE fe.internship_id = ?`,
       [internshipId]
     );
     res.json(rows[0] ?? { status: "open" });

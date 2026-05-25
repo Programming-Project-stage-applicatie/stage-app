@@ -7,7 +7,7 @@ import TeacherDashboard from "./pages/TeacherDashboard";
 import MentorDashboard from "./pages/MentorDashboard";
 import InternshipCommitteeDashboard from "./pages/InternshipCommitteeDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
-import FinaleEvaluatie from "./pages/FinaleEvaluatie";
+import FinaleEvaluatie from "./pages/FinaleEvaluatieStudent";
 
 // Admin pages
 import AdminUsers from "./pages/AdminUsers";

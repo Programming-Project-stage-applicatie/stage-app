@@ -151,7 +151,7 @@ export default function FinaleEvaluatieMentor() {
               placeholder="De student heeft nog geen omschrijving ingediend."
             />
             {evaluatie.document ? (
-              <a href={evaluatie.document} target="_blank" rel="noreferrer" style={s.docLink}>
+              <a href={`http://localhost:3000${evaluatie.document}`} target="_blank" rel="noreferrer" style={s.docLink}>
                 📎 {evaluatie.document.split("/").pop()} — klik om te openen
               </a>
             ) : (

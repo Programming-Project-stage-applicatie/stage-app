@@ -284,7 +284,7 @@ export default function FinaleEvaluatieDocent() {
             {t("FinaleEvaluatieDocent.editAssessment")}
           </button>
         )}
-        <button style={s.backLink} onClick={() => navigate("/dashboard/teacher")}>
+        <button style={s.backLink} onClick={() => navigate("/teacher/final-evaluation-overview")}>
           {t("FinaleEvaluatieDocent.backToDashboard")}
         </button>
       </div>

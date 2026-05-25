@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { t } from "../i18n/translations";
+
+function getUserFromStorage() {
+  const storedUser = localStorage.getItem("user");
+  if (!storedUser) return null;
+  try { return JSON.parse(storedUser); } catch { return null; }
+}
 
 const formatDate = (dateString) =>
   new Date(dateString).toLocaleDateString("nl-BE");
@@ -9,6 +16,7 @@ export default function FinalEvaluationOverviewMentor() {
   const [internships, setInternships] = useState([]);
   const [error, setError] = useState("");
   const token = localStorage.getItem("token");
+  const user = getUserFromStorage();
 
   useEffect(() => {
     fetch("http://localhost:3000/internships/mentor", {
@@ -16,7 +24,6 @@ export default function FinalEvaluationOverviewMentor() {
     })
       .then((res) => { if (!res.ok) throw new Error(); return res.json(); })
       .then(async (data) => {
-        // Haal voor elke stage ook de evaluatie status op
         const metEvaluatie = await Promise.all(
           data.map(async (internship) => {
             try {
@@ -24,11 +31,11 @@ export default function FinalEvaluationOverviewMentor() {
                 `http://localhost:3000/api/finale-evaluatie/student/${internship.student_id}`,
                 { headers: { Authorization: `Bearer ${token}` } }
               );
-              if (!res.ok) return { ...internship, status: "—", final_score: null };
+              if (!res.ok) return { ...internship, ev_status: "—", final_score: null };
               const ev = await res.json();
-              return { ...internship, status: ev.status, final_score: ev.final_score };
+              return { ...internship, ev_status: ev.status, final_score: ev.final_score };
             } catch {
-              return { ...internship, status: "—", final_score: null };
+              return { ...internship, ev_status: "—", final_score: null };
             }
           })
         );
@@ -47,9 +54,16 @@ export default function FinalEvaluationOverviewMentor() {
   }
 
   return (
-    <div className="dashboard-page">
-      <h1>Mijn studenten</h1>
+    <div className="teacher-dashboard-container">
+      <h1>{user ? `Welkom, ${user.firstname || user.username}` : t("dashboards.mentor")}</h1>
+      <h2>Mijn studenten</h2>
       {error && <p className="error">{error}</p>}
+      <button
+        onClick={() => navigate("/dashboard/mentor")}
+        style={{ marginBottom: "1rem", cursor: "pointer" }}
+      >
+        ← Terug naar dashboard
+      </button>
       {internships.length === 0 ? (
         <p>Geen stages gevonden.</p>
       ) : (
@@ -70,11 +84,11 @@ export default function FinalEvaluationOverviewMentor() {
                 <td>{internship.student_firstname} {internship.student_lastname}</td>
                 <td>{internship.company}</td>
                 <td>{formatDate(internship.start_date)} – {formatDate(internship.end_date)}</td>
-                <td>{vertaalStatus(internship.status)}</td>
+                <td>{vertaalStatus(internship.ev_status)}</td>
                 <td>{internship.final_score != null ? `${internship.final_score}/20` : "—"}</td>
                 <td>
                   <button onClick={() => navigate(`/mentor/finale-evaluatie/${internship.student_id}`)}>
-                    Finale Evaluatie
+                    Finale evaluatie
                   </button>
                 </td>
               </tr>

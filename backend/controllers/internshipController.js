@@ -349,6 +349,7 @@ exports.getTeacherInternships = async (req, res) => {
         internships.start_date,
         internships.end_date,
         internship_requests.company,
+        internship_requests.student_id,
 
         student.firstname AS student_firstname,
         student.lastname AS student_lastname
@@ -375,3 +376,4 @@ exports.getTeacherInternships = async (req, res) => {
     });
   }
 };
+

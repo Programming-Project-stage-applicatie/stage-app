@@ -10,7 +10,7 @@ export default function FinaleEvaluatieMentor() {
   const user      = JSON.parse(localStorage.getItem("user") || "{}");
   const token     = localStorage.getItem("token");
   const mentorId  = user.id || 1;
-  const studentId = user.id;
+  const { studentId } = useParams();
 
   useEffect(() => { haalOp(); }, []);
 

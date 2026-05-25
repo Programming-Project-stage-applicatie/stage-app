@@ -18,11 +18,13 @@ import StudentInternshipDetail from "./pages/StudentInternshipDetail";
 // Commissie pages (M10 + M11)
 import InternshipCommitteeOverview from "./pages/InternshipCommitteeOverview";
 import InternshipCommitteeRequestDetail from "./pages/InternshipCommitteeRequestDetail";
+import FinalEvaluationOverviewMentor from "./pages/FinalEvaluationOverviewMentor";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/mentor/studenten" element={<FinalEvaluationOverviewMentor />} />
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard/student" element={<StudentDashboard />} />
@@ -31,7 +33,7 @@ function App() {
         <Route path="/mentor/finale-evaluatie" element={<FinaleEvaluatieMentor />} />
         <Route path="/dashboard/internship-committee" element={<InternshipCommitteeDashboard />} />
         <Route path="/dashboard/admin" element={<AdminDashboard />} />
-        <Route path="/finale-evaluatie" element={<FinaleEvaluatie />} />
+        <Route path="/mentor/finale-evaluatie/:studentId" element={<FinaleEvaluatieMentor />} />
         <Route path="/student/new-request" element={<NewInternshipRequest />} />
         <Route path="/student/request/:id" element={<StudentRequestDetail />} />
         <Route path="/student/internships/:id" element={<StudentInternshipDetail />} />

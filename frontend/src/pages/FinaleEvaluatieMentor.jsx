@@ -97,20 +97,24 @@ export default function FinaleEvaluatieMentor() {
         {vertaalStatus(evaluatie.status).toUpperCase()}
       </div>
 
-      <div style={s.infoBlok}>
-        <p style={s.infoRegel}>
-          <span style={s.infoLabel}>Student:</span>
-          {evaluatie.student_naam || "—"}
-        </p>
-        <p style={s.infoRegel}>
-          <span style={s.infoLabel}>Stagebedrijf:</span>
-          {evaluatie.bedrijf || user.bedrijf || "—"}
-        </p>
-        <p style={s.infoRegel}>
-          <span style={s.infoLabel}>Mentor:</span>
-          {user.name || "—"}
-        </p>
-      </div>
+<div style={s.infoBlok}>
+  <p style={s.infoRegel}>
+    <span style={s.infoLabel}>Student:</span>
+    {evaluatie.student_naam || "—"}
+  </p>
+  <p style={s.infoRegel}>
+    <span style={s.infoLabel}>Stagebedrijf:</span>
+    {evaluatie.bedrijf || "—"}
+  </p>
+  <p style={s.infoRegel}>
+    <span style={s.infoLabel}>Mentor:</span>
+    {evaluatie.mentor_naam || "—"}
+  </p>
+  <p style={s.infoRegel}>
+    <span style={s.infoLabel}>Docent:</span>
+    {evaluatie.docent_naam || "—"}
+  </p>
+</div>
 
       <hr style={s.lijn} />
 

@@ -278,7 +278,7 @@ export default function FinaleEvaluatieDocent() {
       <div style={s.knoppen}>
         {kanInvullen && !toonReadonly && (
           <button style={{ ...s.btn, ...s.btnGroen }} onClick={handleIndienen} disabled={bezig}>
-            {bezig ? "BEZIG…" : isGeeval ? "OPSLAAN" : "BEVESTIGEN"}
+            {bezig ? "BEZIG…" : isGeeval ? "OPSLAAN" : "OPSLAAN"}
           </button>
         )}
         {kanBewerken && (

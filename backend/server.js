@@ -1,11 +1,13 @@
 const express = require("express");
 const cors = require("cors");
 const mysql = require("mysql2/promise");
+const path = require("path"); // ← hier bovenaan
 require("dotenv").config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // ← hier na express.json
 
 const db = mysql.createPool({
   host:     process.env.DB_HOST,
@@ -17,20 +19,16 @@ const db = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0
 });
-
 app.use((req, res, next) => {
   req.db = db;
   next();
 });
 
-/* ── AUTH (geen JWT) ── */
 const authRoutes = require("./routes/auth");
 app.use("/auth", authRoutes);
 
-/* ── JWT middleware ── */
 const authenticateJWT = require("./middleware/authenticateJWT");
 
-/* ── Beveiligde routes ── */
 const internshipRequestsRoutes = require("./routes/internship_requests");
 app.use("/internship-requests", authenticateJWT, internshipRequestsRoutes);
 

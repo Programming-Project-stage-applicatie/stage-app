@@ -39,7 +39,6 @@ exports.getAllInternships = async (req, res) => {
     return res.status(500).json({
       message: "Failed to fetch internships"
     });
-
   }
 };
 
@@ -60,7 +59,6 @@ exports.assignMentor = async (req, res) => {
     connection = await pool.getConnection();
     await connection.beginTransaction();
 
-
     const [internships] = await connection.execute(
       "SELECT id FROM internships WHERE id = ?",
       [internshipId]
@@ -73,9 +71,8 @@ exports.assignMentor = async (req, res) => {
       });
     }
 
-
     const [mentors] = await connection.execute(
-      "SELECT users.id FROM users JOIN mentors ON mentors.user_id = users.id WHERE users.id = ? ",
+      "SELECT users.id FROM users JOIN mentors ON mentors.user_id = users.id WHERE users.id = ?",
       [mentor_id]
     );
 
@@ -85,7 +82,6 @@ exports.assignMentor = async (req, res) => {
         code: "INVALID_MENTOR"
       });
     }
-
 
     await connection.execute(
       "UPDATE internships SET mentor_id = ? WHERE id = ?",
@@ -100,9 +96,7 @@ exports.assignMentor = async (req, res) => {
 
   } catch (error) {
     if (connection) await connection.rollback();
-
     console.error("Assign mentor failed:", error);
-
     return res.status(500).json({
       message: "Failed to assign mentor"
     });
@@ -142,7 +136,7 @@ exports.assignTeacher = async (req, res) => {
     }
 
     const [teachers] = await connection.execute(
-      "SELECT users.id FROM users JOIN teachers ON teachers.user_id = users.id WHERE users.id = ? ",
+      "SELECT users.id FROM users JOIN teachers ON teachers.user_id = users.id WHERE users.id = ?",
       [teacher_id]
     );
 
@@ -166,9 +160,7 @@ exports.assignTeacher = async (req, res) => {
 
   } catch (error) {
     if (connection) await connection.rollback();
-
     console.error("Assign teacher failed:", error);
-
     return res.status(500).json({
       message: "Failed to assign teacher"
     });
@@ -242,7 +234,6 @@ exports.getInternshipById = async (req, res) => {
 
   } catch (error) {
     console.error("Fetch internship detail failed:", error);
-
     return res.status(500).json({
       message: "Failed to fetch internship"
     });
@@ -250,9 +241,7 @@ exports.getInternshipById = async (req, res) => {
   } finally {
     if (connection) connection.release();
   }
-
 };
-
 
 exports.getStudentInternships = async (req, res) => {
   const pool = req.db;
@@ -269,18 +258,17 @@ exports.getStudentInternships = async (req, res) => {
         internships.teacher_id,
         internship_requests.status,
 
-        
         users.firstname AS student_firstname,
         users.lastname AS student_lastname
 
       FROM internships
       JOIN internship_requests
         ON internships.internship_request_id = internship_requests.id
-        
+
       JOIN users
         ON internship_requests.student_id = users.id
-      WHERE internship_requests.student_id = ?
 
+      WHERE internship_requests.student_id = ?
       `,
       [studentId]
     );
@@ -293,8 +281,6 @@ exports.getStudentInternships = async (req, res) => {
       message: "Failed to fetch student internships"
     });
   }
-
-  
 };
 
 exports.getStudentInternshipById = async (req, res) => {
@@ -349,5 +335,45 @@ exports.getStudentInternshipById = async (req, res) => {
       message: "Failed to fetch internship"
     });
   }
-
 };
+
+exports.getTeacherInternships = async (req, res) => {
+  const pool = req.db;
+  const teacherId = req.user.id;
+
+  try {
+    const [rows] = await pool.query(
+      `
+      SELECT
+        internships.id,
+        internships.start_date,
+        internships.end_date,
+        internship_requests.company,
+        internship_requests.student_id,
+
+        student.firstname AS student_firstname,
+        student.lastname AS student_lastname
+
+      FROM internships
+
+      JOIN internship_requests
+        ON internships.internship_request_id = internship_requests.id
+
+      JOIN users AS student
+        ON internship_requests.student_id = student.id
+
+      WHERE internships.teacher_id = ?
+      `,
+      [teacherId]
+    );
+
+    return res.json(rows);
+
+  } catch (error) {
+    console.error("Fetch teacher internships failed:", error);
+    return res.status(500).json({
+      message: "Failed to fetch teacher internships"
+    });
+  }
+};
+

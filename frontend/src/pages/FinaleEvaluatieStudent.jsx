@@ -23,7 +23,7 @@ export default function FinaleEvaluatie() {
 
   async function haalOp() {
     try {
-      const res  = await fetch(`/api/finale-evaluatie/student/${studentId}`, {
+      const res = await fetch(`http://localhost:3000/api/finale-evaluatie/student/${studentId}`, {
         headers: authHeaders,
       });
       const data = await res.json();
@@ -55,14 +55,14 @@ export default function FinaleEvaluatie() {
     if (bestand) fd.append("document", bestand);
 
     try {
-      const r1 = await fetch(`/api/finale-evaluatie/student/${studentId}/opslaan`, {
+      const r1 = await fetch(`http://localhost:3000/api/finale-evaluatie/student/${studentId}/opslaan`, {
         method: "POST",
         headers: authHeaders,
         body: fd,
       });
       if (!r1.ok) { const d = await r1.json(); setFout(d.error); return; }
 
-      const r2 = await fetch(`/api/finale-evaluatie/student/${studentId}/indienen`, {
+      const r2 = await fetch(`http://localhost:3000/api/finale-evaluatie/student/${studentId}/indienen`, {
         method: "POST",
         headers: authHeaders,
       });
@@ -79,7 +79,7 @@ export default function FinaleEvaluatie() {
     if (!window.confirm("Ben je zeker dat je wilt annuleren?")) return;
     setFout("");
     try {
-      const res = await fetch(`/api/finale-evaluatie/student/${studentId}/annuleren`, {
+      const res = await fetch(`http://localhost:3000/api/finale-evaluatie/student/${studentId}/annuleren`, {
         method: "POST",
         headers: authHeaders,
       });
@@ -114,7 +114,7 @@ export default function FinaleEvaluatie() {
       <h1 style={s.titel}>Finale Evaluatie</h1>
 
       <div style={s.statusBadge(evaluatie.status)}>
-        {vertaalStatus(evaluatie.status).toUpperCase()}
+        {vertaalStatus(evaluatie.status ?? "open").toUpperCase()}
       </div>
 
       <div style={s.infoBlok}>
@@ -125,6 +125,14 @@ export default function FinaleEvaluatie() {
         <p style={s.infoRegel}>
           <span style={s.infoLabel}>Stagebedrijf:</span>
           {evaluatie.bedrijf || "—"}
+        </p>
+        <p style={s.infoRegel}>
+          <span style={s.infoLabel}>Mentor:</span>
+          {evaluatie.mentor_naam || "—"}
+        </p>
+        <p style={s.infoRegel}>
+          <span style={s.infoLabel}>Docent:</span>
+          {evaluatie.docent_naam || "—"}
         </p>
       </div>
 
@@ -172,7 +180,7 @@ export default function FinaleEvaluatie() {
         )}
 
         {evaluatie.document && (
-        <a href={`http://localhost:3000${evaluatie.document}`} target="_blank" rel="noreferrer" style={s.docLink}>
+          <a href={`http://localhost:3000${evaluatie.document}`} target="_blank" rel="noreferrer" style={s.docLink}>
             📎 {evaluatie.document.split("/").pop()}
           </a>
         )}
@@ -233,11 +241,11 @@ export default function FinaleEvaluatie() {
           </button>
         )}
         {/*knop annuleren:
-{isSubmitted && (
-  <button style={{ ...s.btn, ...s.btnWit }} onClick={handleAnnuleren}>
-    ANNULEREN
-  </button>
-)}*/}
+        {isSubmitted && (
+          <button style={{ ...s.btn, ...s.btnWit }} onClick={handleAnnuleren}>
+            ANNULEREN
+          </button>
+        )}*/}
         <button style={{ ...s.btn, ...s.btnTerug }} onClick={() => navigate("/dashboard/student")}>
           ← Terug naar dashboard
         </button>

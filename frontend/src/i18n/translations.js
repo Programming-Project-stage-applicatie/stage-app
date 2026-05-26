@@ -124,7 +124,7 @@ const translations = {
     
     studentDashboard: {
       welcome: "Welkom",
-      title: "Mijn stages"
+      title: "Stages"
     },
 
     studentInternships: {
@@ -148,8 +148,49 @@ const translations = {
       logbooks: "Logboeken",
       evaluation: "Finale evaluatie",
       open: "Open"
-    }
-
+    },
+FinaleEvaluatieDocent: {
+  title:                   "Finale Evaluatie — Docent",
+  loading:                 "Laden…",
+  retry:                   "Opnieuw proberen",
+  statusOpen:              "Open",
+  statusSubmitted:         "Ingediend",
+  statusEvaluated:        "Geëvalueerd",
+  statusUnknown:           "Onbekend",
+  student:                 "Student",
+  company:                 "Stagebedrijf",
+  mentor:                  "Mentor",
+  teacher:                 "Docent",
+  notYetSubmittedWarning:  "De student heeft zijn eindpresentatie nog niet ingediend.",
+  sectionPresentation:     "Eindpresentatie Student",
+  submittedBadge:          "Ingediend",
+  presentationDescription: "Omschrijving eindpresentatie",
+  noDescriptionAvailable:  "Geen omschrijving beschikbaar.",
+  noAttachment:            "Geen bestand bijgevoegd.",
+  clickToOpen:             "klik om te openen",
+  notYetSubmittedInfo:     "De student heeft nog geen eindpresentatie ingediend.",
+  sectionMentorFeedback:   "Feedback Mentor",
+  noMentorFeedback:        "Geen feedback mentor.",
+  sectionTeacherFeedback:  "Feedback Docent",
+  finalScore:              "Eindscore",
+  feedback:                "Feedback",
+  scoreOptionalLabel:      "Eindscore (0–20) — optioneel:",
+  feedbackPlaceholder:     "Schrijf hier uw feedback voor de student...",
+  noFeedbackEntered:       "Geen feedback ingevoerd.",
+  canFillWhenSubmitted:    "Beoordeling kan worden ingevoerd zodra de student de eindpresentatie heeft ingediend.",
+  finalizeCheckbox:        "Beëindig evaluatie",
+  finalizeNote:            "student kan de beoordeling zien en status wordt \"Geëvalueerd\"",
+  save:                    "OPSLAAN",
+  saving:                  "BEZIG…",
+  editAssessment:          "BEOORDELING BEWERKEN",
+  backToDashboard:         "← Terug naar dashboard",
+  successSaved:            "✅ Score en feedback succesvol opgeslagen.",
+  successFinalized:        "✅ Evaluatie beëindigd en opgeslagen.",
+  errorInvalidScore:       "Vul een geldige score in (0–20).",
+  errorFetchFailed:        "Er ging iets mis bij het ophalen.",
+  errorSubmitFailed:       "Er ging iets mis bij het indienen.",
+  errorDocumentFailed:     "Er ging iets mis bij het openen van het document.",
+},
 
     
   }

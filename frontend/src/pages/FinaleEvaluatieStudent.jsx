@@ -121,24 +121,24 @@ function handleVerwijderBestand() {
         {vertaalStatus(evaluatie.status).toUpperCase()}
       </div>
 
-      <div style={s.infoBlok}>
-        <p style={s.infoRegel}>
-          <span style={s.infoLabel}>Student:</span>
-          {`${user.firstname ?? ""} ${user.lastname ?? ""}`.trim() || user.username}
-        </p>
-        <p style={s.infoRegel}>
-          <span style={s.infoLabel}>Stagebedrijf:</span>
-          {evaluatie.bedrijf || "—"}
-        </p>
-      </div>
-
-      <hr style={s.lijn} />
-
-      {alleenLezen && (
-        <div style={s.statusMelding}>
-          ✅ Je eindpresentatie is <strong>{vertaalStatus(evaluatie.status)}</strong>. Je kan deze niet meer bewerken.
-        </div>
-      )}
+<div style={s.infoBlok}>
+  <p style={s.infoRegel}>
+    <span style={s.infoLabel}>Student:</span>
+    {`${user.firstname ?? ""} ${user.lastname ?? ""}`.trim() || user.username}
+  </p>
+  <p style={s.infoRegel}>
+    <span style={s.infoLabel}>Stagebedrijf:</span>
+    {evaluatie.company || "—"}
+  </p>
+  <p style={s.infoRegel}>
+    <span style={s.infoLabel}>Mentor:</span>
+    {evaluatie.mentor_naam || "—"}
+  </p>
+  <p style={s.infoRegel}>
+    <span style={s.infoLabel}>Docent:</span>
+    {evaluatie.docent_naam || "—"}
+  </p>
+</div>
 
       <section style={s.sectie}>
         <h2 style={s.sectietitel}>Eindpresentatie</h2>

@@ -47,10 +47,15 @@ router.get("/student/:studentId", async (req, res) => {
     const internshipId = await getInternshipId(db, req.params.studentId);
     if (!internshipId) return res.json({ status: "open" });
     const [rows] = await db.query(
-      `SELECT fe.*, ir.company
+      `SELECT fe.*, 
+              ir.company,
+              CONCAT(mu.firstName, ' ', mu.lastName) AS mentor_naam,
+              CONCAT(tu.firstName, ' ', tu.lastName) AS docent_naam
        FROM final_evaluations fe
-       JOIN internships i ON fe.internship_id = i.id
+       JOIN internships i          ON fe.internship_id = i.id
        JOIN internship_requests ir ON i.internship_request_id = ir.id
+       LEFT JOIN users mu          ON i.mentor_id = mu.id
+       LEFT JOIN users tu          ON i.teacher_id = tu.id
        WHERE fe.internship_id = ?`,
       [internshipId]
     );
@@ -270,6 +275,7 @@ router.post("/internship/:internshipId/docent", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 // ─── GET /api/finale-evaluatie/document/:internshipId ───────────────────────
 router.get("/document/:internshipId", async (req, res) => {
   const pool = req.db;
@@ -282,7 +288,6 @@ router.get("/document/:internshipId", async (req, res) => {
     if (!rows[0]?.document) {
       return res.status(404).json({ error: "Geen document gevonden." });
     }
-    // document is opgeslagen als "/uploads/finale_evaluatie/bestand.pdf"
     const bestandspad = path.join(__dirname, "..", rows[0].document);
     if (!fs.existsSync(bestandspad)) {
       return res.status(404).json({ error: "Bestand niet gevonden op schijf." });
@@ -292,4 +297,5 @@ router.get("/document/:internshipId", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 module.exports = router;

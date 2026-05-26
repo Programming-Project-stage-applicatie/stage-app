@@ -40,7 +40,11 @@ export default function FinaleEvaluatie() {
     setBestand(file);
     setBestandNaam(file.name);
   }
-
+function handleVerwijderBestand() {
+  setBestand(null);
+  setBestandNaam("Geen bestand gekozen");
+  fileRef.current.value = "";
+}
   async function handleIndienen() {
     if (!omschrijving.trim()) {
       setFout("Omschrijving is verplicht.");
@@ -151,23 +155,32 @@ export default function FinaleEvaluatie() {
         {isOpen && (
           <div style={s.uploadRij}>
             <label style={s.label}>Upload bestand (optioneel)</label>
-            <div style={s.uploadControls}>
-              <button
-                type="button"
-                style={s.kiesBestandBtn}
-                onClick={() => fileRef.current.click()}
-              >
-                Kies bestand
-              </button>
-              <span style={s.bestandNaam}>{bestandNaam}</span>
-              <input
-                ref={fileRef}
-                type="file"
-                accept=".pdf,.docx,.doc,.zip"
-                style={{ display: "none" }}
-                onChange={handleBestand}
-              />
-            </div>
+<div style={s.uploadControls}>
+  <button
+    type="button"
+    style={s.kiesBestandBtn}
+    onClick={() => fileRef.current.click()}
+  >
+    Kies bestand
+  </button>
+  <span style={s.bestandNaam}>{bestandNaam}</span>
+  {bestand && (
+    <button
+      type="button"
+      style={s.verwijderBtn}
+      onClick={handleVerwijderBestand}
+    >
+      Verwijder bestand
+    </button>
+  )}
+  <input
+    ref={fileRef}
+    type="file"
+    accept=".pdf,.docx,.doc,.zip"
+    style={{ display: "none" }}
+    onChange={handleBestand}
+  />
+</div>
           </div>
         )}
 
@@ -276,6 +289,7 @@ const s = {
   scoreBlok:        { display: "inline-block", background: "#f0fdf4", border: "1px solid #86efac", borderRadius: "8px", padding: "0.75rem 1.5rem", marginBottom: "0.5rem" },
   scoreGetal:       { fontSize: "2rem", fontWeight: "bold", color: "#16a34a" },
   scoreMax:         { fontSize: "1rem", color: "#555" },
+  verwijderBtn: { padding: "0.4rem 0.9rem", background: "#fef2f2", border: "1px solid #dc2626", color: "#dc2626", borderRadius: "4px", cursor: "pointer", fontSize: "0.85rem" },
   statusBadge: (status) => ({
     display: "inline-block",
     padding: "0.3rem 1rem",

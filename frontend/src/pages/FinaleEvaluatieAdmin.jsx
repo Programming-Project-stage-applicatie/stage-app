@@ -41,24 +41,28 @@ export default function FinaleEvaluatieAdmin() {
 
   useEffect(() => { fetchEvaluation(); }, [fetchEvaluation]);
 
-  async function openDocument() {
-    try {
-      const res = await fetch(
-        `http://localhost:3000/api/finale-evaluatie/document/${id}`,
-        { headers: authHeaders }
-      );
-      if (!res.ok) {
-        setError(t("FinaleEvaluatieDocent.errorDocumentFailed"));
-        return;
-      }
-      const contentType = res.headers.get("content-type") || "application/octet-stream";
-      const blob        = await res.blob();
-      const url         = URL.createObjectURL(new Blob([blob], { type: contentType }));
-      window.open(url, "_blank");
-    } catch {
-      setError(t("FinaleEvaluatieDocent.errorDocumentFailed"));
-    }
+async function openDocument() {
+  try {
+    const res = await fetch(
+      `http://localhost:3000/api/finale-evaluatie/document/${id}`,
+      { headers: authHeaders }
+    );
+    if (!res.ok) { setError(t("FinaleEvaluatieDocent.errorDocumentFailed")); return; }
+    const contentType = res.headers.get("content-type") || "application/octet-stream";
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(new Blob([blob], { type: contentType }));
+    const a    = document.createElement("a");
+    a.href     = url;
+    a.target   = "_blank";
+    a.rel      = "noopener noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  } catch {
+    setError(t("FinaleEvaluatieDocent.errorDocumentFailed"));
   }
+}
 
   if (error && !evaluation) return (
     <div style={s.page}>
@@ -74,7 +78,7 @@ export default function FinaleEvaluatieAdmin() {
   return (
     <div style={s.page}>
 
-      <h1 style={s.title}>{t("FinaleEvaluatieDocent.title")}</h1>
+     <h1 style={s.title}>Finale Evaluatie — Welkom, Admin</h1>
 
       <div style={s.statusBadge(evaluation.status)}>
         {getStatusLabel(evaluation.status).toUpperCase()}
@@ -153,7 +157,7 @@ export default function FinaleEvaluatieAdmin() {
 
       <div style={s.buttons}>
         <button style={s.backLink} onClick={() => navigate("/admin/final-evaluation-overview")}>
-          {t("FinaleEvaluatieDocent.backToDashboard")}
+          ← Terug naar overzicht
         </button>
       </div>
     </div>

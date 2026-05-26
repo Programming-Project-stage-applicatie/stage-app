@@ -27,7 +27,7 @@ export default function FinaleEvaluatieMentor() {
       }
       const data = await res.json();
       setEvaluatie(data);
-      setFeedback(data.mentor_motivatie || "");
+   setFeedback(data.mentor_motivatie || data.mentor_feedback || "");
     } catch {
       setFout("Er ging iets mis bij het ophalen.");
     }
@@ -91,7 +91,7 @@ export default function FinaleEvaluatieMentor() {
   return (
     <div style={s.pagina}>
 
-      <h1 style={s.titel}>Finale Evaluatie — Mentor</h1>
+      <h1 style={s.titel}>Finale Evaluatie — Welkom, Mentor</h1>
 
       <div style={s.statusBadge(evaluatie.status)}>
         {vertaalStatus(evaluatie.status).toUpperCase()}
@@ -236,12 +236,9 @@ export default function FinaleEvaluatieMentor() {
             {bezig ? "BEZIG…" : "BEVESTIGEN"}
           </button>
         )}
-        <button
-          style={{ ...s.btn, ...s.btnWit }}
-          onClick={() => window.history.back()}
-        >
-          TERUG
-        </button>
+<button style={s.terugLink} onClick={() => window.history.back()}>
+  ← Terug naar overzicht
+</button>
       </div>
 
     </div>
@@ -277,6 +274,7 @@ const s = {
   btn:                 { padding: "0.65rem 2.5rem", fontSize: "0.9rem", fontWeight: "bold", borderRadius: "4px", cursor: "pointer", letterSpacing: "0.05em" },
   btnGroen:            { background: "#16a34a", color: "#fff", border: "none" },
   btnWit:              { background: "#fff", color: "#333", border: "1px solid #ccc" },
+  terugLink: { background: "none", border: "none", color: "#7c3aed", fontSize: "0.9rem", cursor: "pointer", padding: 0, textDecoration: "underline" },
   statusBadge: (status) => ({
     display: "inline-block",
     padding: "0.3rem 1rem",

@@ -45,17 +45,25 @@ router.get("/student/:studentId", async (req, res) => {
   const db = req.db;
   try {
     const internshipId = await getInternshipId(db, req.params.studentId);
+    console.log("internshipId:", internshipId); // ← tijdelijke debug log
     if (!internshipId) return res.json({ status: "open" });
     const [rows] = await db.query(
-      `SELECT fe.*, ir.company
+      `SELECT 
+        fe.*,
+        ir.company AS bedrijf,
+        CONCAT(mentor.firstname, ' ', mentor.lastname) AS mentor_naam,
+        CONCAT(teacher.firstname, ' ', teacher.lastname) AS docent_naam
        FROM final_evaluations fe
        JOIN internships i ON fe.internship_id = i.id
        JOIN internship_requests ir ON i.internship_request_id = ir.id
+       LEFT JOIN users AS mentor ON i.mentor_id = mentor.id
+       LEFT JOIN users AS teacher ON i.teacher_id = teacher.id
        WHERE fe.internship_id = ?`,
       [internshipId]
     );
     res.json(rows[0] ?? { status: "open" });
   } catch (err) {
+    console.error("VOLLEDIGE FOUT:", err); // ← volledige fout in terminal
     res.status(500).json({ error: err.message });
   }
 });

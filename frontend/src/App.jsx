@@ -9,7 +9,7 @@ import InternshipCommitteeDashboard from "./pages/InternshipCommitteeDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 // Teacher pages
 import FinaleEvaluatieDocent from "./pages/FinaleEvaluatieDocent";
-import FinaleEvaluatie from "./pages/FinaleEvaluatie";
+import FinaleEvaluatie from "./pages/FinaleEvaluatieStudent"; 
 // Admin pages
 import AdminUsers from "./pages/AdminUsers";
 import AdminInternshipDetail from "./pages/AdminInternshipDetail";

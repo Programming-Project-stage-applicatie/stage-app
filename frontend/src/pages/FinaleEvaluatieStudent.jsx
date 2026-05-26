@@ -123,7 +123,7 @@ export default function FinaleEvaluatie() {
           {`${user.firstname ?? ""} ${user.lastname ?? ""}`.trim() || user.username}
         </p>
         <p style={s.infoRegel}>
-          <span style={s.infoLabel}>Stage:</span>
+          <span style={s.infoLabel}>Stagebedrijf:</span>
           {evaluatie.bedrijf || "—"}
         </p>
       </div>

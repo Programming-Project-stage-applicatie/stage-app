@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const authenticateJWT = require("../middleware/authenticateJWT");
 
 const internshipRequestsController = require("../controllers/internshipRequestsController");
 
@@ -8,6 +9,37 @@ function isValidDate(dateString) {
     const date = new Date(dateString);
     return !isNaN(date.getTime());
 }
+
+// ------------------------------------------------------------
+// Alle routes hieronder vereisen JWT
+// ------------------------------------------------------------
+router.use(authenticateJWT);
+
+// ------------------------------------------------------------
+// GET /internship-requests/me  → student ziet eigen aanvragen
+// ------------------------------------------------------------
+router.get("/me", async (req, res) => {
+    try {
+        const studentId = req.user.id;
+
+        const [rows] = await req.db.query(
+            `SELECT ir.*, 
+                    u.firstname AS student_firstname,
+                    u.lastname AS student_lastname
+             FROM internship_requests ir
+             JOIN users u ON u.id = ir.student_id
+             WHERE ir.student_id = ?
+             ORDER BY ir.id DESC`,
+            [studentId]
+        );
+
+        res.json(rows);
+
+    } catch (err) {
+        console.error("Database error:", err);
+        res.status(500).json({ error: "Database error" });
+    }
+});
 
 /* ============================================================
    GET: lijst van aanvragen
@@ -23,12 +55,23 @@ router.get("/", async (req, res) => {
 
         if (role === "student") {
             [results] = await req.db.query(
-                "SELECT * FROM internship_requests WHERE student_id = ?",
+                `SELECT ir.*, 
+                        u.firstname AS student_firstname,
+                        u.lastname AS student_lastname
+                 FROM internship_requests ir
+                 JOIN users u ON u.id = ir.student_id
+                 WHERE ir.student_id = ?
+                 ORDER BY ir.id DESC`,
                 [userId]
             );
         } else if (role === "internship_committee") {
             [results] = await req.db.query(
-                "SELECT * FROM internship_requests"
+                `SELECT ir.*, 
+                        u.firstname AS student_firstname,
+                        u.lastname AS student_lastname
+                 FROM internship_requests ir
+                 JOIN users u ON u.id = ir.student_id
+                 ORDER BY ir.id DESC`
             );
         } else {
             return res.status(403).json({ error: "Insufficient permissions" });
@@ -43,7 +86,7 @@ router.get("/", async (req, res) => {
 });
 
 /* ============================================================
-   GET: detail van één aanvraag
+   GET: detail van één aanvraag (develop controller)
 ============================================================ */
 router.get("/:id", internshipRequestsController.getById);
 

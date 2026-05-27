@@ -285,7 +285,7 @@ export default function FinaleEvaluatieDocent() {
           </button>
         )}
         <button style={s.backLink} onClick={() => navigate("/teacher/final-evaluation-overview")}>
-          {t("FinaleEvaluatieDocent.backToDashboard")}
+          ← Terug naar overzicht
         </button>
       </div>
     </div>

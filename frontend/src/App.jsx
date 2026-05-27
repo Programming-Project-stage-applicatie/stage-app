@@ -5,6 +5,7 @@ import StudentDashboard from "./pages/StudentDashboard";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import FinalEvaluationOverview from "./pages/FinalEvaluationOverviewTeacher";
 import MentorDashboard from "./pages/MentorDashboard";
+import FinaleEvaluatieMentor from "./pages/FinaleEvaluatieMentor";
 import InternshipCommitteeDashboard from "./pages/InternshipCommitteeDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import FinalEvaluationOverviewAdmin from "./pages/FinalEvaluationOverviewAdmin";
@@ -13,8 +14,7 @@ import FinaleEvaluatieAdmin from "./pages/FinaleEvaluatieAdmin";
 
 import FinaleEvaluatieDocent from "./pages/FinaleEvaluatieDocent";
 import FinaleEvaluatie from "./pages/FinaleEvaluatieStudent";
-
-
+// Admin pages
 import AdminUsers from "./pages/AdminUsers";
 import AdminInternshipDetail from "./pages/AdminInternshipDetail";
 
@@ -26,6 +26,7 @@ import StudentInternshipDetail from "./pages/StudentInternshipDetail";
 
 import InternshipCommitteeOverview from "./pages/InternshipCommitteeOverview";
 import InternshipCommitteeRequestDetail from "./pages/InternshipCommitteeRequestDetail";
+import FinalEvaluationOverviewMentor from "./pages/FinalEvaluationOverviewMentor";
 
 function App() {
   return (
@@ -41,11 +42,15 @@ function App() {
         <Route path="/dashboard/mentor" element={<MentorDashboard />} />
         <Route path="/dashboard/internship-committee" element={<InternshipCommitteeDashboard />} />
         <Route path="/dashboard/admin" element={<AdminDashboard />} />
+        {/* Mentor pages */}
+        <Route path="/mentor/studenten" element={<FinalEvaluationOverviewMentor />} />
+        <Route path="/mentor/finale-evaluatie" element={<FinaleEvaluatieMentor />} />
+        <Route path="/mentor/finale-evaluatie/:studentId" element={<FinaleEvaluatieMentor />} />
         {/* Teacher pages */}
         <Route path="/teacher/internships/:id/evaluation" element={<FinaleEvaluatieDocent />} />
         <Route path="/teacher/final-evaluation-overview" element={<FinalEvaluationOverview />} />
-        <Route path="/finale-evaluatie" element={<FinaleEvaluatie />} />
         {/* Student pages */}
+        <Route path="/finale-evaluatie" element={<FinaleEvaluatie />} />
         <Route path="/student/new-request" element={<NewInternshipRequest />} />
         <Route path="/student/request/:id" element={<StudentRequestDetail />} />
         <Route path="/student/internships/:id" element={<StudentInternshipDetail />} />

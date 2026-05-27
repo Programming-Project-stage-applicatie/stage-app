@@ -49,15 +49,21 @@ export default function TeacherDashboard() {
       <hr className="dashboard-divider" />
 
       <div className="dashboard-cards">
-        <div className="dashboard-card">
-          <h3>Logboeken</h3>
-          <button
-            className="dashboard-button-outline"
-            onClick={() => navigate("/teacher/logbooks")}
-          >
-            open
-          </button>
-        </div>
+
+
+<div className="dashboard-card">
+  <h3>Logboeken</h3>
+  {/* TODO: logboeken pagina nog niet beschikbaar */}
+  <button
+    className="dashboard-button-outline"
+    disabled
+    style={{ cursor: "default", opacity: 0.5 }}
+    title="Nog niet beschikbaar"
+  >
+    open
+  </button>
+  <small style={{ color: "#aaa", marginTop: "6px" }}>binnenkort beschikbaar</small>
+</div>
         <div className="dashboard-card">
           <h3>Finale evaluaties</h3>
           <button

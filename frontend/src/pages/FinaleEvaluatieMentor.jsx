@@ -1,34 +1,36 @@
 import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 
 export default function FinaleEvaluatieMentor() {
-  const [evaluatie, setEvaluatie]       = useState(null);
-  const [feedback, setFeedback]         = useState("");
-  const [fout, setFout]                 = useState("");
-  const [succes, setSucces]             = useState("");
-  const [bezig, setBezig]               = useState(false);
+  const [evaluatie, setEvaluatie] = useState(null);
+  const [feedback, setFeedback]   = useState("");
+  const [fout, setFout]           = useState("");
+  const [succes, setSucces]       = useState("");
+  const [bezig, setBezig]         = useState(false);
 
-  const user      = JSON.parse(localStorage.getItem("user") || "{}");
-  const mentorId  = user.id || 1;
-  const studentId = user.studentId || 1;
+  const user     = JSON.parse(localStorage.getItem("user") || "{}");
+  const token    = localStorage.getItem("token");
+  const mentorId = user.id || 1;
+  const { studentId } = useParams();
 
   useEffect(() => { haalOp(); }, []);
 
   async function haalOp() {
-    // TIJDELIJK — verwijderen als backend klaar is
-    setEvaluatie({
-      status: "submitted",
-      student_naam: "Test Student",
-      bedrijf: "Test BV",
-      presentation: "Dit is een testpresentatie.",
-      document: null,
-      mentor_motivatie: "",
-      final_score: null,
-      evaluatie_docent: "",
-      feedback_docent: "",
-    });
-   setFeedback(evaluatie.mentor_motivatie || "");
-    return;
-    // EINDE TIJDELIJK
+    try {
+      const res = await fetch(
+        `http://localhost:3000/api/finale-evaluatie/student/${studentId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!res.ok) {
+        setFout("Kon evaluatie niet ophalen.");
+        return;
+      }
+      const data = await res.json();
+      setEvaluatie(data);
+      setFeedback(data.mentor_motivatie || data.mentor_feedback || "");
+    } catch {
+      setFout("Er ging iets mis bij het ophalen.");
+    }
   }
 
   async function handleBevestigen() {
@@ -40,24 +42,23 @@ export default function FinaleEvaluatieMentor() {
     setFout("");
     setSucces("");
     setBezig(true);
-// TIJDELIJK — verwijderen als backend klaar is
-  setSucces("Feedback succesvol opgeslagen.");
-  setBezig(false);
-  return;
-  // EINDE TIJDELIJK
     try {
-      const res = await fetch(`/api/finale-evaluatie/student/${studentId}/mentor-motivatie`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mentor_motivatie: feedback, mentor_id: mentorId }),
-      });
-
+      const res = await fetch(
+        `http://localhost:3000/api/finale-evaluatie/student/${studentId}/mentor-motivatie`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ mentor_motivatie: feedback, mentor_id: mentorId }),
+        }
+      );
       if (!res.ok) {
         const d = await res.json();
         setFout(d.error || "Opslaan mislukt.");
         return;
       }
-
       setSucces("Feedback succesvol opgeslagen.");
       await haalOp();
     } catch {
@@ -69,9 +70,9 @@ export default function FinaleEvaluatieMentor() {
 
   function vertaalStatus(status) {
     const vertalingen = {
-      open:       "Open",
-      submitted:  "Ingediend",
-      evaluated:  "Geëvalueerd",
+      open:      "Open",
+      submitted: "Ingediend",
+      evaluated: "Geëvalueerd",
     };
     return vertalingen[status] || status || "Onbekend";
   }
@@ -90,7 +91,7 @@ export default function FinaleEvaluatieMentor() {
   return (
     <div style={s.pagina}>
 
-      <h1 style={s.titel}>Finale Evaluatie — Mentor</h1>
+      <h1 style={s.titel}>Finale Evaluatie — Welkom, Mentor</h1>
 
       <div style={s.statusBadge(evaluatie.status)}>
         {vertaalStatus(evaluatie.status).toUpperCase()}
@@ -102,22 +103,20 @@ export default function FinaleEvaluatieMentor() {
           {evaluatie.student_naam || "—"}
         </p>
         <p style={s.infoRegel}>
-          <span style={s.infoLabel}>Stage:</span>
-          {evaluatie.bedrijf || user.bedrijf || "—"}
+          <span style={s.infoLabel}>Stagebedrijf:</span>
+          {evaluatie.bedrijf || "—"}
         </p>
         <p style={s.infoRegel}>
           <span style={s.infoLabel}>Mentor:</span>
-          {user.name || "—"}
+          {evaluatie.mentor_naam || "—"}
+        </p>
+        <p style={s.infoRegel}>
+          <span style={s.infoLabel}>Docent:</span>
+          {evaluatie.docent_naam || "—"}
         </p>
       </div>
 
       <hr style={s.lijn} />
-
-      {!kanBewerken && evaluatie.status !== "open" && (
-        <div style={s.statusMelding}>
-          ✅ De feedback is <strong>{vertaalStatus(evaluatie.status)}</strong>. Je kan deze niet meer bewerken.
-        </div>
-      )}
 
       {evaluatie.status === "open" && (
         <div style={s.waarschuwingMelding}>
@@ -125,20 +124,41 @@ export default function FinaleEvaluatieMentor() {
         </div>
       )}
 
+      {evaluatie.status === "evaluated" && (
+        <div style={s.statusMelding}>
+          ✅ Deze evaluatie is volledig <strong>geëvalueerd</strong>.
+        </div>
+      )}
+
+      {!kanBewerken && evaluatie.status !== "open" && evaluatie.status !== "evaluated" && (
+        <div style={s.statusMelding}>
+          ✅ De feedback is <strong>{vertaalStatus(evaluatie.status)}</strong>. Je kan deze niet meer bewerken.
+        </div>
+      )}
+
       {/* Eindpresentatie van de student — alleen lezen */}
       <section style={s.sectie}>
         <h2 style={s.sectietitel}>Eindpresentatie Student</h2>
-        <label style={s.label}>Omschrijving eindpresentatie</label>
-        <textarea
-          style={{ ...s.textarea, ...s.textareaReadonly }}
-          value={evaluatie.presentation || ""}
-          readOnly
-          placeholder="De student heeft nog geen omschrijving ingediend."
-        />
-        {evaluatie.document && (
-          <a href={evaluatie.document} target="_blank" rel="noreferrer" style={s.docLink}>
-            📎 {evaluatie.document.split("/").pop()}
-          </a>
+        {!evaluatie.presentation && !evaluatie.document ? (
+          <div style={s.infoBanner}>ℹ️ De student heeft nog geen eindpresentatie ingediend.</div>
+        ) : (
+          <>
+            <div style={s.ingediendBadge}>✅ Ingediend</div>
+            <label style={s.label}>Omschrijving eindpresentatie</label>
+            <textarea
+              style={{ ...s.textarea, ...s.textareaReadonly }}
+              value={evaluatie.presentation || ""}
+              readOnly
+              placeholder="De student heeft nog geen omschrijving ingediend."
+            />
+            {evaluatie.document ? (
+              <a href={`http://localhost:3000${evaluatie.document}`} target="_blank" rel="noreferrer" style={s.docLink}>
+                📎 {evaluatie.document.split("/").pop()} — klik om te openen
+              </a>
+            ) : (
+              <p style={s.geenBijlage}>📄 Geen bestand bijgevoegd.</p>
+            )}
+          </>
         )}
       </section>
 
@@ -183,7 +203,6 @@ export default function FinaleEvaluatieMentor() {
           </div>
         ) : (
           <>
-            {/* Eindscore = de punten die de docent geeft (bv. 14/20) */}
             <label style={s.label}>Eindscore docent:</label>
             <div style={s.scoreBlok}>
               <span style={s.scoreGetal}>
@@ -194,7 +213,6 @@ export default function FinaleEvaluatieMentor() {
               )}
             </div>
 
-            {/* Evaluatie docent = de schriftelijke beoordeling/motivatie van de punten */}
             <label style={{ ...s.label, marginTop: "1rem" }}>
               Evaluatie docent:
             </label>
@@ -205,7 +223,6 @@ export default function FinaleEvaluatieMentor() {
               placeholder="Nog geen evaluatie ingevoerd door de docent."
             />
 
-            {/* Feedback docent = bijkomende opmerkingen of verbeterpunten */}
             <label style={{ ...s.label, marginTop: "1rem" }}>
               Feedback docent:
             </label>
@@ -244,34 +261,35 @@ export default function FinaleEvaluatieMentor() {
   );
 }
 
-// ── Stijlen ────────────────────────────────────────────────────
 const s = {
-  pagina:           { maxWidth: "620px", margin: "2rem auto", padding: "1.5rem", fontFamily: "Arial, sans-serif", color: "#222" },
-  loading:          { display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" },
-  titel:            { fontSize: "1.6rem", fontWeight: "bold", marginBottom: "1rem" },
-  infoBlok:         { marginBottom: "1rem" },
-  infoRegel:        { margin: "0.2rem 0", fontSize: "0.95rem" },
-  infoLabel:        { fontWeight: "bold", marginRight: "0.4rem" },
-  lijn:             { border: "none", borderTop: "1px solid #ccc", margin: "1.25rem 0" },
-  statusMelding:    { background: "#f0fdf4", border: "1px solid #86efac", color: "#166534", padding: "0.75rem 1rem", borderRadius: "6px", marginBottom: "1rem", fontSize: "0.9rem" },
+  pagina:              { maxWidth: "620px", margin: "2rem auto", padding: "1.5rem", fontFamily: "Arial, sans-serif", color: "#222" },
+  loading:             { display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" },
+  titel:               { fontSize: "1.6rem", fontWeight: "bold", marginBottom: "1rem" },
+  infoBlok:            { marginBottom: "1rem" },
+  infoRegel:           { margin: "0.2rem 0", fontSize: "0.95rem" },
+  infoLabel:           { fontWeight: "bold", marginRight: "0.4rem" },
+  lijn:                { border: "none", borderTop: "1px solid #ccc", margin: "1.25rem 0" },
+  statusMelding:       { background: "#f0fdf4", border: "1px solid #86efac", color: "#166534", padding: "0.75rem 1rem", borderRadius: "6px", marginBottom: "1rem", fontSize: "0.9rem" },
   waarschuwingMelding: { background: "#fefce8", border: "1px solid #fde047", color: "#854d0e", padding: "0.75rem 1rem", borderRadius: "6px", marginBottom: "1rem", fontSize: "0.9rem" },
-  sectie:           { marginBottom: "1.25rem" },
-  sectietitel:      { fontSize: "1rem", fontWeight: "bold", marginBottom: "0.5rem" },
-  label:            { display: "block", fontSize: "0.9rem", marginBottom: "0.4rem" },
-  verplicht:        { color: "#dc2626", marginLeft: "0.2rem" },
-  textarea:         { width: "100%", minHeight: "90px", padding: "0.6rem 0.75rem", border: "1px solid #ccc", borderRadius: "4px", fontSize: "0.9rem", resize: "vertical", boxSizing: "border-box", background: "#fff" },
-  textareaReadonly: { background: "#f9f9f9", color: "#444" },
-  docLink:          { display: "inline-block", marginTop: "0.4rem", color: "#2563eb", fontSize: "0.85rem" },
-  fout:             { color: "#dc2626", background: "#fef2f2", padding: "0.6rem 0.9rem", borderRadius: "4px", marginBottom: "0.75rem", fontSize: "0.9rem" },
-  succesMsg:        { color: "#166534", background: "#f0fdf4", padding: "0.6rem 0.9rem", borderRadius: "4px", marginBottom: "0.75rem", fontSize: "0.9rem" },
-  infoBanner:       { background: "#f0f9ff", border: "1px solid #93c5fd", color: "#1e40af", padding: "0.75rem 1rem", borderRadius: "6px", fontSize: "0.9rem" },
-  scoreBlok:        { display: "inline-block", background: "#f0fdf4", border: "1px solid #86efac", borderRadius: "8px", padding: "0.75rem 1.5rem", marginBottom: "0.5rem" },
-  scoreGetal:       { fontSize: "2rem", fontWeight: "bold", color: "#16a34a" },
-  scoreMax:         { fontSize: "1rem", color: "#555" },
-  knoppen:          { display: "flex", justifyContent: "center", gap: "1rem", marginTop: "2rem" },
-  btn:              { padding: "0.65rem 2.5rem", fontSize: "0.9rem", fontWeight: "bold", borderRadius: "4px", cursor: "pointer", letterSpacing: "0.05em" },
-  btnGroen:         { background: "#16a34a", color: "#fff", border: "none" },
-  btnWit:           { background: "#fff", color: "#333", border: "1px solid #ccc" },
+  sectie:              { marginBottom: "1.25rem" },
+  sectietitel:         { fontSize: "1rem", fontWeight: "bold", marginBottom: "0.5rem" },
+  label:               { display: "block", fontSize: "0.9rem", marginBottom: "0.4rem" },
+  verplicht:           { color: "#dc2626", marginLeft: "0.2rem" },
+  textarea:            { width: "100%", minHeight: "90px", padding: "0.6rem 0.75rem", border: "1px solid #ccc", borderRadius: "4px", fontSize: "0.9rem", resize: "vertical", boxSizing: "border-box", background: "#fff" },
+  textareaReadonly:    { background: "#f9f9f9", color: "#444", cursor: "default", outline: "none", userSelect: "none", pointerEvents: "none" },
+  docLink:             { display: "inline-block", marginTop: "0.5rem", color: "#2563eb", fontSize: "0.85rem", textDecoration: "underline" },
+  geenBijlage:         { marginTop: "0.5rem", fontSize: "0.85rem", color: "#888" },
+  fout:                { color: "#dc2626", background: "#fef2f2", padding: "0.6rem 0.9rem", borderRadius: "4px", marginBottom: "0.75rem", fontSize: "0.9rem" },
+  succesMsg:           { color: "#166534", background: "#f0fdf4", padding: "0.6rem 0.9rem", borderRadius: "4px", marginBottom: "0.75rem", fontSize: "0.9rem" },
+  infoBanner:          { background: "#f0f9ff", border: "1px solid #93c5fd", color: "#1e40af", padding: "0.75rem 1rem", borderRadius: "6px", fontSize: "0.9rem" },
+  ingediendBadge:      { display: "inline-block", background: "#f0fdf4", border: "1px solid #86efac", color: "#166534", borderRadius: "20px", padding: "0.2rem 0.75rem", fontSize: "0.8rem", fontWeight: "bold", marginBottom: "0.75rem" },
+  scoreBlok:           { display: "inline-block", background: "#f0fdf4", border: "1px solid #86efac", borderRadius: "8px", padding: "0.75rem 1.5rem", marginBottom: "0.5rem" },
+  scoreGetal:          { fontSize: "2rem", fontWeight: "bold", color: "#16a34a" },
+  scoreMax:            { fontSize: "1rem", color: "#555" },
+  knoppen:             { display: "flex", justifyContent: "center", gap: "1rem", marginTop: "2rem" },
+  btn:                 { padding: "0.65rem 2.5rem", fontSize: "0.9rem", fontWeight: "bold", borderRadius: "4px", cursor: "pointer", letterSpacing: "0.05em" },
+  btnGroen:            { background: "#16a34a", color: "#fff", border: "none" },
+  btnWit:              { background: "#fff", color: "#333", border: "1px solid #ccc" },
   statusBadge: (status) => ({
     display: "inline-block",
     padding: "0.3rem 1rem",
@@ -280,16 +298,16 @@ const s = {
     fontSize: "0.85rem",
     marginBottom: "1rem",
     background:
-      status === "open"       ? "#fef9c3" :
-      status === "submitted"  ? "#dbeafe" :
-      status === "evaluated"  ? "#f0fdf4" : "#f3f4f6",
+      status === "open"      ? "#fef9c3" :
+      status === "submitted" ? "#dbeafe" :
+      status === "evaluated" ? "#f0fdf4" : "#f3f4f6",
     color:
-      status === "open"       ? "#854d0e" :
-      status === "submitted"  ? "#1e40af" :
-      status === "evaluated"  ? "#166534" : "#374151",
+      status === "open"      ? "#854d0e" :
+      status === "submitted" ? "#1e40af" :
+      status === "evaluated" ? "#166534" : "#374151",
     border:
-      status === "open"       ? "1px solid #fde047" :
-      status === "submitted"  ? "1px solid #93c5fd" :
-      status === "evaluated"  ? "1px solid #86efac" : "1px solid #d1d5db",
+      status === "open"      ? "1px solid #fde047" :
+      status === "submitted" ? "1px solid #93c5fd" :
+      status === "evaluated" ? "1px solid #86efac" : "1px solid #d1d5db",
   }),
 };

@@ -19,6 +19,11 @@ import AdminUsers from "./pages/AdminUsers";
 import AdminInternshipDetail from "./pages/AdminInternshipDetail";
 
 
+import TeacherStudentLogbookList from "./pages/TeacherStudentLogbookList";
+import TeacherLogbookDetail from "./pages/TeacherLogbookDetail";
+import LogbookDetailView from "./pages/LogbookDetailView";
+import SupervisorStudentLogbooks from "./pages/SupervisorStudentLogbooks";
+
 import NewInternshipRequest from "./pages/NewInternshipRequest";
 import StudentRequestDetail from "./pages/StudentRequestDetail";
 import StudentInternshipDetail from "./pages/StudentInternshipDetail";
@@ -49,6 +54,7 @@ function App() {
         {/* Teacher pages */}
         <Route path="/teacher/internships/:id/evaluation" element={<FinaleEvaluatieDocent />} />
         <Route path="/teacher/final-evaluation-overview" element={<FinalEvaluationOverview />} />
+         <Route path="/teacher/logbooks" element={<TeacherStudentLogbookList />} />
         {/* Student pages */}
         <Route path="/finale-evaluatie" element={<FinaleEvaluatie />} />
         <Route path="/student/new-request" element={<NewInternshipRequest />} />
@@ -57,12 +63,22 @@ function App() {
         {/* Admin pages */}
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/internships/:id" element={<AdminInternshipDetail />} />
+
+
+        <Route path="/logbooks/internship/:internshipId" element={<TeacherStudentLogbookList />}/>
+
+        <Route path="/logbook/detail/:id" element={<TeacherLogbookDetail />}/>
+        <Route path="/supervisor/students/:id/logbooks" element={<TeacherLogbookDetail />} />
+<Route path="/supervisor/logbook/:id" element={<LogbookDetailView />} />
+<Route path="/supervisor/students/:id/logbooks" element={<SupervisorStudentLogbooks />} />
+
         <Route path="/admin/final-evaluation-overview" element={<FinalEvaluationOverviewAdmin />} />
 <Route path="/admin/internships/:id/evaluation" element={<FinaleEvaluatieAdmin />} />
         {/* Commissie pages */}
         <Route path="/committee/overview" element={<InternshipCommitteeOverview />} />
         <Route path="/committee/requests/:id/overview" element={<InternshipCommitteeRequestDetail />} />
         {/* Catch-all */}
+
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>

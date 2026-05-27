@@ -3,10 +3,13 @@ import Login from "./components/Login";
 // Dashboards
 import StudentDashboard from "./pages/StudentDashboard";
 import TeacherDashboard from "./pages/TeacherDashboard";
+import FinalEvaluationOverview from "./pages/FinalEvaluationOverviewTeacher";
 import MentorDashboard from "./pages/MentorDashboard";
 import FinaleEvaluatieMentor from "./pages/FinaleEvaluatieMentor";
 import InternshipCommitteeDashboard from "./pages/InternshipCommitteeDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+// Teacher pages
+import FinaleEvaluatieDocent from "./pages/FinaleEvaluatieDocent";
 import FinaleEvaluatie from "./pages/FinaleEvaluatieStudent";
 // Admin pages
 import AdminUsers from "./pages/AdminUsers";
@@ -24,23 +27,35 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/mentor/studenten" element={<FinalEvaluationOverviewMentor />} />
+        {/* Default redirect */}
         <Route path="/" element={<Navigate to="/login" />} />
+        {/* Login */}
         <Route path="/login" element={<Login />} />
+        {/* Dashboards */}
         <Route path="/dashboard/student" element={<StudentDashboard />} />
         <Route path="/dashboard/teacher" element={<TeacherDashboard />} />
         <Route path="/dashboard/mentor" element={<MentorDashboard />} />
-        <Route path="/mentor/finale-evaluatie" element={<FinaleEvaluatieMentor />} />
         <Route path="/dashboard/internship-committee" element={<InternshipCommitteeDashboard />} />
         <Route path="/dashboard/admin" element={<AdminDashboard />} />
+        {/* Mentor pages */}
+        <Route path="/mentor/studenten" element={<FinalEvaluationOverviewMentor />} />
+        <Route path="/mentor/finale-evaluatie" element={<FinaleEvaluatieMentor />} />
         <Route path="/mentor/finale-evaluatie/:studentId" element={<FinaleEvaluatieMentor />} />
+        {/* Teacher pages */}
+        <Route path="/teacher/internships/:id/evaluation" element={<FinaleEvaluatieDocent />} />
+        <Route path="/teacher/final-evaluation-overview" element={<FinalEvaluationOverview />} />
+        {/* Student pages */}
+        <Route path="/finale-evaluatie" element={<FinaleEvaluatie />} />
         <Route path="/student/new-request" element={<NewInternshipRequest />} />
         <Route path="/student/request/:id" element={<StudentRequestDetail />} />
         <Route path="/student/internships/:id" element={<StudentInternshipDetail />} />
+        {/* Admin pages */}
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/internships/:id" element={<AdminInternshipDetail />} />
+        {/* Commissie pages */}
         <Route path="/committee/overview" element={<InternshipCommitteeOverview />} />
         <Route path="/committee/requests/:id/overview" element={<InternshipCommitteeRequestDetail />} />
+        {/* Catch-all */}
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>

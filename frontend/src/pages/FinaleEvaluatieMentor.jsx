@@ -8,9 +8,9 @@ export default function FinaleEvaluatieMentor() {
   const [succes, setSucces]       = useState("");
   const [bezig, setBezig]         = useState(false);
 
-  const user      = JSON.parse(localStorage.getItem("user") || "{}");
-  const token     = localStorage.getItem("token");
-  const mentorId  = user.id || 1;
+  const user     = JSON.parse(localStorage.getItem("user") || "{}");
+  const token    = localStorage.getItem("token");
+  const mentorId = user.id || 1;
   const { studentId } = useParams();
 
   useEffect(() => { haalOp(); }, []);
@@ -27,7 +27,7 @@ export default function FinaleEvaluatieMentor() {
       }
       const data = await res.json();
       setEvaluatie(data);
-   setFeedback(data.mentor_motivatie || data.mentor_feedback || "");
+      setFeedback(data.mentor_motivatie || data.mentor_feedback || "");
     } catch {
       setFout("Er ging iets mis bij het ophalen.");
     }
@@ -97,24 +97,24 @@ export default function FinaleEvaluatieMentor() {
         {vertaalStatus(evaluatie.status).toUpperCase()}
       </div>
 
-<div style={s.infoBlok}>
-  <p style={s.infoRegel}>
-    <span style={s.infoLabel}>Student:</span>
-    {evaluatie.student_naam || "—"}
-  </p>
-  <p style={s.infoRegel}>
-    <span style={s.infoLabel}>Stagebedrijf:</span>
-    {evaluatie.bedrijf || "—"}
-  </p>
-  <p style={s.infoRegel}>
-    <span style={s.infoLabel}>Mentor:</span>
-    {evaluatie.mentor_naam || "—"}
-  </p>
-  <p style={s.infoRegel}>
-    <span style={s.infoLabel}>Docent:</span>
-    {evaluatie.docent_naam || "—"}
-  </p>
-</div>
+      <div style={s.infoBlok}>
+        <p style={s.infoRegel}>
+          <span style={s.infoLabel}>Student:</span>
+          {evaluatie.student_naam || "—"}
+        </p>
+        <p style={s.infoRegel}>
+          <span style={s.infoLabel}>Stagebedrijf:</span>
+          {evaluatie.bedrijf || "—"}
+        </p>
+        <p style={s.infoRegel}>
+          <span style={s.infoLabel}>Mentor:</span>
+          {evaluatie.mentor_naam || "—"}
+        </p>
+        <p style={s.infoRegel}>
+          <span style={s.infoLabel}>Docent:</span>
+          {evaluatie.docent_naam || "—"}
+        </p>
+      </div>
 
       <hr style={s.lijn} />
 
@@ -136,6 +136,7 @@ export default function FinaleEvaluatieMentor() {
         </div>
       )}
 
+      {/* Eindpresentatie van de student — alleen lezen */}
       <section style={s.sectie}>
         <h2 style={s.sectietitel}>Eindpresentatie Student</h2>
         {!evaluatie.presentation && !evaluatie.document ? (
@@ -163,6 +164,7 @@ export default function FinaleEvaluatieMentor() {
 
       <hr style={s.lijn} />
 
+      {/* Feedback van de mentor — bewerkbaar zolang status "submitted" is */}
       <section style={s.sectie}>
         <h2 style={s.sectietitel}>Feedback Mentor</h2>
         <label style={s.label}>
@@ -191,6 +193,7 @@ export default function FinaleEvaluatieMentor() {
 
       <hr style={s.lijn} />
 
+      {/* Beoordeling van de docent — altijd alleen lezen voor de mentor */}
       <section style={s.sectie}>
         <h2 style={s.sectietitel}>Beoordeling Docent</h2>
 
@@ -209,6 +212,16 @@ export default function FinaleEvaluatieMentor() {
                 <span style={s.scoreMax}> / 20</span>
               )}
             </div>
+
+            <label style={{ ...s.label, marginTop: "1rem" }}>
+              Evaluatie docent:
+            </label>
+            <textarea
+              style={{ ...s.textarea, ...s.textareaReadonly }}
+              value={evaluatie.evaluatie_docent || ""}
+              readOnly
+              placeholder="Nog geen evaluatie ingevoerd door de docent."
+            />
 
             <label style={{ ...s.label, marginTop: "1rem" }}>
               Feedback docent:
@@ -236,9 +249,12 @@ export default function FinaleEvaluatieMentor() {
             {bezig ? "BEZIG…" : "BEVESTIGEN"}
           </button>
         )}
-<button style={s.terugLink} onClick={() => window.history.back()}>
-  ← Terug naar overzicht
-</button>
+        <button
+          style={{ ...s.btn, ...s.btnWit }}
+          onClick={() => window.history.back()}
+        >
+          TERUG
+        </button>
       </div>
 
     </div>
@@ -274,7 +290,6 @@ const s = {
   btn:                 { padding: "0.65rem 2.5rem", fontSize: "0.9rem", fontWeight: "bold", borderRadius: "4px", cursor: "pointer", letterSpacing: "0.05em" },
   btnGroen:            { background: "#16a34a", color: "#fff", border: "none" },
   btnWit:              { background: "#fff", color: "#333", border: "1px solid #ccc" },
-  terugLink: { background: "none", border: "none", color: "#7c3aed", fontSize: "0.9rem", cursor: "pointer", padding: 0, textDecoration: "underline" },
   statusBadge: (status) => ({
     display: "inline-block",
     padding: "0.3rem 1rem",

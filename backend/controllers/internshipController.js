@@ -14,6 +14,7 @@ exports.getAllInternships = async (req, res) => {
     `);
     return res.json(rows);
   } catch (error) {
+    console.error("Fetch internships failed:", error);
     return res.status(500).json({ message: "Failed to fetch internships" });
   }
 };
@@ -27,15 +28,31 @@ exports.assignMentor = async (req, res) => {
   try {
     connection = await pool.getConnection();
     await connection.beginTransaction();
-    const [internships] = await connection.execute("SELECT id FROM internships WHERE id = ?", [internshipId]);
-    if (internships.length === 0) { await connection.rollback(); return res.status(404).json({ message: "Internship not found" }); }
-    const [mentors] = await connection.execute("SELECT users.id FROM users JOIN mentors ON mentors.user_id = users.id WHERE users.id = ?", [mentor_id]);
-    if (mentors.length === 0) { await connection.rollback(); return res.status(400).json({ code: "INVALID_MENTOR" }); }
-    await connection.execute("UPDATE internships SET mentor_id = ? WHERE id = ?", [mentor_id, internshipId]);
+    const [internships] = await connection.execute(
+      "SELECT id FROM internships WHERE id = ?",
+      [internshipId]
+    );
+    if (internships.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: "Internship not found" });
+    }
+    const [mentors] = await connection.execute(
+      "SELECT users.id FROM users JOIN mentors ON mentors.user_id = users.id WHERE users.id = ?",
+      [mentor_id]
+    );
+    if (mentors.length === 0) {
+      await connection.rollback();
+      return res.status(400).json({ code: "INVALID_MENTOR" });
+    }
+    await connection.execute(
+      "UPDATE internships SET mentor_id = ? WHERE id = ?",
+      [mentor_id, internshipId]
+    );
     await connection.commit();
     return res.status(200).json({ message: "Mentor assigned successfully" });
   } catch (error) {
     if (connection) await connection.rollback();
+    console.error("Assign mentor failed:", error);
     return res.status(500).json({ message: "Failed to assign mentor" });
   } finally {
     if (connection) connection.release();
@@ -51,15 +68,31 @@ exports.assignTeacher = async (req, res) => {
   try {
     connection = await pool.getConnection();
     await connection.beginTransaction();
-    const [internships] = await connection.execute("SELECT id FROM internships WHERE id = ?", [internshipId]);
-    if (internships.length === 0) { await connection.rollback(); return res.status(404).json({ message: "Internship not found" }); }
-    const [teachers] = await connection.execute("SELECT users.id FROM users JOIN teachers ON teachers.user_id = users.id WHERE users.id = ?", [teacher_id]);
-    if (teachers.length === 0) { await connection.rollback(); return res.status(400).json({ code: "INVALID_TEACHER" }); }
-    await connection.execute("UPDATE internships SET teacher_id = ? WHERE id = ?", [teacher_id, internshipId]);
+    const [internships] = await connection.execute(
+      "SELECT id FROM internships WHERE id = ?",
+      [internshipId]
+    );
+    if (internships.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: "Internship not found" });
+    }
+    const [teachers] = await connection.execute(
+      "SELECT users.id FROM users JOIN teachers ON teachers.user_id = users.id WHERE users.id = ?",
+      [teacher_id]
+    );
+    if (teachers.length === 0) {
+      await connection.rollback();
+      return res.status(400).json({ code: "INVALID_TEACHER" });
+    }
+    await connection.execute(
+      "UPDATE internships SET teacher_id = ? WHERE id = ?",
+      [teacher_id, internshipId]
+    );
     await connection.commit();
     return res.status(200).json({ message: "Teacher assigned successfully" });
   } catch (error) {
     if (connection) await connection.rollback();
+    console.error("Assign teacher failed:", error);
     return res.status(500).json({ message: "Failed to assign teacher" });
   } finally {
     if (connection) connection.release();
@@ -91,6 +124,7 @@ exports.getInternshipById = async (req, res) => {
     if (rows.length === 0) return res.status(404).json({ message: "Internship not found" });
     return res.json(rows[0]);
   } catch (error) {
+    console.error("Fetch internship detail failed:", error);
     return res.status(500).json({ message: "Failed to fetch internship" });
   } finally {
     if (connection) connection.release();
@@ -155,5 +189,25 @@ exports.getMentorInternships = async (req, res) => {
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getTeacherInternships = async (req, res) => {
+  const pool = req.db;
+  const teacherId = req.user.id;
+  try {
+    const [rows] = await pool.query(`
+      SELECT internships.id, internships.start_date, internships.end_date,
+        internship_requests.company, internship_requests.student_id,
+        student.firstname AS student_firstname, student.lastname AS student_lastname
+      FROM internships
+      JOIN internship_requests ON internships.internship_request_id = internship_requests.id
+      JOIN users AS student ON internship_requests.student_id = student.id
+      WHERE internships.teacher_id = ?
+    `, [teacherId]);
+    return res.json(rows);
+  } catch (error) {
+    console.error("Fetch teacher internships failed:", error);
+    return res.status(500).json({ message: "Failed to fetch teacher internships" });
   }
 };

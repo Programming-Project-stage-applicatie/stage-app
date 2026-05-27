@@ -1,14 +1,17 @@
 const express = require("express");
 const cors = require("cors");
 const mysql = require("mysql2/promise");
-const path = require("path"); // ← hier bovenaan
+const path = require("path");
 require("dotenv").config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use("/uploads", express.static(path.join(__dirname, "uploads"))); // ← hier na express.json
-
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+/* ---------------------------------------------------------
+   DATABASE CONNECTIE (POOL - AANBEVOLEN)
+   ⭐ FIX: dateStrings voorkomt timezone shifts
+--------------------------------------------------------- */
 const db = mysql.createPool({
   host:     process.env.DB_HOST,
   user:     process.env.DB_USER,
@@ -48,3 +51,5 @@ app.get("/", (req, res) => {
 app.listen(3000, () => {
   console.log("Server running on http://localhost:3000");
 });
+
+

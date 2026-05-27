@@ -8,17 +8,22 @@ import MentorDashboard from "./pages/MentorDashboard";
 import FinaleEvaluatieMentor from "./pages/FinaleEvaluatieMentor";
 import InternshipCommitteeDashboard from "./pages/InternshipCommitteeDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
-// Teacher pages
+import FinalEvaluationOverviewAdmin from "./pages/FinalEvaluationOverviewAdmin";
+import FinaleEvaluatieAdmin from "./pages/FinaleEvaluatieAdmin";
+
+
 import FinaleEvaluatieDocent from "./pages/FinaleEvaluatieDocent";
 import FinaleEvaluatie from "./pages/FinaleEvaluatieStudent";
 // Admin pages
 import AdminUsers from "./pages/AdminUsers";
 import AdminInternshipDetail from "./pages/AdminInternshipDetail";
-// Student pages
+
+
 import NewInternshipRequest from "./pages/NewInternshipRequest";
 import StudentRequestDetail from "./pages/StudentRequestDetail";
 import StudentInternshipDetail from "./pages/StudentInternshipDetail";
-// Commissie pages (M10 + M11)
+
+
 import InternshipCommitteeOverview from "./pages/InternshipCommitteeOverview";
 import InternshipCommitteeRequestDetail from "./pages/InternshipCommitteeRequestDetail";
 import FinalEvaluationOverviewMentor from "./pages/FinalEvaluationOverviewMentor";
@@ -52,6 +57,8 @@ function App() {
         {/* Admin pages */}
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/internships/:id" element={<AdminInternshipDetail />} />
+        <Route path="/admin/final-evaluation-overview" element={<FinalEvaluationOverviewAdmin />} />
+<Route path="/admin/internships/:id/evaluation" element={<FinaleEvaluatieAdmin />} />
         {/* Commissie pages */}
         <Route path="/committee/overview" element={<InternshipCommitteeOverview />} />
         <Route path="/committee/requests/:id/overview" element={<InternshipCommitteeRequestDetail />} />

@@ -187,7 +187,16 @@ return (
         </div>
 
       </div>
-
+<div className="dashboard-card">
+  <h2>Finale evaluaties</h2>
+  <p>Bekijk alle finale evaluaties van studenten.</p>
+  <button
+    className="primary"
+    onClick={() => navigate("/admin/final-evaluation-overview")}
+  >
+    Open
+  </button>
+</div>
 
 </div>
 

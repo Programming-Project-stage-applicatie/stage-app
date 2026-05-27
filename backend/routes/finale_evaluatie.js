@@ -293,7 +293,8 @@ router.post("/internship/:internshipId/docent", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-// ─── GET /api/finale-evaluatie/document/:internshipId ───────────────────────
+
+
 router.get("/document/:internshipId", async (req, res) => {
   const pool = req.db;
   const { internshipId } = req.params;
@@ -302,11 +303,18 @@ router.get("/document/:internshipId", async (req, res) => {
       "SELECT document FROM final_evaluations WHERE internship_id = ?",
       [internshipId]
     );
+    
+    console.log("DB document waarde:", rows[0]?.document);  // ← voeg dit toe
+    
     if (!rows[0]?.document) {
       return res.status(404).json({ error: "Geen document gevonden." });
     }
-    // document is opgeslagen als "/uploads/finale_evaluatie/bestand.pdf"
-    const bestandspad = path.join(__dirname, "..", rows[0].document);
+    const relatief    = rows[0].document.replace(/^\/+/, "");
+    const bestandspad = path.join(__dirname, "..", relatief);
+    
+    console.log("Bestandspad:", bestandspad);              // ← en dit
+    console.log("Bestaat?", fs.existsSync(bestandspad));   // ← en dit
+    
     if (!fs.existsSync(bestandspad)) {
       return res.status(404).json({ error: "Bestand niet gevonden op schijf." });
     }

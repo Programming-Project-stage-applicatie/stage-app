@@ -40,16 +40,16 @@ export default function TeacherDashboard() {
 
   return (
     <div className="student-dashboard-container">
-      <h1>
-        {user
-          ? `Welkom, ${user.firstname || user.username}`
-          : "Welkom, Docent"}
-      </h1>
+<h1>
+  {user
+    ? `Welkom, ${user.firstname || user.username}`
+    : "Dashboard - Docent"}
+</h1>
+<h2>Dashboard</h2>
 
       <hr className="dashboard-divider" />
 
       <div className="dashboard-cards">
-
 
 <div className="dashboard-card">
   <h3>Logboeken</h3>

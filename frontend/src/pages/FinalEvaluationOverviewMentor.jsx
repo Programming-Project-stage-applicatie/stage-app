@@ -58,12 +58,12 @@ export default function FinalEvaluationOverviewMentor() {
       <h1>{user ? `Welkom, ${user.firstname || user.username}` : t("dashboards.mentor")}</h1>
       <h2>Mijn studenten</h2>
       {error && <p className="error">{error}</p>}
-      <button
-        onClick={() => navigate("/dashboard/mentor")}
-        style={{ marginBottom: "1rem", cursor: "pointer" }}
-      >
-        ← Terug naar dashboard
-      </button>
+ <p
+  onClick={() => navigate("/dashboard/mentor")}
+  style={{ color: "#6fa8dc", cursor: "pointer", marginBottom: "16px" }}
+>
+  ← Terug naar dashboard
+</p>
       {internships.length === 0 ? (
         <p>Geen stages gevonden.</p>
       ) : (

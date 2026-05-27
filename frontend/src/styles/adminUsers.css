@@ -1,0 +1,79 @@
+
+.admin-users-page {
+  padding: 32px 48px;
+  width: 100%;
+}
+
+.back-button {
+  margin-bottom: 16px;
+}
+
+
+.admin-users-page h1 {
+  margin-bottom: 24px;
+}
+
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.users-table th,
+.users-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.users-table th {
+  font-weight: 600;
+}
+
+
+.users-table tr:last-child td {
+  border-bottom: none;
+}
+
+
+.users-table tr:hover {
+  background: var(--accent-bg);
+}
+
+
+.users-table input,
+.users-table select {
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+
+.actions-cell {
+  white-space: nowrap;
+}
+
+
+.new-row-button {
+  margin-top: 16px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.new-row-button:hover {
+  background: var(--accent-bg);
+}
+
+
+.create-row {
+  background: var(--accent-bg);
+}

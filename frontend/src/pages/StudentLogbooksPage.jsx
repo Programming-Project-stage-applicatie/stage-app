@@ -7,7 +7,7 @@ export default function StudentLogbooksPage() {
 
   const fetchLogbooks = () => {
     const token = localStorage.getItem("token");
-    fetch("/api/logbooks", {
+  fetch("http://localhost:3000/api/logbooks",  {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())

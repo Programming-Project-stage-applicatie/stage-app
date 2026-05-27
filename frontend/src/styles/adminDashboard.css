@@ -1,0 +1,201 @@
+/* =========================
+   DASHBOARD CONTAINER
+========================= */
+.admin-dashboard {
+  padding: 32px 48px;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* alles zelfde gewicht */
+.header-left,
+.header-center,
+.header-right {
+  flex: 1;
+}
+
+/* uitlijning */
+.header-left {
+  text-align: left;
+}
+
+.header-center {
+  text-align: center;
+  letter-spacing: -0.3px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.header-right {
+  text-align: right;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+
+/* =========================
+   WELCOME
+========================= */
+.dashboard-welcome {
+  margin-bottom: 16px;
+}
+
+.dashboard-welcome h2 {
+  font-weight: 500;
+}
+
+
+/* =========================
+   DIVIDERS
+========================= */
+.dashboard-divider {
+  border: none;
+  height: 1px;
+  background: var(--border);
+  margin: 24px 0;
+}
+
+
+/* =========================
+   CARD ROW (FLEX)
+========================= */
+.dashboard-row {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+
+/* =========================
+   CARDS
+========================= */
+.dashboard-card {
+  flex: 1;
+  background: var(--bg);
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  margin-bottom: 32px;
+}
+
+.dashboard-card h2 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.dashboard-card p {
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.dashboard-card:first-child {
+  max-width: 300px;
+}
+
+.dashboard-card a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.dashboard-card a:hover {
+  text-decoration: underline;
+}
+
+
+/* =========================
+   SUB SECTIONS
+========================= */
+.dashboard-subsection {
+  margin-top: 24px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.dashboard-subsection:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.dashboard-subsection h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+
+/* =========================
+   LIST STYLING
+========================= */
+.dashboard-card ul {
+  padding-left: 0;
+  list-style: none;
+}
+
+.dashboard-card li {
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.dashboard-card li:hover {
+  background: var(--accent-bg);
+}
+
+
+/* =========================
+   BUTTONS
+========================= */
+button.primary {
+  margin-top: 15px;
+  padding: 18px 22px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button.primary:hover {
+  background: #9128e6;
+}
+
+
+/* =========================
+   ERROR
+========================= */
+.error {
+  color: #dc2626;
+  margin-bottom: 16px;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 900px) {
+  .dashboard-row {
+    flex-direction: column;
+  }
+
+  .dashboard-card:first-child {
+    max-width: 100%;
+  }
+}

@@ -25,7 +25,7 @@ export default function LogboekForm({ logbook, internshipId, onTerug, existingWe
     try {
       let res;
       if (isNieuw) {
-        res = await fetch("/api/logbooks", {
+        res = await fetch("http://localhost:3000/api/logbooks", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({ week, tasks, reflection, problems, internship_id: internshipId }),
@@ -34,7 +34,7 @@ export default function LogboekForm({ logbook, internshipId, onTerug, existingWe
         const nieuwLogbook = await res.json();
         setSavedLogbook(nieuwLogbook); // ← reste sur le formulaire, bouton Indienen apparaît
       } else {
-        res = await fetch(`/api/logbooks/${savedLogbook.id}/save`, {
+        res = await fetch(`http://localhost:3000/api/logbooks/${savedLogbook.id}/save`, {
           method: "PUT",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({ tasks, reflection, problems }),
@@ -56,7 +56,7 @@ export default function LogboekForm({ logbook, internshipId, onTerug, existingWe
     const token = localStorage.getItem("token");
 
     try {
-      const res = await fetch(`/api/logbooks/${savedLogbook?.id}/submit`, {
+      const res = await fetch(`http://localhost:3000/api/logbooks/${savedLogbook?.id}/submit`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ tasks, reflection, problems }),
@@ -216,6 +216,7 @@ export default function LogboekForm({ logbook, internshipId, onTerug, existingWe
               >
                 {t("logbooks.confirmCancel")}
               </button>
+              
             </div>
           </div>
         </div>

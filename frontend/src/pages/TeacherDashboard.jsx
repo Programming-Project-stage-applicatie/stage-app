@@ -84,10 +84,10 @@ export default function TeacherDashboard() {
               <th>Finale Evaluatie</th>
             </tr>
           </thead>
-         <tbody>
+<tbody>
   {students.map((internship) => (
     <tr key={internship.id}>
-     <td>{internship.student_firstname} {internship.student_lastname}</td>
+      <td>{internship.student_firstname} {internship.student_lastname}</td>
       <td>
         {/* TODO: klikbaar maken naar logboeken van student */}
         <span style={{ fontWeight: "bold" }}>
@@ -96,13 +96,7 @@ export default function TeacherDashboard() {
       </td>
       <td>
         {/* TODO: klikbaar maken naar finale evaluatie van student */}
-        <button
-          className="dashboard-button-outline"
-          disabled
-          style={{ cursor: "default", opacity: 0.5 }}
-        >
-          open
-        </button>
+        <span>{internship.finale_evaluatie_status}</span>
       </td>
     </tr>
   ))}

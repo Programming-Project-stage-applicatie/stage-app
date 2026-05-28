@@ -128,7 +128,7 @@ export default function StudentLogbooks({ logbooks = [], internshipId, onRefresh
 
       <p style={{ marginTop: "24px" }}>
         <span
-          onClick={() => navigate("/student/dashboard")}
+          onClick={() => navigate("/dashboard/student")}
           style={{ color: "#a855f7", cursor: "pointer", textDecoration: "underline" }}
         >
           ← Terug naar dashboard

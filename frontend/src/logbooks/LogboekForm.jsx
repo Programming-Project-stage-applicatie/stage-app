@@ -32,7 +32,7 @@ export default function LogboekForm({ logbook, internshipId, onTerug, existingWe
         });
         if (!res.ok) throw new Error("Opslaan mislukt");
         const nieuwLogbook = await res.json();
-        setSavedLogbook(nieuwLogbook); // ← reste sur le formulaire, bouton Indienen apparaît
+setSavedLogbook({ ...nieuwLogbook, week, tasks, reflection, problems, status: 'open' }); 
       } else {
         res = await fetch(`http://localhost:3000/api/logbooks/${savedLogbook.id}/save`, {
           method: "PUT",
@@ -40,7 +40,7 @@ export default function LogboekForm({ logbook, internshipId, onTerug, existingWe
           body: JSON.stringify({ tasks, reflection, problems }),
         });
         if (!res.ok) throw new Error("Opslaan mislukt");
-        onTerug();
+       
       }
     } catch (err) {
       setError(t("logbooks.saveError"));

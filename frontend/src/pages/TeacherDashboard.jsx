@@ -68,14 +68,13 @@ export default function TeacherDashboard() {
           <div className="dashboard-card">
             <h3>Logboeken</h3>
             <button
-              className="primary"
-              disabled
-              style={{ cursor: "default", opacity: 0.5 }}
-              title="Nog niet beschikbaar"
-            >
-              open
-            </button>
-            <small style={{ color: "#aaa", marginTop: "6px" }}>binnenkort beschikbaar</small>
+  className="primary"
+  disabled
+  style={{ cursor: "default", opacity: 0.5 }}
+  title="Nog niet beschikbaar"
+>
+  binnenkort beschikbaar
+</button>
           </div>
           <div className="dashboard-card">
             <h3>Finale evaluaties</h3>
@@ -85,7 +84,7 @@ export default function TeacherDashboard() {
             >
               open
             </button>
-            <small style={{ visibility: "hidden" }}>placeholder</small>
+            
           </div>
         </div>
 

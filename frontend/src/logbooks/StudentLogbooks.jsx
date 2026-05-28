@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { t } from "../i18n/translations";
 import LogboekDetail from "./LogboekDetail";
 import LogboekForm from "./LogboekForm";
@@ -21,6 +22,7 @@ const sortLogbooks = (logbooks) => {
 };
 
 export default function StudentLogbooks({ logbooks = [], internshipId, onRefresh }) {
+  const navigate = useNavigate();
   const [view, setView] = useState("list");
   const [selected, setSelected] = useState(null);
 
@@ -52,6 +54,9 @@ export default function StudentLogbooks({ logbooks = [], internshipId, onRefresh
 
   return (
     <div style={{ padding: "40px", maxWidth: "1000px", margin: "0 auto", fontFamily: "sans-serif" }}>
+
+
+
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", flexWrap: "wrap", gap: "20px" }}>
         <h1 style={{ margin: 0 }}>{t("logbooks.title")}</h1>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "4px" }}>
@@ -118,7 +123,18 @@ export default function StudentLogbooks({ logbooks = [], internshipId, onRefresh
             );
           })
         )}
-      </div>
+  
+     </div>
+
+      <p style={{ marginTop: "24px" }}>
+        <span
+          onClick={() => navigate("/student/dashboard")}
+          style={{ color: "#a855f7", cursor: "pointer", textDecoration: "underline" }}
+        >
+          ← Terug naar dashboard
+        </span>
+      </p>
+
     </div>
   );
 }

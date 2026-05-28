@@ -192,22 +192,24 @@ FinaleEvaluatieDocent: {
   errorDocumentFailed:     "Er ging iets mis bij het openen van het document.",
 },
 
-    
+
+
+    finaleEvaluatieStatus: {   
+      open:      "Open",
+      submitted: "Ingediend",
+      evaluated: "Geëvalueerd",
+      geen:      "Geen",
+    },
   }
 
   
 };
 
-// nl fixed for now
+
 const currentLanguage = "nl";
 
 
-/* vertaalfunctie:
-    Gebruik:
-      t("loginTitle")
-      t("adminUsers.title")
-      t("adminUsers.fields.firstname")
-*/
+
 export const t = (key) => {
   return (
    key

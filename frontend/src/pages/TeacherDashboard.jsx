@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { t } from "../i18n/translations";
 import "../styles/teacherDashboard.css";
 
+const translateStatus = (status) =>
+  t(`finaleEvaluatieStatus.${status?.toLowerCase()}`) || status;
+
 function getUserFromStorage() {
   const storedUser = localStorage.getItem("user");
   if (!storedUser) return null;
@@ -64,19 +67,16 @@ export default function TeacherDashboard() {
         <hr className="dashboard-divider" />
 
         <div className="dashboard-cards">
-          <div className="dashboard-card">
-            <h3>Logboeken</h3>
-            {/* TODO: logboeken pagina nog niet beschikbaar */}
-            <button
-              className="primary"
-              disabled
-              style={{ cursor: "default", opacity: 0.5 }}
-              title="Nog niet beschikbaar"
-            >
-              open
-            </button>
-            <small style={{ color: "#aaa", marginTop: "6px" }}>binnenkort beschikbaar</small>
-          </div>
+<div className="dashboard-card">
+  <h3>Finale evaluaties</h3>
+  <button
+    className="primary"
+    onClick={() => navigate("/teacher/final-evaluation-overview")}
+  >
+    open
+  </button>
+  <small style={{ visibility: "hidden" }}>placeholder</small>
+</div>
 
           <div className="dashboard-card">
             <h3>Finale evaluaties</h3>
@@ -116,7 +116,7 @@ export default function TeacherDashboard() {
                   </td>
                   <td>
                     {/* TODO: klikbaar maken naar finale evaluatie van student */}
-                    <span>{internship.finale_evaluatie_status}</span>
+                    <span>{translateStatus(internship.finale_evaluatie_status)}</span>
                   </td>
                 </tr>
               ))}

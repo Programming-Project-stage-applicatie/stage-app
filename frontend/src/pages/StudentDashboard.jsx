@@ -76,10 +76,17 @@ export default function StudentDashboard() {
           Nieuwe stageaanvraag
         </Link>
 
+        
+        <Link className="dashboard-button" to="/student/logbooks">
+    Logboeken
+  </Link>
+
         <button className="dashboard-button" onClick={() => navigate("/finale-evaluatie")}>
           Finale Evaluatie
         </button>
       </div>
+
+
 
       <h2>Mijn stageaanvragen</h2>
       {requests.length === 0 ? (
@@ -130,7 +137,11 @@ export default function StudentDashboard() {
                     {t("studentInternships.open")}
                   </Link>
                 </td>
-                <td>-</td>
+               <td>
+  <Link to={`/student/logbooks`}>
+    Logboeken
+  </Link>
+</td>
                 <td>-</td>
               </tr>
             ))}

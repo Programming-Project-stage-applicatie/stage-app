@@ -7,7 +7,10 @@ const path = require("path");
 require("dotenv").config();
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}));
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
@@ -42,9 +45,9 @@ app.use("/internship-requests", authenticateJWT, internshipRequestsRoutes);
 const userRoutes = require("./routes/users");
 app.use("/users", userRoutes);
 
-const authRoutes = require("./routes/auth");
-app.use("/auth", authRoutes);
 
+const internshipRoutes = require("./routes/internships");
+app.use("/internships", internshipRoutes);
 
 const finaleEvaluatieRoutes = require("./routes/finale_evaluatie");
 app.use("/api/finale-evaluatie", authenticateJWT, finaleEvaluatieRoutes);

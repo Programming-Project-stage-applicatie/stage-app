@@ -27,7 +27,7 @@ import SupervisorStudentLogbooks from "./pages/SupervisorStudentLogbooks";
 import NewInternshipRequest from "./pages/NewInternshipRequest";
 import StudentRequestDetail from "./pages/StudentRequestDetail";
 import StudentInternshipDetail from "./pages/StudentInternshipDetail";
-
+import StudentLogbooksPage from "./pages/StudentLogbooksPage";
 
 import InternshipCommitteeOverview from "./pages/InternshipCommitteeOverview";
 import InternshipCommitteeRequestDetail from "./pages/InternshipCommitteeRequestDetail";
@@ -60,6 +60,7 @@ function App() {
         <Route path="/student/new-request" element={<NewInternshipRequest />} />
         <Route path="/student/request/:id" element={<StudentRequestDetail />} />
         <Route path="/student/internships/:id" element={<StudentInternshipDetail />} />
+        <Route path="/student/logbooks" element={<StudentLogbooksPage />} />
         {/* Admin pages */}
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/internships/:id" element={<AdminInternshipDetail />} />

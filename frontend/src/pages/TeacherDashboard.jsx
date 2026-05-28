@@ -30,7 +30,6 @@ export default function TeacherDashboard() {
       });
       if (!res.ok) throw new Error();
       const data = await res.json();
-      console.log("Internships data:", data);
       setStudents(data);
     } catch {
       setError("Kon studenten niet ophalen.");
@@ -43,7 +42,6 @@ export default function TeacherDashboard() {
 
   return (
     <div>
-      {/* Navbar */}
       <div style={{
         display: "flex",
         justifyContent: "space-between",
@@ -67,17 +65,18 @@ export default function TeacherDashboard() {
         <hr className="dashboard-divider" />
 
         <div className="dashboard-cards">
-<div className="dashboard-card">
-  <h3>Finale evaluaties</h3>
-  <button
-    className="primary"
-    onClick={() => navigate("/teacher/final-evaluation-overview")}
-  >
-    open
-  </button>
-  <small style={{ visibility: "hidden" }}>placeholder</small>
-</div>
-
+          <div className="dashboard-card">
+            <h3>Logboeken</h3>
+            <button
+              className="primary"
+              disabled
+              style={{ cursor: "default", opacity: 0.5 }}
+              title="Nog niet beschikbaar"
+            >
+              open
+            </button>
+            <small style={{ color: "#aaa", marginTop: "6px" }}>binnenkort beschikbaar</small>
+          </div>
           <div className="dashboard-card">
             <h3>Finale evaluaties</h3>
             <button
@@ -86,6 +85,7 @@ export default function TeacherDashboard() {
             >
               open
             </button>
+            <small style={{ visibility: "hidden" }}>placeholder</small>
           </div>
         </div>
 
@@ -109,13 +109,11 @@ export default function TeacherDashboard() {
                 <tr key={internship.id}>
                   <td>{internship.student_firstname} {internship.student_lastname}</td>
                   <td>
-                    {/* TODO: klikbaar maken naar logboeken van student */}
                     <span style={{ fontWeight: "bold" }}>
                       {internship.logbook_count ?? "-"}
                     </span>
                   </td>
                   <td>
-                    {/* TODO: klikbaar maken naar finale evaluatie van student */}
                     <span>{translateStatus(internship.finale_evaluatie_status)}</span>
                   </td>
                 </tr>

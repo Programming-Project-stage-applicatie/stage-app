@@ -68,7 +68,7 @@ export default function TeacherDashboard() {
             <h3>Logboeken</h3>
             {/* TODO: logboeken pagina nog niet beschikbaar */}
             <button
-              className="dashboard-button-outline"
+              className="primary"
               disabled
               style={{ cursor: "default", opacity: 0.5 }}
               title="Nog niet beschikbaar"
@@ -81,7 +81,7 @@ export default function TeacherDashboard() {
           <div className="dashboard-card">
             <h3>Finale evaluaties</h3>
             <button
-              className="dashboard-button-outline"
+              className="primary"
               onClick={() => navigate("/teacher/final-evaluation-overview")}
             >
               open

@@ -126,7 +126,7 @@ return (
         </table>
       )}
 
-      <h2>Mijn stages</h2>
+      <h2>Mijn stages: logboeken en finale evaluaties</h2>
       {error && <p className="error">{error}</p>}
       {internships.length === 0 ? (
         <p>{t("studentInternships.none")}</p>

@@ -173,3 +173,6 @@ router.patch("/:id", internshipRequestsController.updateByStudent);
 router.patch("/:id/status", internshipRequestsController.updateStatus);
 
 module.exports = router;
+
+module.exports = router;
+

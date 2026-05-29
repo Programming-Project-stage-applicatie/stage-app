@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 exports.login = (req, res) => {
+  console.log("LOGIN REQUEST ONTVANGEN", req.body);  // <-- hier
   const { username, password } = req.body;
   if (!username || !password) {
     return res.status(400).json({

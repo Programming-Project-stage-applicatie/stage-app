@@ -95,9 +95,7 @@ return (
         <Link className="dashboard-button" to="/student/logbooks">
           Logboeken
         </Link>
-        <button className="dashboard-button" onClick={() => navigate("/finale-evaluatie")}>
-          Finale Evaluatie
-        </button>
+
       </div>
 
       <h2>Mijn stageaanvragen</h2>
@@ -146,13 +144,15 @@ return (
               <tr key={internship.id}>
                 <td>{internship.company || "—"}</td>
                 <td>{formatDate(internship.start_date)} – {formatDate(internship.end_date)}</td>
-                <td><Link to="/student/logbooks">{internship.logbook_count ?? "0"}</Link></td>
+                <td><Link to={`/student/logbooks?internship=${internship.id}`}>{internship.logbook_count ?? "0"}</Link></td>
                 <td>{internship.final_score != null ? `${internship.final_score}/20` : "—"}</td>
-                <td>
-                  {internship.ev_status === "evaluated" ? "Geëvalueerd" :
-                   internship.ev_status === "submitted" ? "Ingediend" :
-                   internship.ev_status === "open" ? "Open" : "—"}
-                </td>
+<td>
+  <Link to={`/finale-evaluatie/${internship.id}`}>
+    {internship.ev_status === "evaluated" ? "Geëvalueerd" :
+     internship.ev_status === "submitted" ? "Ingediend" :
+     internship.ev_status === "open" ? "Open" : "—"}
+  </Link>
+</td>
               </tr>
             ))}
           </tbody>

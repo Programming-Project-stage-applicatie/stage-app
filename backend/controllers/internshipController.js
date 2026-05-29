@@ -178,16 +178,23 @@ exports.getMentorInternships = async (req, res) => {
   const mentorId = req.user.id;
   try {
     const [rows] = await pool.query(`
-      SELECT internships.id, internships.start_date, internships.end_date,
+      SELECT 
+        internships.id, internships.start_date, internships.end_date,
         internship_requests.company, internship_requests.student_id,
-        student.firstname AS student_firstname, student.lastname AS student_lastname
+        student.firstname AS student_firstname, student.lastname AS student_lastname,
+        COALESCE(fe.status, 'geen') AS finale_evaluatie_status,
+        COUNT(lb.id) AS logbook_count
       FROM internships
       JOIN internship_requests ON internships.internship_request_id = internship_requests.id
       JOIN users AS student ON internship_requests.student_id = student.id
+      LEFT JOIN final_evaluations fe ON fe.internship_id = internships.id
+      LEFT JOIN logbooks lb ON lb.internship_id = internships.id
       WHERE internships.mentor_id = ?
+      GROUP BY internships.id
     `, [mentorId]);
     res.json(rows);
   } catch (err) {
+    console.error("Fetch mentor internships failed:", err);
     res.status(500).json({ error: err.message });
   }
 };

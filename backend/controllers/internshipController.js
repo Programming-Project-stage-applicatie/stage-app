@@ -136,13 +136,17 @@ exports.getStudentInternships = async (req, res) => {
   const studentId = req.user.id;
   try {
     const [rows] = await pool.query(`
-      SELECT internships.id, internships.start_date, internships.end_date,
-        internships.mentor_id, internships.teacher_id, internship_requests.status,
-        users.firstname AS student_firstname, users.lastname AS student_lastname
-      FROM internships
-      JOIN internship_requests ON internships.internship_request_id = internship_requests.id
-      JOIN users ON internship_requests.student_id = users.id
-      WHERE internship_requests.student_id = ?
+SELECT internships.id, internships.start_date, internships.end_date,
+  internships.mentor_id, internships.teacher_id, internship_requests.status,
+  internship_requests.company,
+  users.firstname AS student_firstname, users.lastname AS student_lastname,
+  COUNT(lb.id) AS logbook_count
+FROM internships
+JOIN internship_requests ON internships.internship_request_id = internship_requests.id
+JOIN users ON internship_requests.student_id = users.id
+LEFT JOIN logbooks lb ON lb.internship_id = internships.id
+WHERE internship_requests.student_id = ?
+GROUP BY internships.id
     `, [studentId]);
     return res.json(rows);
   } catch (error) {

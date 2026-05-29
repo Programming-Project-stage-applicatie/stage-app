@@ -56,7 +56,7 @@ function App() {
         <Route path="/teacher/final-evaluation-overview" element={<FinalEvaluationOverview />} />
          <Route path="/teacher/logbooks" element={<TeacherStudentLogbookList />} />
         {/* Student pages */}
-        <Route path="/finale-evaluatie" element={<FinaleEvaluatie />} />
+     <Route path="/finale-evaluatie/:internshipId" element={<FinaleEvaluatie />} />
         <Route path="/student/new-request" element={<NewInternshipRequest />} />
         <Route path="/student/request/:id" element={<StudentRequestDetail />} />
         <Route path="/student/internships/:id" element={<StudentInternshipDetail />} />

@@ -108,7 +108,7 @@ export default function StudentLogbooks({ logbooks = [], internshipId, onRefresh
                     {config.label}
                   </span>
                   <button
-                    onClick={() => canEdit ? handleInvullen(logbook) : handleBekijken(logbook)}
+                   onClick={() => handleBekijken(logbook)}
                     style={{ border: "1px solid black", backgroundColor: "white", padding: "6px 14px", borderRadius: "6px", cursor: "pointer", fontWeight: "500" }}
                   >
                     {canEdit ? t("logbooks.fill") : t("logbooks.view")}

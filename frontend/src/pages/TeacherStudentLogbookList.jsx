@@ -41,10 +41,13 @@ export default function TeacherStudentLogbookList() {
     const fetchStudents = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(
-          `http://localhost:3000/api/supervisor/teacher/logbooks`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+const isMentor = user.role === "mentor";
+
+const res = await fetch(
+  `http://localhost:3000/api/supervisor/${isMentor ? "mentor" : "teacher"}/logbooks`,
+  { headers: { Authorization: `Bearer ${token}` } }
+);
         if (!res.ok) throw new Error();
         const json = await res.json();
         setStudents(json.data || []);

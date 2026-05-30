@@ -24,6 +24,16 @@ export default function MentorDashboard() {
       >
         Overzicht studenten
       </button>
+      <button
+  onClick={() => navigate("/mentor/logbooks")}
+  style={{
+    marginTop: "1.5rem", padding: "0.75rem 2rem",
+    background: "#2563eb", color: "#fff", border: "none",
+    borderRadius: "6px", fontSize: "1rem", fontWeight: "bold", cursor: "pointer",
+  }}
+>
+  Logboeken
+</button>
     </div>
   );
 }

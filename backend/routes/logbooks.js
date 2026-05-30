@@ -29,10 +29,15 @@ router.get("/detail/:id", authenticateJWT, (req, res) => {
 });
  
 // Alle logboeken van ingelogde student
+// Alle logboeken van ingelogde student
 router.get("/", authenticateJWT, (req, res) => {
   const studentId = req.user.id;
   db.query(
-    "SELECT * FROM logbooks WHERE created_by_student_id = ? ORDER BY week DESC",
+    `SELECT l.* FROM logbooks l
+     INNER JOIN internships i ON i.id = l.internship_id
+     INNER JOIN internship_requests ir ON ir.id = i.internship_request_id
+     WHERE ir.student_id = ?
+     ORDER BY l.week DESC`,
     [studentId],
     (err, results) => {
       if (err) return res.status(500).json({ message: "Fout bij ophalen logbooks" });

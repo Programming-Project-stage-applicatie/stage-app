@@ -18,7 +18,21 @@ export default function StudentLogbooksPage() {
       .catch((err) => console.error("Fout bij ophalen logbooks:", err));
   };
 
-  useEffect(() => { fetchLogbooks(); }, []);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    
+    // internshipId ophalen via stage
+    fetch("http://localhost:3000/internships/student", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.length > 0) setInternshipId(data[0].id);
+      })
+      .catch((err) => console.error("Fout bij ophalen stage:", err));
+
+    fetchLogbooks();
+  }, []);
 
   return (
     <StudentLogbooks

@@ -7,7 +7,7 @@ export default function StudentLogbooksPage() {
 
   const fetchLogbooks = () => {
     const token = localStorage.getItem("token");
-  fetch("http://localhost:3000/api/logbooks",  {
+    fetch("http://localhost:3000/api/logbooks", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -16,23 +16,23 @@ export default function StudentLogbooksPage() {
         if (data.length > 0) setInternshipId(data[0].internship_id);
       })
       .catch((err) => console.error("Fout bij ophalen logbooks:", err));
-  };
+  }
 
-  useEffect(() => {
+const fetchInternship = async () => {
     const token = localStorage.getItem("token");
-    
-    // internshipId ophalen via stage
-    fetch("http://localhost:3000/internships/student", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.length > 0) setInternshipId(data[0].id);
-      })
-      .catch((err) => console.error("Fout bij ophalen stage:", err));
-
+    const res = await fetch("http://localhost:3000/internships/student", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.length > 0) setInternshipId(data[0].id);
+    }
+  };
+  useEffect(() => {
     fetchLogbooks();
+    fetchInternship();
   }, []);
+  
 
   return (
     <StudentLogbooks

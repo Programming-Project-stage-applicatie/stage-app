@@ -32,7 +32,7 @@ export default function LogboekForm({ logbook, internshipId, onTerug, existingWe
         });
         if (!res.ok) throw new Error("Opslaan mislukt");
         const nieuwLogbook = await res.json();
-        setSavedLogbook(nieuwLogbook); // ← reste sur le formulaire, bouton Indienen apparaît
+setSavedLogbook({ ...nieuwLogbook, week, tasks, reflection, problems, status: 'open' }); 
       } else {
         res = await fetch(`http://localhost:3000/api/logbooks/${savedLogbook.id}/save`, {
           method: "PUT",
@@ -40,7 +40,7 @@ export default function LogboekForm({ logbook, internshipId, onTerug, existingWe
           body: JSON.stringify({ tasks, reflection, problems }),
         });
         if (!res.ok) throw new Error("Opslaan mislukt");
-        onTerug();
+       
       }
     } catch (err) {
       setError(t("logbooks.saveError"));
@@ -49,26 +49,41 @@ export default function LogboekForm({ logbook, internshipId, onTerug, existingWe
     }
   };
 
-  const handleSubmitConfirm = async () => {
-    setShowConfirm(false);
-    setLoading(true);
-    setError("");
-    const token = localStorage.getItem("token");
+const handleSubmitConfirm = async () => {
+  setShowConfirm(false);
+  setLoading(true);
+  setError("");
+  const token = localStorage.getItem("token");
 
-    try {
-      const res = await fetch(`http://localhost:3000/api/logbooks/${savedLogbook?.id}/submit`, {
-        method: "PUT",
+  try {
+    let logbookId = savedLogbook?.id;
+
+    // ✅ Nieuw logboek: eerst aanmaken
+    if (isNieuw) {
+      const postRes = await fetch("http://localhost:3000/api/logbooks", {
+        method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ tasks, reflection, problems }),
+        body: JSON.stringify({ week, tasks, reflection, problems, internship_id: internshipId }),
       });
-      if (!res.ok) throw new Error("Indienen mislukt");
-      onTerug();
-    } catch (err) {
-      setError(t("logbooks.saveError"));
-    } finally {
-      setLoading(false);
+      if (!postRes.ok) throw new Error("Aanmaken mislukt");
+      const nieuw = await postRes.json();
+      logbookId = nieuw.id;
     }
-  };
+
+    // Dan indienen
+    const res = await fetch(`http://localhost:3000/api/logbooks/${logbookId}/submit`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ tasks, reflection, problems }),
+    });
+    if (!res.ok) throw new Error("Indienen mislukt");
+    onTerug();
+  } catch (err) {
+    setError(t("logbooks.saveError"));
+  } finally {
+    setLoading(false);
+  }
+};
 
   const inputStyle = (disabled) => ({
     width: "100%",

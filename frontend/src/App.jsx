@@ -50,7 +50,7 @@ function App() {
         {/* Mentor pages */}
         <Route path="/mentor/studenten" element={<FinalEvaluationOverviewMentor />} />
         <Route path="/mentor/finale-evaluatie" element={<FinaleEvaluatieMentor />} />
-        <Route path="/mentor/finale-evaluatie/:studentId" element={<FinaleEvaluatieMentor />} />
+        <Route path="/mentor/finale-evaluatie/:internshipId" element={<FinaleEvaluatieMentor />} />
         {/* Teacher pages */}
         <Route path="/teacher/internships/:id/evaluation" element={<FinaleEvaluatieDocent />} />
         <Route path="/teacher/final-evaluation-overview" element={<FinalEvaluationOverview />} />

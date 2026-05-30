@@ -28,7 +28,7 @@ export default function FinalEvaluationOverviewMentor() {
           data.map(async (internship) => {
             try {
               const res = await fetch(
-                `http://localhost:3000/api/finale-evaluatie/student/${internship.student_id}`,
+                `http://localhost:3000/api/finale-evaluatie/internship/${internship.id}/docent`,
                 { headers: { Authorization: `Bearer ${token}` } }
               );
               if (!res.ok) return { ...internship, ev_status: "—", final_score: null };
@@ -56,7 +56,7 @@ export default function FinalEvaluationOverviewMentor() {
   return (
     <div className="teacher-dashboard-container">
       <h1>{user ? `Welkom, ${user.firstname || user.username}` : t("dashboards.mentor")}</h1>
-      <h2>Mijn studenten</h2>
+      <h2>Overzicht finale evaluaties</h2>
       {error && <p className="error">{error}</p>}
 
       {internships.length === 0 ? (
@@ -82,7 +82,7 @@ export default function FinalEvaluationOverviewMentor() {
                 <td>{vertaalStatus(internship.ev_status)}</td>
                 <td>{internship.final_score != null ? `${internship.final_score}/20` : "—"}</td>
                 <td>
-                  <button onClick={() => navigate(`/mentor/finale-evaluatie/${internship.student_id}`)}>
+                  <button onClick={() => navigate(`/mentor/finale-evaluatie/${internship.id}`)}>
                     Finale evaluatie
                   </button>
                 </td>

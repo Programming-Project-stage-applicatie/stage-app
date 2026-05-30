@@ -27,10 +27,10 @@ export default function FinalEvaluationOverviewTeacher() {
         const metEvaluatie = await Promise.all(
           data.map(async (internship) => {
             try {
-              const res = await fetch(
-                `http://localhost:3000/api/finale-evaluatie/student/${internship.student_id}`,
-                { headers: { Authorization: `Bearer ${token}` } }
-              );
+     const res = await fetch(
+  `http://localhost:3000/api/finale-evaluatie/internship/${internship.id}/docent`,
+  { headers: { Authorization: `Bearer ${token}` } }
+);
               if (!res.ok) return { ...internship, ev_status: "—", final_score: null };
               const ev = await res.json();
               return { ...internship, ev_status: ev.status, final_score: ev.final_score };

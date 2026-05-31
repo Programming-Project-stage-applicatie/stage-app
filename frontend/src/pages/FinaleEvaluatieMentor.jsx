@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 export default function FinaleEvaluatieMentor() {
   const [evaluatie, setEvaluatie] = useState(null);
@@ -11,14 +11,15 @@ export default function FinaleEvaluatieMentor() {
   const user     = JSON.parse(localStorage.getItem("user") || "{}");
   const token    = localStorage.getItem("token");
   const mentorId = user.id || 1;
-  const { studentId } = useParams();
+ const { internshipId } = useParams();
+const navigate = useNavigate();
 
   useEffect(() => { haalOp(); }, []);
 
   async function haalOp() {
     try {
       const res = await fetch(
-        `http://localhost:3000/api/finale-evaluatie/student/${studentId}`,
+        `http://localhost:3000/api/finale-evaluatie/internship/${internshipId}/docent`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (!res.ok) {
@@ -44,7 +45,7 @@ export default function FinaleEvaluatieMentor() {
     setBezig(true);
     try {
       const res = await fetch(
-        `http://localhost:3000/api/finale-evaluatie/student/${studentId}/mentor-motivatie`,
+        `http://localhost:3000/api/finale-evaluatie/internship/${internshipId}/mentor-motivatie`,
         {
           method: "POST",
           headers: {
@@ -152,9 +153,12 @@ export default function FinaleEvaluatieMentor() {
               placeholder="De student heeft nog geen omschrijving ingediend."
             />
             {evaluatie.document ? (
-              <a href={`http://localhost:3000${evaluatie.document}`} target="_blank" rel="noreferrer" style={s.docLink}>
-                📎 {evaluatie.document.split("/").pop()} — klik om te openen
-              </a>
+<button
+  style={{ ...s.docLink, background: "none", border: "none" }}
+  onClick={() => window.open(`http://localhost:3000${evaluatie.document}`, "_blank")}
+>
+  📎 {evaluatie.document.split("/").pop()} — klik om te openen
+</button>
             ) : (
               <p style={s.geenBijlage}>📄 Geen bestand bijgevoegd.</p>
             )}
@@ -249,13 +253,14 @@ export default function FinaleEvaluatieMentor() {
             {bezig ? "BEZIG…" : "BEVESTIGEN"}
           </button>
         )}
-        <button
-          style={{ ...s.btn, ...s.btnWit }}
-          onClick={() => window.history.back()}
-        >
-          TERUG
-        </button>
+
       </div>
+<p
+  onClick={() => navigate("/mentor/studenten")}
+  style={{ color: "#6fa8dc", cursor: "pointer", marginTop: "24px", textAlign: "left" }}
+>
+  ← Terug naar overzicht
+</p>
 
     </div>
   );

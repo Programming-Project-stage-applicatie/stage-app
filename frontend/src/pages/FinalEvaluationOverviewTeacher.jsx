@@ -27,10 +27,10 @@ export default function FinalEvaluationOverviewTeacher() {
         const metEvaluatie = await Promise.all(
           data.map(async (internship) => {
             try {
-              const res = await fetch(
-                `http://localhost:3000/api/finale-evaluatie/student/${internship.student_id}`,
-                { headers: { Authorization: `Bearer ${token}` } }
-              );
+     const res = await fetch(
+  `http://localhost:3000/api/finale-evaluatie/internship/${internship.id}/docent`,
+  { headers: { Authorization: `Bearer ${token}` } }
+);
               if (!res.ok) return { ...internship, ev_status: "—", final_score: null };
               const ev = await res.json();
               return { ...internship, ev_status: ev.status, final_score: ev.final_score };
@@ -56,6 +56,7 @@ export default function FinalEvaluationOverviewTeacher() {
   return (
     <div className="teacher-dashboard-container">
       <h1>{user ? `Welkom, ${user.firstname || user.username}` : t("dashboards.teacher")}</h1>
+
       <h2>Mijn stages</h2>
       {error && <p className="error">{error}</p>}
       {internships.length === 0 ? (
@@ -90,6 +91,12 @@ export default function FinalEvaluationOverviewTeacher() {
           </tbody>
         </table>
       )}
+      <p
+  onClick={() => navigate("/dashboard/teacher")}
+  style={{ color: "#6fa8dc", cursor: "pointer", marginTop: "24px" }}
+>
+  ← Terug naar dashboard
+</p>
     </div>
   );
 }

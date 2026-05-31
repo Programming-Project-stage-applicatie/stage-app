@@ -90,7 +90,13 @@ setInternships(alleenGevalueerd);
             ))}
           </tbody>
         </table>
-      )}
+)}
+      <p
+        onClick={() => navigate("/dashboard/admin")}
+        style={{ color: "#6fa8dc", cursor: "pointer", marginTop: "24px" }}
+      >
+        ← Terug naar dashboard
+      </p>
     </div>
   );
 }

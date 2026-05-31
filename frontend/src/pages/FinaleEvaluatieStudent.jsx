@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-export default function FinaleEvaluatie() {
+export default function FinaleEvaluatieStudent() {
   const [evaluatie, setEvaluatie]       = useState(null);
   const [omschrijving, setOmschrijving] = useState("");
   const [bestandNaam, setBestandNaam]   = useState("Geen bestand gekozen");
@@ -10,10 +10,9 @@ export default function FinaleEvaluatie() {
   const [bezig, setBezig]               = useState(false);
   const fileRef = useRef();
   const navigate = useNavigate();
+  const { internshipId } = useParams();
 
-  const user      = JSON.parse(localStorage.getItem("user") || "{}");
-  const studentId = user.id;
-
+  const user  = JSON.parse(localStorage.getItem("user") || "{}");
   const token = localStorage.getItem("token");
   const authHeaders = {
     Authorization: `Bearer ${token}`,
@@ -23,7 +22,7 @@ export default function FinaleEvaluatie() {
 
   async function haalOp() {
     try {
-      const res = await fetch(`http://localhost:3000/api/finale-evaluatie/student/${studentId}`, {
+      const res = await fetch(`http://localhost:3000/api/finale-evaluatie/internship/${internshipId}/docent`, {
         headers: authHeaders,
       });
       const data = await res.json();
@@ -55,14 +54,14 @@ export default function FinaleEvaluatie() {
     if (bestand) fd.append("document", bestand);
 
     try {
-      const r1 = await fetch(`http://localhost:3000/api/finale-evaluatie/student/${studentId}/opslaan`, {
+      const r1 = await fetch(`http://localhost:3000/api/finale-evaluatie/internship/${internshipId}/opslaan`, {
         method: "POST",
         headers: authHeaders,
         body: fd,
       });
       if (!r1.ok) { const d = await r1.json(); setFout(d.error); return; }
 
-      const r2 = await fetch(`http://localhost:3000/api/finale-evaluatie/student/${studentId}/indienen`, {
+      const r2 = await fetch(`http://localhost:3000/api/finale-evaluatie/internship/${internshipId}/indienen`, {
         method: "POST",
         headers: authHeaders,
       });
@@ -79,7 +78,7 @@ export default function FinaleEvaluatie() {
     if (!window.confirm("Ben je zeker dat je wilt annuleren?")) return;
     setFout("");
     try {
-      const res = await fetch(`http://localhost:3000/api/finale-evaluatie/student/${studentId}/annuleren`, {
+      const res = await fetch(`http://localhost:3000/api/finale-evaluatie/internship/${internshipId}/annuleren`, {
         method: "POST",
         headers: authHeaders,
       });
@@ -240,12 +239,11 @@ export default function FinaleEvaluatie() {
             {bezig ? "BEZIG…" : "INDIENEN"}
           </button>
         )}
-        {/*knop annuleren:
         {isSubmitted && (
           <button style={{ ...s.btn, ...s.btnWit }} onClick={handleAnnuleren}>
             ANNULEREN
           </button>
-        )}*/}
+        )}
         <button style={{ ...s.btn, ...s.btnTerug }} onClick={() => navigate("/dashboard/student")}>
           ← Terug naar dashboard
         </button>

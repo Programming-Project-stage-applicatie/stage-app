@@ -50,16 +50,15 @@ function App() {
         {/* Mentor pages */}
         <Route path="/mentor/studenten" element={<FinalEvaluationOverviewMentor />} />
         <Route path="/mentor/finale-evaluatie" element={<FinaleEvaluatieMentor />} />
-        <Route path="/mentor/finale-evaluatie/:studentId" element={<FinaleEvaluatieMentor />} />
-      <Route path="/mentor/logbooks" element={<TeacherStudentLogbookList />} />
-      <Route path="/supervisor/internship/:internshipId/logbooks" element={<SupervisorStudentLogbooks />} /> {/*voor beide docent en mentor*/}
-   
+<Route path="/mentor/finale-evaluatie/:internshipId" element={<FinaleEvaluatieMentor />} />
+        <Route path="/mentor/logbooks" element={<TeacherStudentLogbookList />} />
+        <Route path="/supervisor/internship/:internshipId/logbooks" element={<SupervisorStudentLogbooks />} />
         {/* Teacher pages */}
         <Route path="/teacher/internships/:id/evaluation" element={<FinaleEvaluatieDocent />} />
         <Route path="/teacher/final-evaluation-overview" element={<FinalEvaluationOverview />} />
          <Route path="/teacher/logbooks" element={<TeacherStudentLogbookList />} />
         {/* Student pages */}
-        <Route path="/finale-evaluatie" element={<FinaleEvaluatie />} />
+     <Route path="/finale-evaluatie/:internshipId" element={<FinaleEvaluatie />} />
         <Route path="/student/new-request" element={<NewInternshipRequest />} />
         <Route path="/student/request/:id" element={<StudentRequestDetail />} />
         <Route path="/student/internships/:id" element={<StudentInternshipDetail />} />

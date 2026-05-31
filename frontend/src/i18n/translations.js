@@ -196,6 +196,14 @@ const translations = {
       open: "Open"
     },
 
+
+
+    finaleEvaluatieStatus: {   
+      open:      "Open",
+      submitted: "Ingediend",
+      evaluated: "Geëvalueerd",
+      geen:      "Geen",
+    },
     FinaleEvaluatieDocent: {
       title: "Finale Evaluatie — Docent",
       loading: "Laden…",
@@ -242,7 +250,7 @@ const translations = {
   }
 };
 
-// nl fixed for now
+
 const currentLanguage = "nl";
 
 /* vertaalfunctie:

@@ -28,25 +28,25 @@ const statusMapping = {
 export default function StudentDashboard() {
   const navigate = useNavigate();
   const [internships, setInternships] = useState([]);
-const [requests, setRequests] = useState([]);
-const [logbookCounts, setLogbookCounts] = useState({});
-const [error, setError] = useState("");
+  const [requests, setRequests] = useState([]);
+  const [logbookCounts, setLogbookCounts] = useState({});
+  const [error, setError] = useState("");
   const token = localStorage.getItem("token");
   const user = getUserFromStorage();
 
- const fetchStudentInternships = async () => {
-  try {
-    const res = await fetch("http://localhost:3000/internships/student", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) throw new Error();
-    const data = await res.json();
-    setInternships(data);
-    fetchLogbookCounts(data);
-  } catch {
-    setError(t("studentInternships.fetchError"));
-  }
-};
+  const fetchStudentInternships = async () => {
+    try {
+      const res = await fetch("http://localhost:3000/internships/student", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      await fetchEvaluaties(data);
+      fetchLogbookCounts(data);
+    } catch {
+      setError(t("studentInternships.fetchError"));
+    }
+  };
 
   const fetchRequests = async () => {
     try {
@@ -60,26 +60,45 @@ const [error, setError] = useState("");
     }
   };
 
-  const fetchLogbookCounts = async (internshipList) => {
-  const counts = {};
-  await Promise.all(
-    internshipList.map(async (internship) => {
-      try {
-        const res = await fetch(
-          `http://localhost:3000/api/logbooks/count/${internship.id}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        if (res.ok) {
-          const data = await res.json();
-          counts[internship.id] = data.count;
+  const fetchEvaluaties = async (internshipsList) => {
+    const metEvaluatie = await Promise.all(
+      internshipsList.map(async (internship) => {
+        try {
+          const res = await fetch(
+            `http://localhost:3000/api/finale-evaluatie/internship/${internship.id}/docent`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          if (!res.ok) return { ...internship, ev_status: "—", final_score: null };
+          const ev = await res.json();
+          return { ...internship, ev_status: ev.status, final_score: ev.final_score };
+        } catch {
+          return { ...internship, ev_status: "—", final_score: null };
         }
-      } catch {
-        counts[internship.id] = 0;
-      }
-    })
-  );
-  setLogbookCounts(counts);
-};
+      })
+    );
+    setInternships(metEvaluatie);
+  };
+
+  const fetchLogbookCounts = async (internshipList) => {
+    const counts = {};
+    await Promise.all(
+      internshipList.map(async (internship) => {
+        try {
+          const res = await fetch(
+            `http://localhost:3000/api/logbooks/count/${internship.id}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          if (res.ok) {
+            const data = await res.json();
+            counts[internship.id] = data.count;
+          }
+        } catch {
+          counts[internship.id] = 0;
+        }
+      })
+    );
+    setLogbookCounts(counts);
+  };
 
   useEffect(() => {
     fetchStudentInternships();
@@ -88,29 +107,20 @@ const [error, setError] = useState("");
 
   return (
     <div className="student-dashboard-container">
-
       <h1>
         {user
           ? `${t("studentDashboard.welcome")}, ${user.firstname || user.username}`
           : t("studentDashboard.welcome")}
       </h1>
 
-<div style={{ display: "flex", gap: "12px" }}>
+      <div style={{ display: "flex", gap: "12px" }}>
         <Link className="dashboard-button" to="/student/new-request">
           Nieuwe stageaanvraag
         </Link>
-
-        
         <Link className="dashboard-button" to="/student/logbooks">
-    Logboeken
-  </Link>
-
-        <button className="dashboard-button" onClick={() => navigate("/finale-evaluatie")}>
-          Finale Evaluatie
-        </button>
+          Logboeken
+        </Link>
       </div>
-
-
 
       <h2>Mijn stageaanvragen</h2>
       {requests.length === 0 ? (
@@ -138,7 +148,7 @@ const [error, setError] = useState("");
         </table>
       )}
 
-      <h2>{t("studentDashboard.title")}</h2>
+      <h2>Mijn stages: logboeken en finale evaluaties</h2>
       {error && <p className="error">{error}</p>}
       {internships.length === 0 ? (
         <p>{t("studentInternships.none")}</p>
@@ -146,29 +156,31 @@ const [error, setError] = useState("");
         <table className="student-stages-table">
           <thead>
             <tr>
-              <th>{t("studentInternships.period")}</th>
-              <th className="stage-col">{t("studentInternships.stage")}</th>
-              <th>{t("studentInternships.logbooks")}</th>
-              <th>{t("studentInternships.evaluation")}</th>
+              <th>Bedrijf</th>
+              <th>Periode</th>
+              <th>Logboeken</th>
+              <th>Score</th>
+              <th>Status evaluatie</th>
             </tr>
           </thead>
           <tbody>
             {internships.map((internship) => (
               <tr key={internship.id}>
+                <td>{internship.company || "—"}</td>
                 <td>{formatDate(internship.start_date)} – {formatDate(internship.end_date)}</td>
-                <td className="stage-col">
-                  <Link to={`/student/internships/${internship.id}`}>
-                    {t("studentInternships.open")}
+                <td>
+                  <Link to={`/student/logbooks/${internship.id}`}>
+                    {logbookCounts[internship.id] ?? 0} logboeken
                   </Link>
                 </td>
-               
- <td>
-  <Link to={`/student/logbooks/${internship.id}`}>
-    {logbookCounts[internship.id] ?? 0} logboeken
-  </Link>
-</td>
-
-                <td>-</td>
+                <td>{internship.final_score != null ? `${internship.final_score}/20` : "—"}</td>
+                <td>
+                  <Link to={`/finale-evaluatie/${internship.id}`}>
+                    {internship.ev_status === "evaluated" ? "Geëvalueerd" :
+                     internship.ev_status === "submitted" ? "Ingediend" :
+                     internship.ev_status === "open" ? "Open" : "—"}
+                  </Link>
+                </td>
               </tr>
             ))}
           </tbody>

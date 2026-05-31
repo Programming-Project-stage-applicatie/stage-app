@@ -16,9 +16,9 @@ export default function StudentLogbooksPage() {
         if (data.length > 0) setInternshipId(data[0].internship_id);
       })
       .catch((err) => console.error("Fout bij ophalen logbooks:", err));
-  };
+  }
 
-  const fetchInternship = async () => {
+const fetchInternship = async () => {
     const token = localStorage.getItem("token");
     const res = await fetch("http://localhost:3000/internships/student", {
       headers: { Authorization: `Bearer ${token}` }
@@ -28,11 +28,11 @@ export default function StudentLogbooksPage() {
       if (data.length > 0) setInternshipId(data[0].id);
     }
   };
-
   useEffect(() => {
     fetchLogbooks();
     fetchInternship();
   }, []);
+  
 
   return (
     <StudentLogbooks

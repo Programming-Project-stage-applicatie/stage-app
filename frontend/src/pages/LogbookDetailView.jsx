@@ -29,7 +29,10 @@ export default function LogbookDetailView() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
+ const [loading, setLoading] = useState(true);
+const token = localStorage.getItem("token");
+const payload = token ? JSON.parse(atob(token.split('.')[1])) : {};
+const isMentor = payload.role === "mentor";
 
   useEffect(() => {
     const fetchLogbook = async () => {
@@ -52,7 +55,7 @@ export default function LogbookDetailView() {
     fetchLogbook();
   }, [id]);
 
-  const handleSubmitFeedback = async () => {
+const handleSubmitFeedback = async (status) => {
     setSaving(true);
     try {
       const token = localStorage.getItem("token");
@@ -61,7 +64,7 @@ export default function LogbookDetailView() {
         {
           method: "POST",
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ feedback }),
+          body: JSON.stringify({ feedback, status }),
         }
       );
       if (!res.ok) throw new Error();
@@ -135,10 +138,21 @@ export default function LogbookDetailView() {
           </>
         ) : (
           <>
-            <button style={s.submitBtn} onClick={handleSubmitFeedback} disabled={saving}>
-              {saving ? 'Opslaan...' : 'indienen'}
-            </button>
-            <button style={s.cancelBtn} onClick={() => navigate(-1)}>annuleren</button>
+           {isMentor ? (
+  <>
+    <button style={s.submitBtn} onClick={() => handleSubmitFeedback("approved")} disabled={saving}>
+      {saving ? 'Opslaan...' : 'Goedkeuren'}
+    </button>
+    <button style={{ ...s.submitBtn, background: '#e05a1a' }} onClick={() => handleSubmitFeedback("adjustment_required")} disabled={saving}>
+      {saving ? 'Opslaan...' : 'Aanpassingen vereist'}
+    </button>
+  </>
+) : (
+  <button style={s.submitBtn} onClick={() => handleSubmitFeedback("submitted")} disabled={saving}>
+    {saving ? 'Opslaan...' : 'indienen'}
+  </button>
+)}
+<button style={s.cancelBtn} onClick={() => navigate(-1)}>annuleren</button>
           </>
         )}
       </div>

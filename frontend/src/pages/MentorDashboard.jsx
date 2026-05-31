@@ -23,14 +23,14 @@ export default function MentorDashboard() {
   const token = localStorage.getItem("token");
   const user = getUserFromStorage();
 
-const fetchStudents = async () => {
+  const fetchStudents = async () => {
     try {
       const res = await fetch("http://localhost:3000/internships/mentor", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error();
       const data = await res.json();
-      console.log("Mentor internships data:", data);  // ← hier
+      console.log("Mentor internships data:", data);
       setStudents(data);
     } catch {
       setError("Kon studenten niet ophalen.");
@@ -70,11 +70,9 @@ const fetchStudents = async () => {
             <h3>Logboeken</h3>
             <button
               className="primary"
-              disabled
-              style={{ cursor: "default", opacity: 0.5 }}
-              title="Nog niet beschikbaar"
+              onClick={() => navigate("/mentor/logbooks")}
             >
-              binnenkort beschikbaar
+              open
             </button>
           </div>
           <div className="dashboard-card">

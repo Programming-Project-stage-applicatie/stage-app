@@ -6,13 +6,13 @@ export default function StudentLogbooksPage() {
   const { internshipId: urlInternshipId } = useParams();
   const [logbooks, setLogbooks] = useState([]);
   const [internshipId, setInternshipId] = useState(urlInternshipId || null);
+  const [internshipInfo, setInternshipInfo] = useState(null);
 
   const fetchLogbooks = () => {
     const token = localStorage.getItem("token");
     const url = urlInternshipId
       ? `http://localhost:3000/api/logbooks?internship_id=${urlInternshipId}`
       : `http://localhost:3000/api/logbooks`;
-
     fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -25,14 +25,23 @@ export default function StudentLogbooksPage() {
   };
 
   const fetchInternship = async () => {
-    if (urlInternshipId) return; // al bekend via URL
     const token = localStorage.getItem("token");
-    const res = await fetch("http://localhost:3000/internships/student", {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.length > 0) setInternshipId(data[0].id);
+    if (urlInternshipId) {
+      const res = await fetch(`http://localhost:3000/internships/student/${urlInternshipId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setInternshipInfo(data);
+      }
+    } else {
+      const res = await fetch("http://localhost:3000/internships/student", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.length > 0) setInternshipId(data[0].id);
+      }
     }
   };
 
@@ -45,6 +54,7 @@ export default function StudentLogbooksPage() {
     <StudentLogbooks
       logbooks={logbooks}
       internshipId={internshipId || urlInternshipId}
+      internshipInfo={internshipInfo}
       onRefresh={fetchLogbooks}
     />
   );

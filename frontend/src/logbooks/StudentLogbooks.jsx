@@ -21,7 +21,7 @@ const sortLogbooks = (logbooks) => {
   });
 };
 
-export default function StudentLogbooks({ logbooks = [], internshipId, onRefresh }) {
+export default function StudentLogbooks({ logbooks = [], internshipId, internshipInfo, onRefresh }) {
   const navigate = useNavigate();
   const [view, setView] = useState("list");
   const [selected, setSelected] = useState(null);
@@ -55,7 +55,13 @@ export default function StudentLogbooks({ logbooks = [], internshipId, onRefresh
   return (
     <div style={{ padding: "40px", maxWidth: "1000px", margin: "0 auto", fontFamily: "sans-serif" }}>
 
-
+ {internshipInfo && (
+        <div style={{ marginBottom: "24px", padding: "16px", background: "#f9fafb", borderRadius: "8px", border: "1px solid #e5e7eb" }}>
+          <p style={{ margin: "4px 0" }}><strong>Stagebedrijf:</strong> {internshipInfo.company || "—"}</p>
+          <p style={{ margin: "4px 0" }}><strong>Mentor:</strong> {internshipInfo.mentor_firstname ? `${internshipInfo.mentor_firstname} ${internshipInfo.mentor_lastname}` : "—"}</p>
+          <p style={{ margin: "4px 0" }}><strong>Docent:</strong> {internshipInfo.teacher_firstname ? `${internshipInfo.teacher_firstname} ${internshipInfo.teacher_lastname}` : "—"}</p>
+        </div>
+      )}
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", flexWrap: "wrap", gap: "20px" }}>
         <h1 style={{ margin: 0 }}>{t("logbooks.title")}</h1>

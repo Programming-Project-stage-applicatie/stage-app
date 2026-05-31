@@ -11,7 +11,7 @@ export default function FinaleEvaluatieMentor() {
   const user     = JSON.parse(localStorage.getItem("user") || "{}");
   const token    = localStorage.getItem("token");
   const mentorId = user.id || 1;
- const { studentId } = useParams();
+ const { internshipId } = useParams();
 const navigate = useNavigate();
 
   useEffect(() => { haalOp(); }, []);
@@ -19,7 +19,7 @@ const navigate = useNavigate();
   async function haalOp() {
     try {
       const res = await fetch(
-        `http://localhost:3000/api/finale-evaluatie/student/${studentId}`,
+        `http://localhost:3000/api/finale-evaluatie/internship/${internshipId}/docent`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (!res.ok) {
@@ -45,7 +45,7 @@ const navigate = useNavigate();
     setBezig(true);
     try {
       const res = await fetch(
-        `http://localhost:3000/api/finale-evaluatie/student/${studentId}/mentor-motivatie`,
+        `http://localhost:3000/api/finale-evaluatie/internship/${internshipId}/mentor-motivatie`,
         {
           method: "POST",
           headers: {

@@ -96,28 +96,27 @@ export default function TeacherDashboard() {
           <p>Geen studenten gevonden.</p>
         ) : (
           <table className="student-stages-table">
-            <thead>
-              <tr>
-                <th>Student</th>
-                <th>Logboeken</th>
-                <th>Finale Evaluatie</th>
-              </tr>
-            </thead>
-            <tbody>
-              {students.map((internship) => (
-                <tr key={internship.id}>
-                  <td>{internship.student_firstname} {internship.student_lastname}</td>
-                  <td>
-                    <span style={{ fontWeight: "bold" }}>
-                      {internship.logbook_count ?? "-"}
-                    </span>
-                  </td>
-                  <td>
-                    <span>{translateStatus(internship.finale_evaluatie_status)}</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+
+<thead>
+  <tr>
+    <th>Student</th>
+    <th>Bedrijf</th>
+    <th>Logboeken</th>
+    <th>Finale Evaluatie</th>
+  </tr>
+</thead>
+<tbody>
+  {students.map((internship) => (
+    <tr key={internship.id}
+        style={{ cursor: "pointer" }}
+        onClick={() => navigate(`/teacher/internships/${internship.id}/evaluation`)}>
+      <td>{internship.student_firstname} {internship.student_lastname}</td>
+      <td>{internship.company}</td>
+      <td><span style={{ fontWeight: "bold" }}>{internship.logbook_count ?? "-"}</span></td>
+      <td><span style={{ color: "#6fa8dc", textDecoration: "underline" }}>{translateStatus(internship.finale_evaluatie_status)}</span></td>
+    </tr>
+  ))}
+</tbody>
           </table>
         )}
       </div>

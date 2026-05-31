@@ -97,22 +97,20 @@ export default function MentorDashboard() {
             <thead>
               <tr>
                 <th>Student</th>
+                <th>Bedrijf</th>
                 <th>Logboeken</th>
                 <th>Finale Evaluatie</th>
               </tr>
             </thead>
             <tbody>
               {students.map((internship) => (
-                <tr key={internship.id}>
+                <tr key={internship.id}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/mentor/finale-evaluatie/${internship.id}`)}>
                   <td>{internship.student_firstname} {internship.student_lastname}</td>
-                  <td>
-                    <span style={{ fontWeight: "bold" }}>
-                      {internship.logbook_count ?? "-"}
-                    </span>
-                  </td>
-                  <td>
-                    <span>{translateStatus(internship.finale_evaluatie_status)}</span>
-                  </td>
+                  <td>{internship.company}</td>
+                  <td><span style={{ fontWeight: "bold" }}>{internship.logbook_count ?? "-"}</span></td>
+                  <td><span style={{ color: "#6fa8dc", textDecoration: "underline" }}>{translateStatus(internship.finale_evaluatie_status)}</span></td>
                 </tr>
               ))}
             </tbody>

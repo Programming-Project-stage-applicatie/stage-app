@@ -61,7 +61,7 @@ export default function FinaleEvaluatieStudent() {
       });
       if (!r1.ok) { const d = await r1.json(); setFout(d.error); return; }
 
-      const r2 = await fetch(`http://localhost:3000/api/finale-evaluatie/internship/${internshipId}/indienen`, {
+     const r2 = await fetch(`http://localhost:3000/api/finale-evaluatie/internship/${internshipId}/indienen`, {
         method: "POST",
         headers: authHeaders,
       });

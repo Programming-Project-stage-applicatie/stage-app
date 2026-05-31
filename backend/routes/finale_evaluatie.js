@@ -1,5 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const multer = require("multer");
+const upload = multer({ dest: "uploads/" });
 
 async function getInternshipId(db, studentId) {
   const [rows] = await db.query(
@@ -346,6 +348,113 @@ router.post("/internship/:internshipId/mentor-motivatie", async (req, res) => {
       [mentor_motivatie.trim(), mentor_id ?? null, record.id]
     );
     res.json({ message: "Eindmotivatie opgeslagen.", status: record.status });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+// ─── POST /api/finale-evaluatie/internship/:internshipId/opslaan ─────────────
+router.post(
+  "/internship/:internshipId/opslaan",
+  (req, res, next) => {
+    upload.single("document")(req, res, (err) => {
+      if (err instanceof multer.MulterError) {
+        return res.status(400).json({ error: `Upload fout: ${err.message}` });
+      } else if (err) {
+        return res.status(400).json({ error: err.message });
+      }
+      next();
+    });
+  },
+  async (req, res) => {
+    const db = req.db;
+    const { internshipId } = req.params;
+    const { omschrijving } = req.body;
+    const document = req.file ? `/${req.file.path}` : null;
+    try {
+      const [existing] = await db.query(
+        "SELECT id, status FROM final_evaluations WHERE internship_id = ?",
+        [internshipId]
+      );
+      if (existing.length > 0) {
+        if (existing[0].status !== "open") {
+          return res.status(400).json({
+            error: `Finale evaluatie kan niet meer bewerkt worden (status: ${existing[0].status}).`,
+          });
+        }
+        const updates = ["presentation = ?"];
+        const values = [omschrijving];
+        if (document) {
+          updates.push("document = ?");
+          values.push(document);
+        }
+        values.push(existing[0].id);
+        await db.query(
+          `UPDATE final_evaluations SET ${updates.join(", ")} WHERE id = ?`,
+          values
+        );
+        return res.json({ message: "Opgeslagen", status: "open" });
+      }
+      const [internshipRows] = await db.query(
+        "SELECT teacher_id, mentor_id FROM internships WHERE id = ?",
+        [internshipId]
+      );
+      const teacherId = internshipRows[0]?.teacher_id ?? null;
+      const mentorId  = internshipRows[0]?.mentor_id  ?? null;
+      const [result] = await db.query(
+        `INSERT INTO final_evaluations (internship_id, presentation, document, status, teacher_id, mentor_id)
+         VALUES (?, ?, ?, 'open', ?, ?)`,
+        [internshipId, omschrijving ?? null, document, teacherId, mentorId]
+      );
+      res.status(201).json({ id: result.insertId, message: "Opgeslagen", status: "open" });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
+// ─── POST /api/finale-evaluatie/internship/:internshipId/indienen ─────────────
+router.post("/internship/:internshipId/indienen", async (req, res) => {
+  const db = req.db;
+  const { internshipId } = req.params;
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM final_evaluations WHERE internship_id = ?",
+      [internshipId]
+    );
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Geen finale evaluatie gevonden om in te dienen." });
+    }
+    const record = rows[0];
+    if (record.status !== "open") {
+      return res.status(400).json({ error: `Kan niet indienen: status is al '${record.status}'.` });
+    }
+    if (!record.presentation || record.presentation.trim() === "") {
+      return res.status(400).json({ error: "Omschrijving is verplicht om in te dienen." });
+    }
+    await db.query("UPDATE final_evaluations SET status = 'submitted' WHERE id = ?", [record.id]);
+    res.json({ message: "Eindpresentatie ingediend!", status: "submitted" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── POST /api/finale-evaluatie/internship/:internshipId/annuleren ────────────
+router.post("/internship/:internshipId/annuleren", async (req, res) => {
+  const db = req.db;
+  const { internshipId } = req.params;
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM final_evaluations WHERE internship_id = ?",
+      [internshipId]
+    );
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Geen finale evaluatie gevonden." });
+    }
+    if (rows[0].status !== "submitted") {
+      return res.status(400).json({ error: "Kan alleen annuleren als status 'submitted' is." });
+    }
+    await db.query("UPDATE final_evaluations SET status = 'open' WHERE id = ?", [rows[0].id]);
+    res.json({ message: "Annulering geslaagd!", status: "open" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -107,13 +107,18 @@ export default function TeacherDashboard() {
 </thead>
 <tbody>
   {students.map((internship) => (
-    <tr key={internship.id}
-        style={{ cursor: "pointer" }}
-        onClick={() => navigate(`/teacher/internships/${internship.id}/evaluation`)}>
+    <tr key={internship.id}>
       <td>{internship.student_firstname} {internship.student_lastname}</td>
       <td>{internship.company}</td>
       <td><span style={{ fontWeight: "bold" }}>{internship.logbook_count ?? "-"}</span></td>
-      <td><span style={{ color: "#6fa8dc", textDecoration: "underline" }}>{translateStatus(internship.finale_evaluatie_status)}</span></td>
+      <td>
+        <span
+          style={{ color: "#6fa8dc", textDecoration: "underline", cursor: "pointer" }}
+          onClick={() => navigate(`/teacher/internships/${internship.id}/evaluation`)}
+        >
+          {translateStatus(internship.finale_evaluatie_status)}
+        </span>
+      </td>
     </tr>
   ))}
 </tbody>

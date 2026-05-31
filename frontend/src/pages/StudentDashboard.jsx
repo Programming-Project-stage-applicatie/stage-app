@@ -28,22 +28,25 @@ const statusMapping = {
 export default function StudentDashboard() {
   const navigate = useNavigate();
   const [internships, setInternships] = useState([]);
-  const [requests, setRequests] = useState([]);
-  const [error, setError] = useState("");
+const [requests, setRequests] = useState([]);
+const [logbookCounts, setLogbookCounts] = useState({});
+const [error, setError] = useState("");
   const token = localStorage.getItem("token");
   const user = getUserFromStorage();
 
-  const fetchStudentInternships = async () => {
-    try {
-      const res = await fetch("http://localhost:3000/internships/student", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error();
-      setInternships(await res.json());
-    } catch {
-      setError(t("studentInternships.fetchError"));
-    }
-  };
+ const fetchStudentInternships = async () => {
+  try {
+    const res = await fetch("http://localhost:3000/internships/student", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    setInternships(data);
+    fetchLogbookCounts(data);
+  } catch {
+    setError(t("studentInternships.fetchError"));
+  }
+};
 
   const fetchRequests = async () => {
     try {
@@ -56,6 +59,27 @@ export default function StudentDashboard() {
       setError("Kon stageaanvragen niet ophalen.");
     }
   };
+
+  const fetchLogbookCounts = async (internshipList) => {
+  const counts = {};
+  await Promise.all(
+    internshipList.map(async (internship) => {
+      try {
+        const res = await fetch(
+          `http://localhost:3000/api/logbooks/count/${internship.id}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          counts[internship.id] = data.count;
+        }
+      } catch {
+        counts[internship.id] = 0;
+      }
+    })
+  );
+  setLogbookCounts(counts);
+};
 
   useEffect(() => {
     fetchStudentInternships();
@@ -137,11 +161,13 @@ export default function StudentDashboard() {
                     {t("studentInternships.open")}
                   </Link>
                 </td>
-               <td>
-  <Link to={`/student/logbooks`}>
-    Logboeken
+               
+ <td>
+  <Link to={`/student/logbooks/${internship.id}`}>
+    {logbookCounts[internship.id] ?? 0} logboeken
   </Link>
 </td>
+
                 <td>-</td>
               </tr>
             ))}

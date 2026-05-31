@@ -64,6 +64,7 @@ function App() {
         <Route path="/student/request/:id" element={<StudentRequestDetail />} />
         <Route path="/student/internships/:id" element={<StudentInternshipDetail />} />
         <Route path="/student/logbooks" element={<StudentLogbooksPage />} />
+        <Route path="/student/logbooks/:internshipId" element={<StudentLogbooksPage />} />
         {/* Admin pages */}
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/internships/:id" element={<AdminInternshipDetail />} />

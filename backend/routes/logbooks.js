@@ -29,21 +29,28 @@ router.get("/detail/:id", authenticateJWT, (req, res) => {
 });
  
 // Alle logboeken van ingelogde student
-// Alle logboeken van ingelogde student
+
 router.get("/", authenticateJWT, (req, res) => {
   const studentId = req.user.id;
-  db.query(
-    `SELECT l.* FROM logbooks l
+  const internshipId = req.query.internship_id;
+
+  let query = `SELECT l.* FROM logbooks l
      INNER JOIN internships i ON i.id = l.internship_id
      INNER JOIN internship_requests ir ON ir.id = i.internship_request_id
-     WHERE ir.student_id = ?
-     ORDER BY l.week DESC`,
-    [studentId],
-    (err, results) => {
-      if (err) return res.status(500).json({ message: "Fout bij ophalen logbooks" });
-      res.json(results);
-    }
-  );
+     WHERE ir.student_id = ?`;
+  const params = [studentId];
+
+  if (internshipId) {
+    query += ` AND l.internship_id = ?`;
+    params.push(internshipId);
+  }
+
+  query += ` ORDER BY l.week DESC`;
+
+  db.query(query, params, (err, results) => {
+    if (err) return res.status(500).json({ message: "Fout bij ophalen logbooks" });
+    res.json(results);
+  });
 });
  
 // Één logboek ophalen
@@ -56,6 +63,17 @@ router.get("/:id", authenticateJWT, (req, res) => {
       if (err) return res.status(500).json({ message: "Fout bij ophalen logbook" });
       if (results.length === 0) return res.status(404).json({ message: "Niet gevonden" });
       res.json(results[0]);
+    }
+  );
+});
+
+router.get("/count/:internshipId", authenticateJWT, (req, res) => {
+  db.query(
+    "SELECT COUNT(*) as count FROM logbooks WHERE internship_id = ?",
+    [req.params.internshipId],
+    (err, results) => {
+      if (err) return res.status(500).json({ message: "Fout" });
+      res.json({ count: results[0].count });
     }
   );
 });

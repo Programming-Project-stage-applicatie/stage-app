@@ -1,7 +1,22 @@
 const express = require("express");
 const router = express.Router();
+
 const multer = require("multer");
-const upload = multer({ dest: "uploads/" });
+const path = require("path");
+const fs = require("fs");
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = "uploads/finale_evaluatie/";
+    fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `student_${req.params.internshipId || req.params.studentId}_${Date.now()}${ext}`);
+  },
+});
+const upload = multer({ storage });
 
 async function getInternshipId(db, studentId) {
   const [rows] = await db.query(

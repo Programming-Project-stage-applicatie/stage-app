@@ -179,9 +179,12 @@ export default function FinaleEvaluatieStudent() {
         )}
 
         {evaluatie.document && (
-          <a href={`http://localhost:3000${evaluatie.document}`} target="_blank" rel="noreferrer" style={s.docLink}>
-            📎 {evaluatie.document.split("/").pop()}
-          </a>
+<button
+  style={{ ...s.docLink, background: "none", border: "none", cursor: "pointer" }}
+  onClick={() => window.open(`http://localhost:3000${evaluatie.document}`, "_blank")}
+>
+  📎 {evaluatie.document.split("/").pop()} — klik om te openen
+</button>
         )}
       </section>
 

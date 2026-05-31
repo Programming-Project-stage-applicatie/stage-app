@@ -474,4 +474,21 @@ router.post("/internship/:internshipId/annuleren", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// ─── DELETE /api/finale-evaluatie/internship/:internshipId/document ──────────
+router.delete("/internship/:internshipId/document", async (req, res) => {
+  const db = req.db;
+  const { internshipId } = req.params;
+  try {
+    const [rows] = await db.query(
+      "SELECT id, status, document FROM final_evaluations WHERE internship_id = ?",
+      [internshipId]
+    );
+    if (rows.length === 0) return res.status(404).json({ error: "Geen evaluatie gevonden." });
+    if (rows[0].status !== "open") return res.status(400).json({ error: "Kan document niet verwijderen." });
+    await db.query("UPDATE final_evaluations SET document = NULL WHERE id = ?", [rows[0].id]);
+    res.json({ message: "Document verwijderd." });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 module.exports = router;

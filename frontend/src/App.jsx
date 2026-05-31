@@ -52,6 +52,8 @@ function App() {
         <Route path="/mentor/finale-evaluatie" element={<FinaleEvaluatieMentor />} />
         <Route path="/mentor/finale-evaluatie/:studentId" element={<FinaleEvaluatieMentor />} />
       <Route path="/mentor/logbooks" element={<TeacherStudentLogbookList />} />
+      <Route path="/supervisor/internship/:internshipId/logbooks" element={<SupervisorStudentLogbooks />} /> {/*voor beide docent en mentor*/}
+   
         {/* Teacher pages */}
         <Route path="/teacher/internships/:id/evaluation" element={<FinaleEvaluatieDocent />} />
         <Route path="/teacher/final-evaluation-overview" element={<FinalEvaluationOverview />} />
@@ -70,9 +72,8 @@ function App() {
         <Route path="/logbooks/internship/:internshipId" element={<TeacherStudentLogbookList />}/>
 
         <Route path="/logbook/detail/:id" element={<TeacherLogbookDetail />}/>
-        <Route path="/supervisor/students/:id/logbooks" element={<TeacherLogbookDetail />} />
+        
 <Route path="/supervisor/logbook/:id" element={<LogbookDetailView />} />
-<Route path="/supervisor/students/:id/logbooks" element={<SupervisorStudentLogbooks />} />
 
         <Route path="/admin/final-evaluation-overview" element={<FinalEvaluationOverviewAdmin />} />
 <Route path="/admin/internships/:id/evaluation" element={<FinaleEvaluatieAdmin />} />

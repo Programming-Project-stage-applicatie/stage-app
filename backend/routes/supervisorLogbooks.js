@@ -48,7 +48,7 @@ router.get("/mentor/logbooks", authenticateJWT, (req, res) => {
       ORDER BY week DESC LIMIT 1
     )
     WHERE u.role = 'student' AND i.mentor_id = ?
-    ORDER BY u.firstname ASC
+    ORDER BY name ASC
   `;
   db.query(query, [mentorId], (err, results) => {
     if (err) {
@@ -111,4 +111,58 @@ router.post("/logbooks/:id/feedback", authenticateJWT, (req, res) => {
   );
 });
 
+router.get("/internship/:internshipId/logbooks", authenticateJWT, (req, res) => {
+  const internshipId = req.params.internshipId;
+  db.query(
+    `SELECT id, week, status FROM logbooks WHERE internship_id = ? ORDER BY week DESC`,
+    [internshipId],
+    (err, logbooks) => {
+      if (err) return res.status(500).json({ message: "Fout bij ophalen logboeken" });
+      db.query(
+        `SELECT CONCAT(u.firstname, ' ', u.lastname) AS student_name
+         FROM internships i
+         INNER JOIN internship_requests ir ON ir.id = i.internship_request_id
+         INNER JOIN users u ON u.id = ir.student_id
+         WHERE i.id = ?`,
+        [internshipId],
+        (err2, info) => {
+          if (err2) return res.status(500).json({ message: "Fout bij ophalen student" });
+          res.json({
+            data: {
+              student_name: info[0]?.student_name || "",
+              logbooks
+            }
+          });
+        }
+      );
+    }
+  );
+});
+router.get("/internship/:internshipId/logbooks", authenticateJWT, (req, res) => {
+  const internshipId = req.params.internshipId;
+  db.query(
+    `SELECT id, week, status FROM logbooks WHERE internship_id = ? ORDER BY week DESC`,
+    [internshipId],
+    (err, logbooks) => {
+      if (err) return res.status(500).json({ message: "Fout bij ophalen logboeken" });
+      db.query(
+        `SELECT CONCAT(u.firstname, ' ', u.lastname) AS student_name
+         FROM internships i
+         INNER JOIN internship_requests ir ON ir.id = i.internship_request_id
+         INNER JOIN users u ON u.id = ir.student_id
+         WHERE i.id = ?`,
+        [internshipId],
+        (err2, info) => {
+          if (err2) return res.status(500).json({ message: "Fout bij ophalen student" });
+          res.json({
+            data: {
+              student_name: info[0]?.student_name || "",
+              logbooks
+            }
+          });
+        }
+      );
+    }
+  );
+});
 module.exports = router;

@@ -22,7 +22,7 @@ function StatusBadge({ status }) {
 }
 
 export default function SupervisorStudentLogbooks() {
-  const { id } = useParams();
+const { internshipId: id } = useParams();
   const navigate = useNavigate();
   const [studentName, setStudentName] = useState("");
   const [logbooks, setLogbooks] = useState([]);
@@ -31,12 +31,13 @@ export default function SupervisorStudentLogbooks() {
 
   useEffect(() => {
     const fetchData = async () => {
+    
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(
-          `http://localhost:3000/api/supervisor/students/${id}/logbooks`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+      const res = await fetch(
+  `http://localhost:3000/api/supervisor/internship/${id}/logbooks`,
+  { headers: { Authorization: `Bearer ${token}` } }
+);
         if (!res.ok) throw new Error();
         const json = await res.json();
         setStudentName(json.data.student_name || "");

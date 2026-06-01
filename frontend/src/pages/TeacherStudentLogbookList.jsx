@@ -40,9 +40,9 @@ export default function TeacherStudentLogbookList() {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const token = localStorage.getItem("token");
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
-const isMentor = user.role === "mentor";
+const token = localStorage.getItem("token");
+const payload = token ? JSON.parse(atob(token.split('.')[1])) : {};
+const isMentor = payload.role === "mentor";
 
 const res = await fetch(
   `http://localhost:3000/api/supervisor/${isMentor ? "mentor" : "teacher"}/logbooks`,
@@ -127,7 +127,7 @@ const res = await fetch(
                   <td style={s.td}>{student.last_week ? `Week ${student.last_week}` : '-'}</td>
                   <td style={s.td}><StatusBadge status={student.status} /></td>
                   <td style={s.td}>
-                    <button style={s.btn} onClick={() => navigate(`/supervisor/students/${student.id}/logbooks`)}>
+                    <button style={s.btn} onClick={() =>{ console.log("internship_id:", student.internship_id); navigate(`/supervisor/internship/${student.internship_id}/logbooks`)}}>
                       Bekijk overzicht
                     </button>
                   </td>

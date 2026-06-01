@@ -92,6 +92,25 @@ export default function FinaleEvaluatieStudent() {
     }
   }
 
+  async function handleVerwijderDocument() {
+    if (!window.confirm("Ben je zeker dat je het document wilt verwijderen?")) return;
+    try {
+      const res = await fetch(`http://localhost:3000/api/finale-evaluatie/internship/${internshipId}/document`, {
+        method: "DELETE",
+        headers: authHeaders,
+      });
+      if (res.ok) {
+        await haalOp();
+        setBestandNaam("Geen bestand gekozen");
+        setBestand(null);
+      } else {
+        setFout("Verwijderen mislukt.");
+      }
+    } catch {
+      setFout("Er ging iets mis.");
+    }
+  }
+
   function vertaalStatus(status) {
     const vertalingen = {
       open:      "Open",
@@ -179,9 +198,22 @@ export default function FinaleEvaluatieStudent() {
         )}
 
         {evaluatie.document && (
-          <a href={`http://localhost:3000${evaluatie.document}`} target="_blank" rel="noreferrer" style={s.docLink}>
-            📎 {evaluatie.document.split("/").pop()}
-          </a>
+          <div style={{ marginTop: "0.4rem", display: "flex", alignItems: "center", gap: "1rem" }}>
+            <button
+              style={{ ...s.docLink, background: "none", border: "none", cursor: "pointer" }}
+              onClick={() => window.open(`http://localhost:3000${evaluatie.document}`, "_blank")}
+            >
+              📎 {evaluatie.document.split("/").pop()} — klik om te openen
+            </button>
+            {isOpen && (
+              <button
+                style={{ background: "none", border: "none", cursor: "pointer", color: "#dc2626", fontSize: "0.85rem" }}
+                onClick={handleVerwijderDocument}
+              >
+                🗑️ Verwijder
+              </button>
+            )}
+          </div>
         )}
       </section>
 
@@ -253,7 +285,6 @@ export default function FinaleEvaluatieStudent() {
   );
 }
 
-// ── Stijlen ────────────────────────────────────────────────────
 const s = {
   pagina:           { maxWidth: "620px", margin: "2rem auto", padding: "1.5rem", fontFamily: "Arial, sans-serif", color: "#222" },
   loading:          { display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" },

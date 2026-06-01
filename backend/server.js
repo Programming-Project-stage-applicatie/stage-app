@@ -54,7 +54,7 @@ const internshipRoutes = require("./routes/internships");
 app.use("/internships", internshipRoutes);
 
 const finaleEvaluatieRoutes = require("./routes/finale_evaluatie");
-app.use("/api/finale-evaluatie", authenticateJWT, finaleEvaluatieRoutes);
+app.use("/api/finale-evaluatie", finaleEvaluatieRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend is running");

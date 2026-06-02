@@ -85,8 +85,8 @@ router.post("/", authenticateJWT, (req, res) => {
  
   // Controleer of er al een logboek bestaat voor deze week
   db.query(
-    "SELECT id FROM logbooks WHERE created_by_student_id = ? AND week = ?",
-    [studentId, week],
+    "SELECT id FROM logbooks WHERE created_by_student_id = ? AND week = ? AND internship_id = ?",
+    [studentId, week, internship_id],
     (err, existing) => {
       if (err) return res.status(500).json({ message: "Fout bij aanmaken logbook" });
       if (existing.length > 0) return res.status(409).json({ message: "Er bestaat al een logboek voor deze week" });

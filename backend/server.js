@@ -12,12 +12,16 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads"), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith(".pdf")) {
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", "inline");
+    }
+  }
+}));
 
-/* ---------------------------------------------------------
-   DATABASE CONNECTIE (POOL - AANBEVOLEN)
-   ⭐ FIX: dateStrings voorkomt timezone shifts
---------------------------------------------------------- */
+
 const db = mysql.createPool({
   host:     process.env.DB_HOST,
   user:     process.env.DB_USER,
@@ -50,7 +54,7 @@ const internshipRoutes = require("./routes/internships");
 app.use("/internships", internshipRoutes);
 
 const finaleEvaluatieRoutes = require("./routes/finale_evaluatie");
-app.use("/api/finale-evaluatie", authenticateJWT, finaleEvaluatieRoutes);
+app.use("/api/finale-evaluatie", finaleEvaluatieRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend is running");

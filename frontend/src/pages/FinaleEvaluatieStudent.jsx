@@ -273,7 +273,7 @@ export default function FinaleEvaluatieStudent() {
         )}
         {isSubmitted && (
           <button style={{ ...s.btn, ...s.btnWit }} onClick={handleAnnuleren}>
-            ANNULEREN
+            WIJZIGEN
           </button>
         )}
         <button style={{ ...s.btn, ...s.btnTerug }} onClick={() => navigate("/dashboard/student")}>

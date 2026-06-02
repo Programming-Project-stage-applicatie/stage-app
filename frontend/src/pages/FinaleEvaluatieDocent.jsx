@@ -161,7 +161,7 @@ export default function FinaleEvaluatieDocent() {
             />
             {evaluation.document ? (
               <a
-                href={`http://localhost:3000${evaluation.document}`}
+                href={`http://localhost:3000${evaluation.document.replace(/\\/g, "/")}`}
                 target="_blank"
                 rel="noreferrer"
                 style={s.docBtn}

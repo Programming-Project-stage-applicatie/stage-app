@@ -12,14 +12,16 @@ export default function LogboekForm({ logbook, internshipId, onTerug, existingWe
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
+  
 
   const readOnly = savedLogbook && savedLogbook.status !== "open" && savedLogbook.status !== "adjustment_required";
   const weekExists = isNieuw && existingWeeks.includes(Number(week));
-
-  const handleSave = async () => {
+const [saved, setSaved] = useState(false);
+ const handleSave = async () => {
     if (weekExists) return;
     setLoading(true);
     setError("");
+    setSaved(false);
     const token = localStorage.getItem("token");
 
     try {
@@ -32,7 +34,8 @@ export default function LogboekForm({ logbook, internshipId, onTerug, existingWe
         });
         if (!res.ok) throw new Error("Opslaan mislukt");
         const nieuwLogbook = await res.json();
-setSavedLogbook({ ...nieuwLogbook, week, tasks, reflection, problems, status: 'open' }); 
+        setSavedLogbook({ ...nieuwLogbook, week, tasks, reflection, problems, status: 'open' }); 
+        setSaved(true); // ← nieuw
       } else {
         res = await fetch(`http://localhost:3000/api/logbooks/${savedLogbook.id}/save`, {
           method: "PUT",
@@ -40,7 +43,7 @@ setSavedLogbook({ ...nieuwLogbook, week, tasks, reflection, problems, status: 'o
           body: JSON.stringify({ tasks, reflection, problems }),
         });
         if (!res.ok) throw new Error("Opslaan mislukt");
-       
+        setSaved(true); // ← nieuw
       }
     } catch (err) {
       setError(t("logbooks.saveError"));
@@ -162,7 +165,8 @@ const handleSubmitConfirm = async () => {
           />
         </div>
 
-        {error && <p style={{ color: "red", marginBottom: "16px" }}>{error}</p>}
+      {saved && <p style={{ color: "#22c55e", marginBottom: "16px", fontWeight: "bold" }}>{t("logbooks.saved")}</p>}
+{error && <p style={{ color: "red", marginBottom: "16px" }}>{error}</p>}
 
         {!readOnly && (
           <div style={{ display: "flex", gap: "12px" }}>

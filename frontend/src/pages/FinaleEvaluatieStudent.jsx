@@ -224,7 +224,7 @@ export default function FinaleEvaluatieStudent() {
             <h2 style={s.sectietitel}>Feedback Mentor</h2>
             <textarea
               style={{ ...s.textarea, ...s.textareaReadonly }}
-              value={evaluatie.mentor_feedback || ""}
+              value={evaluatie.mentor_motivatie || ""}
               disabled
               placeholder="Nog geen feedback van mentor."
             />

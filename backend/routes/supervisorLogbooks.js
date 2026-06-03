@@ -43,8 +43,8 @@ router.get("/mentor/logbooks", authenticateJWT, (req, res) => {
     INNER JOIN internship_requests ir ON ir.student_id = u.id
     INNER JOIN internships i ON i.internship_request_id = ir.id
     LEFT JOIN logbooks lb ON lb.id = (
-      SELECT id FROM logbooks 
-      WHERE created_by_student_id = u.id AND status != 'open'
+      SELECT id FROM logbooks
+      WHERE internship_id = i.id
       ORDER BY week DESC LIMIT 1
     )
     WHERE u.role = 'student' AND i.mentor_id = ?
@@ -58,7 +58,6 @@ router.get("/mentor/logbooks", authenticateJWT, (req, res) => {
     res.json({ data: results });
   });
 });
-
 router.get("/students/:id/logbooks", authenticateJWT, (req, res) => {
   const studentId = req.params.id;
   const query = `
@@ -89,7 +88,10 @@ router.get("/students/:id/logbooks", authenticateJWT, (req, res) => {
 
 router.get("/logbooks/:id/detail", authenticateJWT, (req, res) => {
   db.query(
-    "SELECT * FROM logbooks WHERE id = ?",
+    `SELECT l.*, CONCAT(u.firstname, ' ', u.lastname) AS student_name
+     FROM logbooks l
+     INNER JOIN users u ON u.id = l.created_by_student_id
+     WHERE l.id = ?`,
     [req.params.id],
     (err, results) => {
       if (err) return res.status(500).json({ message: "Fout bij ophalen logboek" });
@@ -101,8 +103,11 @@ router.get("/logbooks/:id/detail", authenticateJWT, (req, res) => {
 
 router.post("/logbooks/:id/feedback", authenticateJWT, (req, res) => {
   const { feedback, status } = req.body;
+  const isMentor = req.user.role === "mentor";
+  const column = isMentor ? "mentor_feedback" : "teacher_feedback";
+
   db.query(
-    "UPDATE logbooks SET feedback = ?, status = ? WHERE id = ?",
+    `UPDATE logbooks SET ${column} = ?, status = ? WHERE id = ?`,
     [feedback, status || "adjustment_required", req.params.id],
     (err) => {
       if (err) return res.status(500).json({ message: "Fout bij opslaan feedback" });

@@ -22,7 +22,7 @@ function StatusBadge({ status }) {
 }
 
 export default function SupervisorStudentLogbooks() {
-const { internshipId: id } = useParams();
+  const { internshipId: id } = useParams();
   const navigate = useNavigate();
   const [studentName, setStudentName] = useState("");
   const [logbooks, setLogbooks] = useState([]);
@@ -31,13 +31,12 @@ const { internshipId: id } = useParams();
 
   useEffect(() => {
     const fetchData = async () => {
-    
       try {
         const token = localStorage.getItem("token");
-      const res = await fetch(
-  `http://localhost:3000/api/supervisor/internship/${id}/logbooks`,
-  { headers: { Authorization: `Bearer ${token}` } }
-);
+        const res = await fetch(
+          `http://localhost:3000/api/supervisor/internship/${id}/logbooks`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
         if (!res.ok) throw new Error();
         const json = await res.json();
         setStudentName(json.data.student_name || "");
@@ -87,7 +86,7 @@ const { internshipId: id } = useParams();
                   <td style={s.td}>
                     <button
                       style={s.btn}
-                   onClick={() => navigate(`/supervisor/logbook/${log.id}`)}
+                      onClick={() => navigate(`/supervisor/logbook/${log.id}`)}
                     >
                       Bekijken
                     </button>

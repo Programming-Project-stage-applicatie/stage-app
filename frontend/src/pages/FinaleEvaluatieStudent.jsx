@@ -124,6 +124,7 @@ export default function FinaleEvaluatieStudent() {
 
   const isOpen      = evaluatie.status === "open";
   const isSubmitted = evaluatie.status === "submitted";
+  const isEvaluated = evaluatie.status === "evaluated";
   const alleenLezen = !isOpen;
 
   return (
@@ -217,6 +218,7 @@ export default function FinaleEvaluatieStudent() {
         )}
       </section>
 
+      {/* Mentor- en docentfeedback: alleen tonen als ingediend of geëvalueerd */}
       {alleenLezen && (
         <>
           <hr style={s.lijn} />
@@ -230,36 +232,37 @@ export default function FinaleEvaluatieStudent() {
             />
           </section>
 
-          <section style={s.sectie}>
-            <h2 style={s.sectietitel}>Feedback Docent</h2>
-            <textarea
-              style={{ ...s.textarea, ...s.textareaReadonly }}
-              value={evaluatie.teacher_feedback || ""}
-              disabled
-              placeholder="Nog geen feedback van docent."
-            />
-          </section>
-        </>
-      )}
+          {/* Docent score: ALLEEN zichtbaar als geëvalueerd */}
+<section style={s.sectie}>
+  <h2 style={s.sectietitel}>Feedback Docent</h2>
+  <textarea
+    style={{ ...s.textarea, ...s.textareaReadonly }}
+    value={evaluatie.teacher_feedback || ""}
+    disabled
+    placeholder="Nog geen feedback van docent."
+  />
+</section>
 
-      {evaluatie.status === "evaluated" && (
-        <>
-          <hr style={s.lijn} />
-          <section style={s.sectie}>
-            <h2 style={s.sectietitel}>Beoordeling</h2>
-            <label style={s.label}>Eindscore:</label>
-            <div style={s.scoreBlok}>
-              <span style={s.scoreGetal}>{evaluatie.final_score != null ? evaluatie.final_score : "—"}</span>
-              {evaluatie.final_score != null && <span style={s.scoreMax}> / 20</span>}
-            </div>
-            <label style={{ ...s.label, marginTop: "1rem" }}>Motivatie:</label>
-            <textarea
-              style={{ ...s.textarea, ...s.textareaReadonly }}
-              value={evaluatie.motivatie || ""}
-              disabled
-              placeholder="Nog geen motivatie ingegeven."
-            />
-          </section>
+{isEvaluated && (
+  <>
+    <hr style={s.lijn} />
+    <section style={s.sectie}>
+      <h2 style={s.sectietitel}>Beoordeling</h2>
+      <label style={s.label}>Eindscore:</label>
+      <div style={s.scoreBlok}>
+        <span style={s.scoreGetal}>{evaluatie.final_score != null ? evaluatie.final_score : "—"}</span>
+        {evaluatie.final_score != null && <span style={s.scoreMax}> / 20</span>}
+      </div>
+      <label style={{ ...s.label, marginTop: "1rem" }}>Motivatie:</label>
+      <textarea
+        style={{ ...s.textarea, ...s.textareaReadonly }}
+        value={evaluatie.motivatie || ""}
+        disabled
+        placeholder="Nog geen motivatie ingegeven."
+      />
+    </section>
+  </>
+)}
         </>
       )}
 

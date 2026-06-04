@@ -86,10 +86,17 @@ router.post("/logbooks/:id/feedback", authenticateJWT, async (req, res) => {
   const isMentor = req.user.role === "mentor";
   const column = isMentor ? "mentor_feedback" : "teacher_feedback";
   try {
-    await db.query(
-      `UPDATE logbooks SET ${column} = ?, status = ? WHERE id = ?`,
-      [feedback, status || "adjustment_required", req.params.id]
-    );
+    if (isMentor) {
+      await db.query(
+        `UPDATE logbooks SET ${column} = ?, status = ? WHERE id = ?`,
+        [feedback, status || "adjustment_required", req.params.id]
+      );
+    } else {
+      await db.query(
+        `UPDATE logbooks SET ${column} = ? WHERE id = ?`,
+        [feedback, req.params.id]
+      );
+    }
     res.json({ message: "Feedback opgeslagen" });
   } catch (err) {
     res.status(500).json({ message: "Fout bij opslaan feedback" });

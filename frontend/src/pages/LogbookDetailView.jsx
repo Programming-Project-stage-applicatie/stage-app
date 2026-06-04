@@ -157,9 +157,9 @@ export default function LogbookDetailView() {
                 </button>
               </>
             ) : (
-              <button style={s.submitBtn} onClick={() => handleSubmitFeedback("approved")} disabled={saving}>
-                {saving ? 'Opslaan...' : 'Opslaan'}
-              </button>
+              <button style={s.submitBtn} onClick={() => handleSubmitFeedback(null)} disabled={saving}>
+  {saving ? 'Opslaan...' : 'Opslaan'}
+</button>
             )}
             <button style={s.cancelBtn} onClick={() => navigate(-1)}>annuleren</button>
           </>

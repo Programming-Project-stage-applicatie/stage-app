@@ -117,9 +117,7 @@ export default function StudentDashboard() {
         <Link className="dashboard-button" to="/student/new-request">
           Nieuwe stageaanvraag
         </Link>
-        <Link className="dashboard-button" to="/student/logbooks">
-          Logboeken
-        </Link>
+       
       </div>
 
       <h2>Mijn stageaanvragen</h2>

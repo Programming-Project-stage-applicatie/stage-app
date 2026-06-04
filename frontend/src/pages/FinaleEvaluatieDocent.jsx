@@ -161,13 +161,13 @@ export default function FinaleEvaluatieDocent() {
             />
             {evaluation.document ? (
               <a
-                href={`http://localhost:3000${evaluation.document}`}
-                target="_blank"
-                rel="noreferrer"
-                style={s.docBtn}
-              >
-                📎 {evaluation.document.split("/").pop()} — {t("FinaleEvaluatieDocent.clickToOpen")}
-              </a>
+                  href={`http://localhost:3000/api/finale-evaluatie/document/${id}`}
+  target="_blank"
+  rel="noreferrer"
+  style={s.docBtn}
+>
+  📎 {evaluation.document.split("/").pop()} — {t("FinaleEvaluatieDocent.clickToOpen")}
+</a>
             ) : (
               <p style={s.noAttachment}>📄 {t("FinaleEvaluatieDocent.noAttachment")}</p>
             )}

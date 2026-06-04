@@ -3,7 +3,7 @@ const router = express.Router();
 const authenticateJWT = require("../middleware/authenticateJWT");
 const db = require("../db");
 
-router.get("/teacher/logbooks", authenticateJWT, (req, res) => {
+router.get("/teacher/logbooks", authenticateJWT, async (req, res) => {
   const query = `
     SELECT 
       u.id,
@@ -20,16 +20,16 @@ router.get("/teacher/logbooks", authenticateJWT, (req, res) => {
     WHERE u.role = 'student'
     ORDER BY u.firstname ASC
   `;
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error("Error fetching teacher logbooks:", err);
-      return res.status(500).json({ message: "Error fetching logbooks" });
-    }
+  try {
+    const [results] = await db.query(query);
     res.json({ data: results });
-  });
+  } catch (err) {
+    console.error("Error fetching teacher logbooks:", err);
+    res.status(500).json({ message: "Error fetching logbooks" });
+  }
 });
 
-router.get("/mentor/logbooks", authenticateJWT, (req, res) => {
+router.get("/mentor/logbooks", authenticateJWT, async (req, res) => {
   const mentorId = req.user.id;
   const query = `
     SELECT DISTINCT
@@ -48,16 +48,17 @@ router.get("/mentor/logbooks", authenticateJWT, (req, res) => {
       ORDER BY week DESC LIMIT 1
     )
     WHERE u.role = 'student' AND i.mentor_id = ?
-    ORDER BY name ASC
+    ORDER BY u.firstname ASC
   `;
-  db.query(query, [mentorId], (err, results) => {
-    if (err) {
-      console.error("Error fetching mentor logbooks:", err);
-      return res.status(500).json({ message: "Error fetching logbooks" });
-    }
+  try {
+    const [results] = await db.query(query, [mentorId]);
     res.json({ data: results });
-  });
+  } catch (err) {
+    console.error("Error fetching mentor logbooks:", err);
+    res.status(500).json({ message: "Error fetching logbooks" });
+  }
 });
+
 router.get("/students/:id/logbooks", authenticateJWT, (req, res) => {
   const studentId = req.params.id;
   const query = `
@@ -143,31 +144,5 @@ router.get("/internship/:internshipId/logbooks", authenticateJWT, (req, res) => 
     }
   );
 });
-router.get("/internship/:internshipId/logbooks", authenticateJWT, (req, res) => {
-  const internshipId = req.params.internshipId;
-  db.query(
-    `SELECT id, week, status FROM logbooks WHERE internship_id = ? ORDER BY week DESC`,
-    [internshipId],
-    (err, logbooks) => {
-      if (err) return res.status(500).json({ message: "Fout bij ophalen logboeken" });
-      db.query(
-        `SELECT CONCAT(u.firstname, ' ', u.lastname) AS student_name
-         FROM internships i
-         INNER JOIN internship_requests ir ON ir.id = i.internship_request_id
-         INNER JOIN users u ON u.id = ir.student_id
-         WHERE i.id = ?`,
-        [internshipId],
-        (err2, info) => {
-          if (err2) return res.status(500).json({ message: "Fout bij ophalen student" });
-          res.json({
-            data: {
-              student_name: info[0]?.student_name || "",
-              logbooks
-            }
-          });
-        }
-      );
-    }
-  );
-});
+
 module.exports = router;

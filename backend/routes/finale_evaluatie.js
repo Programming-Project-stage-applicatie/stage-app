@@ -117,7 +117,7 @@ router.post(
     const db = req.db;
     const { studentId } = req.params;
     const { omschrijving } = req.body;
-    const document = req.file ? `/${req.file.path}` : null;
+    const document = req.file ? `/${req.file.path.replace(/\\/g, "/")}` : null;
     try {
       const internshipId = await getInternshipId(db, studentId);
       if (!internshipId) {
@@ -326,7 +326,7 @@ router.get("/document/:internshipId", async (req, res) => {
     if (!rows[0]?.document) {
       return res.status(404).json({ error: "Geen document gevonden." });
     }
-    const relatief    = rows[0].document.replace(/^\/+/, "");
+   const relatief    = rows[0].document.replace(/^[\/\\]+/, "").replace(/\\/g, "/");
     const bestandspad = path.join(__dirname, "..", relatief);
     
     console.log("Bestandspad:", bestandspad);              // ← en dit
@@ -384,7 +384,7 @@ router.post(
     const db = req.db;
     const { internshipId } = req.params;
     const { omschrijving } = req.body;
-    const document = req.file ? `/${req.file.path}` : null;
+    const document = req.file ? `/${req.file.path.replace(/\\/g, "/")}` : null;
     try {
       const [existing] = await db.query(
         "SELECT id, status FROM final_evaluations WHERE internship_id = ?",

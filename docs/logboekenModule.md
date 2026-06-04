@@ -93,7 +93,7 @@ DB_NAME=jouw_database
 | POST | /api/supervisor/logbooks/:id/feedback | Feedback opslaan |
 
 ## Projectstructuur
-\```
+```
 stage-app/
 ├── backend/
 │   ├── middleware/
@@ -107,4 +107,4 @@ stage-app/
         ├── logbooks/
         ├── styles/
         └── i18n/
-\```
+```

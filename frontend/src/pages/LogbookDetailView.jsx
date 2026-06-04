@@ -68,7 +68,8 @@ export default function LogbookDetailView() {
         }
       );
       if (!res.ok) throw new Error();
-      setSaved(true);
+setSaved(true);
+setLogbook(prev => ({ ...prev, status }));
     } catch {
       alert("Fout bij het opslaan van feedback.");
     } finally {

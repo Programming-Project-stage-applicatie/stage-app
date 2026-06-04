@@ -45,7 +45,8 @@ const isMentor = payload.role === "mentor";
         if (!res.ok) throw new Error();
         const data = await res.json();
         setLogbook(data);
-        setFeedback(data.feedback || "");
+        setFeedback(isMentor ? (data.mentor_feedback || "") : (data.teacher_feedback || ""));
+if (isMentor ? data.mentor_feedback : data.teacher_feedback) setSaved(true);
       } catch {
         setError("Fout bij het laden van het logboek.");
       } finally {
@@ -109,21 +110,29 @@ const handleSubmitFeedback = async (status) => {
         </div>
       )}
 
-      {logbook.feedback && (
-        <div style={s.feedbackBox}>
-          <h2 style={s.sectionTitle}>Feedback van mentor</h2>
-          <p style={s.sectionText}>{logbook.feedback}</p>
-        </div>
-      )}
+  {!isMentor && (
+  <div style={s.feedbackBox}>
+    <h2 style={s.sectionTitle}>Feedback van mentor</h2>
+    <p style={s.sectionText}>{logbook.mentor_feedback || 'Nog geen feedback van mentor'}</p>
+  </div>
+)}
+
+{isMentor && (
+  <div style={s.feedbackBox}>
+    <h2 style={s.sectionTitle}>Feedback van docent</h2>
+    <p style={s.sectionText}>{logbook.teacher_feedback || 'Nog geen feedback van docent'}</p>
+  </div>
+)}
 
       <hr style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: '24px 0' }} />
 
       <div style={s.section}>
-        <h2 style={s.sectionTitle}>Jouw feedback (optioneel)</h2>
+        <h2 style={s.sectionTitle}>
+  {isMentor ? "Jouw feedback" : "Feedback (optioneel)"} </h2>
         <textarea
           style={{ ...s.textarea, background: saved ? '#f9fafb' : '#fff' }}
           rows={4}
-          placeholder="geef feedback op dit logboek"
+          placeholder={isMentor ? "Geef feedback op dit logboek" : "Geef feedback op dit logboek (optioneel)"}
           value={feedback}
           onChange={e => { if (!saved) setFeedback(e.target.value); }}
           readOnly={saved}

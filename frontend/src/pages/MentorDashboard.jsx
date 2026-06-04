@@ -107,7 +107,14 @@ export default function MentorDashboard() {
   <tr key={internship.id}>
     <td>{internship.student_firstname} {internship.student_lastname}</td>
     <td>{internship.company}</td>
-    <td><span style={{ fontWeight: "bold" }}>{internship.logbook_count ?? "-"}</span></td>
+   <td>
+  <span
+    style={{ fontWeight: "bold", color: "#6fa8dc", textDecoration: "underline", cursor: "pointer" }}
+    onClick={() => navigate(`/supervisor/internship/${internship.id}/logbooks`)}
+  >
+    {internship.logbook_count ?? "-"}
+  </span>
+</td>
     <td>
       <span
         style={{ color: "#6fa8dc", textDecoration: "underline", cursor: "pointer" }}

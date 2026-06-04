@@ -20,8 +20,11 @@ export default function LogboekDetail({ logbook, onTerug, onAanpassen }) {
         <p style={{ whiteSpace: "pre-wrap" }}>{logbook.tasks || "—"}</p>
         <h3>{t("logbooks.reflection")}</h3>
         <p style={{ whiteSpace: "pre-wrap" }}>{logbook.reflection || "—"}</p>
-        <h3>{t("logbooks.mentorFeedback")}</h3>
-        <p style={{ whiteSpace: "pre-wrap" }}>{logbook.feedback || "—"}</p>
+   <h3>{t("logbooks.mentorFeedback")}</h3>
+<p style={{ whiteSpace: "pre-wrap" }}>{logbook.mentor_feedback || "—"}</p>
+
+<h3>Feedback van docent</h3>
+<p style={{ whiteSpace: "pre-wrap" }}>{logbook.teacher_feedback || "—"}</p>
         <div style={{ display: "flex", gap: "12px", marginTop: "32px" }}>
           {canEdit && (
             <button

@@ -29,15 +29,15 @@ export default function LogbookDetailView() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
- const [loading, setLoading] = useState(true);
-const token = localStorage.getItem("token");
-const payload = token ? JSON.parse(atob(token.split('.')[1])) : {};
-const isMentor = payload.role === "mentor";
+  const [loading, setLoading] = useState(true);
+
+  const token = localStorage.getItem("token");
+  const payload = token ? JSON.parse(atob(token.split('.')[1])) : {};
+  const isMentor = payload.role === "mentor";
 
   useEffect(() => {
     const fetchLogbook = async () => {
       try {
-        const token = localStorage.getItem("token");
         const res = await fetch(
           `http://localhost:3000/api/supervisor/logbooks/${id}/detail`,
           { headers: { Authorization: `Bearer ${token}` } }
@@ -46,7 +46,7 @@ const isMentor = payload.role === "mentor";
         const data = await res.json();
         setLogbook(data);
         setFeedback(isMentor ? (data.mentor_feedback || "") : (data.teacher_feedback || ""));
-if (isMentor ? data.mentor_feedback : data.teacher_feedback) setSaved(true);
+        if (isMentor ? data.mentor_feedback : data.teacher_feedback) setSaved(true);
       } catch {
         setError("Fout bij het laden van het logboek.");
       } finally {
@@ -56,10 +56,9 @@ if (isMentor ? data.mentor_feedback : data.teacher_feedback) setSaved(true);
     fetchLogbook();
   }, [id]);
 
-const handleSubmitFeedback = async (status) => {
+  const handleSubmitFeedback = async (status) => {
     setSaving(true);
     try {
-      const token = localStorage.getItem("token");
       const res = await fetch(
         `http://localhost:3000/api/supervisor/logbooks/${id}/feedback`,
         {
@@ -110,25 +109,26 @@ const handleSubmitFeedback = async (status) => {
         </div>
       )}
 
-  {!isMentor && (
-  <div style={s.feedbackBox}>
-    <h2 style={s.sectionTitle}>Feedback van mentor</h2>
-    <p style={s.sectionText}>{logbook.mentor_feedback || 'Nog geen feedback van mentor'}</p>
-  </div>
-)}
+      {!isMentor && (
+        <div style={s.feedbackBox}>
+          <h2 style={s.sectionTitle}>Feedback van mentor</h2>
+          <p style={s.sectionText}>{logbook.mentor_feedback || 'Nog geen feedback van mentor'}</p>
+        </div>
+      )}
 
-{isMentor && (
-  <div style={s.feedbackBox}>
-    <h2 style={s.sectionTitle}>Feedback van docent</h2>
-    <p style={s.sectionText}>{logbook.teacher_feedback || 'Nog geen feedback van docent'}</p>
-  </div>
-)}
+      {isMentor && (
+        <div style={s.feedbackBox}>
+          <h2 style={s.sectionTitle}>Feedback van docent</h2>
+          <p style={s.sectionText}>{logbook.teacher_feedback || 'Nog geen feedback van docent'}</p>
+        </div>
+      )}
 
       <hr style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: '24px 0' }} />
 
       <div style={s.section}>
         <h2 style={s.sectionTitle}>
-  {isMentor ? "Jouw feedback" : "Feedback (optioneel)"} </h2>
+          {isMentor ? "Jouw feedback" : "Jouw feedback (optioneel)"}
+        </h2>
         <textarea
           style={{ ...s.textarea, background: saved ? '#f9fafb' : '#fff' }}
           rows={4}
@@ -147,21 +147,21 @@ const handleSubmitFeedback = async (status) => {
           </>
         ) : (
           <>
-           {isMentor ? (
-  <>
-    <button style={s.submitBtn} onClick={() => handleSubmitFeedback("approved")} disabled={saving}>
-      {saving ? 'Opslaan...' : 'Goedkeuren'}
-    </button>
-    <button style={{ ...s.submitBtn, background: '#e05a1a' }} onClick={() => handleSubmitFeedback("adjustment_required")} disabled={saving}>
-      {saving ? 'Opslaan...' : 'Aanpassingen vereist'}
-    </button>
-  </>
-) : (
-  <button style={s.submitBtn} onClick={() => handleSubmitFeedback("submitted")} disabled={saving}>
-    {saving ? 'Opslaan...' : 'indienen'}
-  </button>
-)}
-<button style={s.cancelBtn} onClick={() => navigate(-1)}>annuleren</button>
+            {isMentor ? (
+              <>
+                <button style={s.submitBtn} onClick={() => handleSubmitFeedback("approved")} disabled={saving}>
+                  {saving ? 'Opslaan...' : 'Goedkeuren'}
+                </button>
+                <button style={{ ...s.submitBtn, background: '#e05a1a' }} onClick={() => handleSubmitFeedback("adjustment_required")} disabled={saving}>
+                  {saving ? 'Opslaan...' : 'Aanpassingen vereist'}
+                </button>
+              </>
+            ) : (
+              <button style={s.submitBtn} onClick={() => handleSubmitFeedback(null)} disabled={saving}>
+  {saving ? 'Opslaan...' : 'Opslaan'}
+</button>
+            )}
+            <button style={s.cancelBtn} onClick={() => navigate(-1)}>annuleren</button>
           </>
         )}
       </div>

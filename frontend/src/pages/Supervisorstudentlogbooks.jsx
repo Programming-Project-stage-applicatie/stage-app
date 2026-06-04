@@ -22,38 +22,33 @@ function StatusBadge({ status }) {
 }
 
 export default function SupervisorStudentLogbooks() {
-const { internshipId: id } = useParams();
+  const { internshipId: id } = useParams();
   const navigate = useNavigate();
   const [studentName, setStudentName] = useState("");
   const [logbooks, setLogbooks] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
-useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const payload = token ? JSON.parse(atob(token.split('.')[1])) : {};
-      const isMentor = payload.role === "mentor";
-
-      const res = await fetch(
-        `http://localhost:3000/api/supervisor/internship/${id}/logbooks`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (!res.ok) throw new Error();
-      const json = await res.json();
-      setStudentName(json.data.student_name || "");
-      const allLogbooks = json.data.logbooks || [];
-      console.log("isMentor:", isMentor, "logbooks:", allLogbooks.map(l => l.status));
-      setLogbooks(isMentor ? allLogbooks.filter(l => l.status !== 'open') : allLogbooks);
-    } catch {
-      setError("Fout bij het laden van logboeken.");
-    } finally {
-      setLoading(false);
-    }
-  };
-  fetchData();
-}, [id]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(
+          `http://localhost:3000/api/supervisor/internship/${id}/logbooks`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (!res.ok) throw new Error();
+        const json = await res.json();
+        setStudentName(json.data.student_name || "");
+        setLogbooks((json.data.logbooks || []).filter(l => l.status !== 'open'));
+      } catch {
+        setError("Fout bij het laden van logboeken.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [id]);
 
   return (
     <div style={s.page}>
@@ -84,14 +79,14 @@ useEffect(() => {
                   </td>
                 </tr>
               )}
-              {logbooks.filter(log => log.status !== 'open').map((log, i) => (
+              {logbooks.map((log, i) => (
                 <tr key={log.id} style={{ background: i % 2 === 0 ? '#fff' : '#f9fafb' }}>
                   <td style={s.td}>Week {log.week}</td>
                   <td style={s.td}><StatusBadge status={log.status} /></td>
                   <td style={s.td}>
                     <button
                       style={s.btn}
-                   onClick={() => navigate(`/supervisor/logbook/${log.id}`)}
+                      onClick={() => navigate(`/supervisor/logbook/${log.id}`)}
                     >
                       Bekijken
                     </button>

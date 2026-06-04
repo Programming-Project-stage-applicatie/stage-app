@@ -70,7 +70,7 @@ export default function StudentDashboard() {
           );
           if (!res.ok) return { ...internship, ev_status: "—", final_score: null };
           const ev = await res.json();
-          return { ...internship, ev_status: ev.status, final_score: ev.final_score };
+          return { ...internship, ev_status: ev.status, final_score: ev.status === "evaluated" ? ev.final_score : null };
         } catch {
           return { ...internship, ev_status: "—", final_score: null };
         }

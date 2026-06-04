@@ -4,35 +4,9 @@ const authenticateJWT = require("../middleware/authenticateJWT");
 const db = require("../db").promise();
 
 router.get("/teacher/logbooks", authenticateJWT, async (req, res) => {
+  const teacherId = req.user.id;
   const query = `
-    SELECT 
-      u.id,
-      CONCAT(u.firstname, ' ', u.lastname) AS name,
-      lb.week AS last_week,
-      lb.status,
-      (SELECT internship_id FROM logbooks WHERE created_by_student_id = u.id LIMIT 1) AS internship_id
-    FROM users u
-    LEFT JOIN logbooks lb ON lb.id = (
-      SELECT id FROM logbooks 
-      WHERE created_by_student_id = u.id AND status != 'open'
-      ORDER BY week DESC LIMIT 1
-    )
-    WHERE u.role = 'student'
-    ORDER BY u.firstname ASC
-  `;
-  try {
-    const [results] = await db.query(query);
-    res.json({ data: results });
-  } catch (err) {
-    console.error("Error fetching teacher logbooks:", err);
-    res.status(500).json({ message: "Error fetching logbooks" });
-  }
-});
-
-router.get("/mentor/logbooks", authenticateJWT, async (req, res) => {
-  const mentorId = req.user.id;
-  const query = `
-    SELECT DISTINCT
+    SELECT
       u.id,
       CONCAT(u.firstname, ' ', u.lastname) AS name,
       ir.company,
@@ -43,11 +17,43 @@ router.get("/mentor/logbooks", authenticateJWT, async (req, res) => {
     INNER JOIN internship_requests ir ON ir.student_id = u.id
     INNER JOIN internships i ON i.internship_request_id = ir.id
     LEFT JOIN logbooks lb ON lb.id = (
-      SELECT id FROM logbooks 
-      WHERE created_by_student_id = u.id AND status != 'open'
+      SELECT id FROM logbooks
+      WHERE internship_id = i.id
+      ORDER BY week DESC LIMIT 1
+    )
+    WHERE u.role = 'student' AND i.teacher_id = ?
+    GROUP BY u.id, i.id, ir.company, lb.week, lb.status
+    ORDER BY u.firstname ASC
+  `;
+  try {
+    const [results] = await db.query(query, [teacherId]);
+    res.json({ data: results });
+  } catch (err) {
+    console.error("Error fetching teacher logbooks:", err);
+    res.status(500).json({ message: "Error fetching logbooks" });
+  }
+});
+
+router.get("/mentor/logbooks", authenticateJWT, async (req, res) => {
+  const mentorId = req.user.id;
+  const query = `
+    SELECT
+      u.id,
+      CONCAT(u.firstname, ' ', u.lastname) AS name,
+      ir.company,
+      lb.week AS last_week,
+      lb.status,
+      i.id AS internship_id
+    FROM users u
+    INNER JOIN internship_requests ir ON ir.student_id = u.id
+    INNER JOIN internships i ON i.internship_request_id = ir.id
+    LEFT JOIN logbooks lb ON lb.id = (
+      SELECT id FROM logbooks
+      WHERE internship_id = i.id
       ORDER BY week DESC LIMIT 1
     )
     WHERE u.role = 'student' AND i.mentor_id = ?
+    GROUP BY u.id, i.id, ir.company, lb.week, lb.status
     ORDER BY u.firstname ASC
   `;
   try {
@@ -58,6 +64,7 @@ router.get("/mentor/logbooks", authenticateJWT, async (req, res) => {
     res.status(500).json({ message: "Error fetching logbooks" });
   }
 });
+
 router.get("/logbooks/:id/detail", authenticateJWT, async (req, res) => {
   try {
     const [results] = await db.query(
@@ -93,7 +100,7 @@ router.get("/internship/:internshipId/logbooks", authenticateJWT, async (req, re
   const internshipId = req.params.internshipId;
   try {
     const [logbooks] = await db.query(
-      `SELECT id, week, status FROM logbooks WHERE internship_id = ? ORDER BY week DESC`,
+      `SELECT id, week, status FROM logbooks WHERE internship_id = ? AND status != 'open' ORDER BY week DESC`,
       [internshipId]
     );
     const [info] = await db.query(

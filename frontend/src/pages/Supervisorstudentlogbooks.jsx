@@ -41,7 +41,7 @@ const { internshipId: id } = useParams();
         if (!res.ok) throw new Error();
         const json = await res.json();
         setStudentName(json.data.student_name || "");
-        setLogbooks(json.data.logbooks || []);
+        setLogbooks((json.data.logbooks || []).filter(l => l.status !== 'open'));
       } catch {
         setError("Fout bij het laden van logboeken.");
       } finally {

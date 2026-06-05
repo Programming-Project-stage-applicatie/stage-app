@@ -1,0 +1,163 @@
+/* ============================================================
+   CONTAINER
+============================================================ */
+.student-request-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+/* ============================================================
+   TITEL
+============================================================ */
+.student-request-title {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+/* ============================================================
+   SECTIES
+============================================================ */
+.student-request-section {
+  margin-bottom: 24px;
+}
+
+/* ============================================================
+   RIJEN (label + waarde)
+============================================================ */
+.student-request-row {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.student-request-label {
+  font-weight: 600;
+  color: #444;
+}
+
+.student-request-value {
+  color: #222;
+}
+
+/* ============================================================
+   BESCHRIJVING (opdracht)
+============================================================ */
+.student-request-description {
+  padding: 1rem;
+  background-color: #f6f6f6;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   FEEDBACK BLOK (M9)
+============================================================ */
+.student-request-warning {
+  background: #fff7d6;
+  border-left: 4px solid #e0b200;
+  padding: 16px;
+  border-radius: 6px;
+  margin-bottom: 24px;
+}
+
+.student-request-warning strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #7a5e00;
+}
+
+/* ============================================================
+   FORMULIER (edit-modus)
+============================================================ */
+.student-request-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 12px;
+}
+
+.student-request-form label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  color: #444;
+  font-size: 15px;
+}
+
+.student-request-form input,
+.student-request-form textarea {
+  margin-top: 6px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+  background: #fafafa;
+}
+
+.student-request-form textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* ============================================================
+   SUBMIT BUTTON — TIFFANY PAARS
+============================================================ */
+.student-request-submit {
+  margin-top: 10px;
+  padding: 12px 24px;
+  background: #6A1B9A; /* Tiffany paars */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.student-request-submit:hover {
+  background: #5a1784; /* iets donkerder paars */
+}
+
+/* ============================================================
+   TERUG / ANNULEREN LINK — onder submit knop
+============================================================ */
+.student-request-back {
+  display: inline-block;
+  margin-top: 12px; /* dichter bij submit knop */
+  text-decoration: none;
+  color: #6A1B9A; /* Tiffany paars */
+  font-weight: 500;
+}
+
+.student-request-back:hover {
+  text-decoration: underline;
+}
+
+/* ============================================================
+   ERROR & SUCCESS MESSAGES
+============================================================ */
+.error-message {
+  background: #ffe5e5;
+  color: #b30000;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  border-left: 4px solid #cc0000;
+}
+
+.success-message {
+  background: #e6ffe6;
+  color: #006600;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  border-left: 4px solid #009900;
+}
